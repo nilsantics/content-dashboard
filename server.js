@@ -76,18 +76,6 @@ function pct(curr, prev) {
   return Math.round(((c - p) / p) * 1000) / 10;
 }
 
-app.get('/api/env-check', (req, res) => {
-  res.json({
-    POSTGRES_URL:             !!process.env.POSTGRES_URL,
-    POSTGRES_URL_NON_POOLING: !!process.env.POSTGRES_URL_NON_POOLING,
-    POSTGRES_HOST:            !!process.env.POSTGRES_HOST,
-    POSTGRES_USER:            !!process.env.POSTGRES_USER,
-    POSTGRES_PASSWORD:        !!process.env.POSTGRES_PASSWORD,
-    DATABASE_URL:             !!process.env.DATABASE_URL,
-    connectionString:         !!connectionString,
-    connectionPreview:        connectionString ? connectionString.slice(0, 30) + '...' : null,
-  });
-});
 
 app.get('/api/dashboard', async (req, res) => {
   try {
