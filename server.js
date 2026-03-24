@@ -6,9 +6,10 @@ const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
+const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes('supabase') ? { rejectUnauthorized: false } : false,
+  connectionString,
+  ssl: connectionString?.includes('supabase') ? { rejectUnauthorized: false } : false,
 });
 
 pool.query(`
