@@ -8,32 +8,173 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: #080d14; color: #e2e8f0; min-height: 100vh; }
+    body { font-family: 'Inter', sans-serif; background: #080d14; color: #e2e8f0; min-height: 100vh; transition: background .25s, color .25s; }
     ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: #0d1524; }
     ::-webkit-scrollbar-thumb { background: #2d3f5c; border-radius: 3px; }
 
-    /* ── Header ── */
-    header {
-      background: linear-gradient(135deg, #0d1524 0%, #111927 100%);
-      border-bottom: 1px solid rgba(99,102,241,.2);
-      padding: 0 28px; height: 64px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 50;
-      box-shadow: 0 4px 24px rgba(0,0,0,.4);
+    /* ── Global Light Mode ── */
+    body.light { background: #f1f5f9; color: #0f172a; }
+    body.light ::-webkit-scrollbar-track { background: #e2e8f0; }
+    body.light ::-webkit-scrollbar-thumb { background: #94a3b8; }
+    body.light .main-wrap { background: #f1f5f9; }
+    body.light .brand-name { color: #0f172a; }
+    body.light .brand-sub  { color: #64748b; }
+    body.light .brand-icon { background: #6366f1; }
+    body.light .tab-nav { background: #ffffff; border-bottom-color: #e2e8f0; }
+    body.light .tab-btn { color: #64748b; }
+    body.light .tab-btn.active { color: #6366f1; border-bottom-color: #6366f1; }
+    body.light .tab-btn:hover:not(.active) { color: #0f172a; }
+    body.light .card { background: #ffffff; border-color: #e2e8f0; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+    body.light .card-title { color: #0f172a; }
+    body.light .kpi-card { background: #ffffff; border-color: #e2e8f0; }
+    body.light .kpi-label { color: #64748b; }
+    body.light .kpi-value { color: #0f172a; }
+    body.light .kpi-change.pos { color: #16a34a; } body.light .kpi-change.neg { color: #dc2626; }
+    body.light .btn-filter { background: #f1f5f9; border-color: #e2e8f0; color: #475569; }
+    body.light .btn-filter.active { background: #6366f133; border-color: #6366f1; color: #6366f1; }
+    body.light .btn-filter:hover { border-color: #6366f1; color: #6366f1; }
+    body.light .platform-switch { background: #f1f5f9; border-color: #e2e8f0; }
+    body.light .platform-btn { color: #64748b; }
+    body.light .platform-btn.active[data-platform="youtube"] { background: #ff000015; color: #cc0000; }
+    body.light .platform-btn.active[data-platform="instagram"] { background: #e1306c15; color: #c13584; }
+    body.light .sync-btn { border-color: #e2e8f0; color: #64748b; }
+    body.light .sync-btn:hover:not(:disabled) { border-color: #6366f1; color: #6366f1; }
+    body.light .sync-last { color: #94a3b8; }
+    body.light .date-input { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+    body.light table thead tr { background: #f8fafc; }
+    body.light table th { color: #475569; border-color: #e2e8f0; }
+    body.light table td { border-color: #f1f5f9; color: #334155; }
+    body.light table tr:hover td { background: #f8fafc; }
+    body.light .post-title { color: #0f172a; }
+    body.light select, body.light input[type=text], body.light input[type=search], body.light textarea { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+    body.light .milestone-item { background: #f8fafc; border-color: #e2e8f0; }
+    body.light .milestone-label { color: #475569; }
+    body.light .goal-item { background: #f8fafc; border-color: #e2e8f0; }
+    body.light .goal-name { color: #0f172a; }
+    body.light .pattern-card { background: #f8fafc; border-color: #e2e8f0; }
+    body.light .channel-card { background: #f8fafc; border-color: #e2e8f0; }
+    body.light .channel-name { color: #0f172a; }
+    body.light .channel-handle { color: #64748b; }
+    body.light .channel-stat-val { color: #0f172a; }
+    body.light .channel-stat-lbl { color: #94a3b8; }
+    body.light .lab-settings-row { background: #f8fafc; border-color: #e2e8f0; }
+    body.light .lab-filter-btn { background: #ffffff; border-color: #e2e8f0; color: #475569; }
+    body.light .lab-filter-btn.active { background: #6366f133; border-color: #6366f1; color: #6366f1; }
+    body.light .thumb-upload-zone { background: #f8fafc; border-color: #e2e8f0; }
+    body.light .thumb-label-input { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+    body.light .lab-channel-name { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+    body.light .yt-feed-light { background: #f9f9f9; }
+    body.light .heatmap-wrap { background: #f8fafc; border-color: #e2e8f0; }
+    body.light .pipeline-col { background: #f8fafc; border-color: #e2e8f0; }
+    body.light .pipeline-card { background: #ffffff; border-color: #e2e8f0; }
+    body.light .pipeline-card-title { color: #0f172a; }
+    body.light .comments-item { border-color: #f1f5f9; }
+    body.light .comment-author { color: #0f172a; }
+    body.light .comment-body { color: #334155; }
+    body.light .ideas-output { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+    body.light .light-mode-btn { background: #0f172a15; color: #0f172a; border-color: #0f172a30; }
+    body.light .light-mode-btn:hover { background: #0f172a22; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; left: 0; top: 0; height: 100vh; width: 220px;
+      background: #080d14; border-right: 1px solid #1a2740;
+      display: flex; flex-direction: column; gap: 0;
+      overflow-y: auto; z-index: 100;
+      padding: 0 0 16px 0;
     }
-    .brand { display:flex; align-items:center; gap:12px; }
+    body.light .sidebar { background: #ffffff; border-right-color: #e2e8f0; }
+    .sidebar-brand { display:flex; align-items:center; gap:10px; padding:18px 16px 14px; }
     .brand-icon {
-      width: 36px; height: 36px; border-radius: 10px;
+      width: 34px; height: 34px; border-radius: 9px; flex-shrink:0;
       background: linear-gradient(135deg, #6366f1, #8b5cf6);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 12px rgba(99,102,241,.4);
+      box-shadow: 0 3px 10px rgba(99,102,241,.4);
     }
-    .brand-name { font-size: 16px; font-weight: 700; color: #f1f5f9; letter-spacing: -.3px; }
-    .brand-sub  { font-size: 11px; color: #64748b; font-weight: 400; margin-top: 1px; }
+    .brand-name { font-size: 14px; font-weight: 700; color: #f1f5f9; letter-spacing: -.3px; line-height:1.2; }
+    .brand-sub  { font-size: 10px; color: #64748b; font-weight: 400; margin-top: 1px; }
+    body.light .brand-name { color: #0f172a; }
+    .sidebar-section { padding: 8px 12px 4px; }
+    .sidebar-divider { height: 1px; background: #1a2740; margin: 8px 12px; }
+    body.light .sidebar-divider { background: #e2e8f0; }
+    .sidebar-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #334155; padding: 4px 4px 6px; display:block; }
+    .sidebar-btn {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      background: transparent; border: none; border-radius: 8px;
+      color: #64748b; font-size: 12px; font-weight: 600; padding: 8px 10px;
+      cursor: pointer; transition: all .15s; text-align: left; font-family: inherit;
+    }
+    .sidebar-btn:hover { background: rgba(255,255,255,.05); color: #94a3b8; }
+    body.light .sidebar-btn:hover { background: #f1f5f9; color: #0f172a; }
+    .sidebar-btn.active { background: rgba(99,102,241,.15); color: #818cf8; }
+    .sidebar-btn[data-platform="youtube"].active { background: rgba(220,38,38,.12); color: #f87171; }
+    .sidebar-btn[data-platform="instagram"].active { background: rgba(253,29,29,.1); color: #f472b6; }
+    body.light .sidebar-btn.active { background: rgba(99,102,241,.1); color: #6366f1; }
+    .sidebar-range-btn {
+      display: block; width: 100%;
+      background: transparent; border: 1px solid transparent; border-radius: 8px;
+      color: #64748b; font-size: 12px; font-weight: 600; padding: 7px 10px;
+      cursor: pointer; transition: all .15s; text-align: left; font-family: inherit;
+      margin-bottom: 2px;
+    }
+    .sidebar-range-btn:hover { border-color: #1e2d45; color: #94a3b8; }
+    body.light .sidebar-range-btn:hover { border-color: #e2e8f0; color: #0f172a; }
+    .sidebar-range-btn.active { background: rgba(99,102,241,.15); border-color: #6366f155; color: #818cf8; }
+    body.light .sidebar-range-btn.active { background: rgba(99,102,241,.1); color: #6366f1; border-color: #6366f133; }
+    .sidebar-date-input {
+      width: 100%; background: #0f1a2e; border: 1px solid #1e2d45; border-radius: 8px;
+      color: #94a3b8; font-size: 11px; padding: 6px 8px; margin-bottom: 6px;
+      cursor: pointer; transition: border-color .15s; font-family: inherit; box-sizing: border-box;
+    }
+    body.light .sidebar-date-input { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+    .sidebar-date-input:focus { outline: none; border-color: #6366f1; color: #e2e8f0; }
+    body.light .sidebar-date-input:focus { color: #0f172a; }
+    .sidebar-date-input::-webkit-calendar-picker-indicator { filter: invert(.4); cursor: pointer; }
+    .sidebar-sync-btn {
+      display: flex; align-items: center; gap: 6px; width: 100%;
+      background: #0f1a2e; border: 1px solid #1e2d45; border-radius: 9px;
+      color: #64748b; font-size: 11px; font-weight: 700; padding: 8px 10px;
+      cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    body.light .sidebar-sync-btn { background: #f8fafc; border-color: #e2e8f0; }
+    .sidebar-sync-btn:hover:not(:disabled) { border-color: #818cf8; color: #818cf8; }
+    .sidebar-sync-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .sidebar-sync-btn.syncing { color: #818cf8; border-color: #818cf8; }
+    .sidebar-login-btn {
+      display: flex; align-items: center; gap: 6px; width: 100%;
+      background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.2); border-radius: 8px;
+      color: #818cf8; font-size: 11px; font-weight: 700; padding: 7px 10px;
+      cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    .sidebar-login-btn:hover { background: rgba(99,102,241,.15); }
+    .sidebar-user-info { font-size: 11px; color: #64748b; padding: 4px 10px; }
+    body.light .sidebar-user-info { color: #475569; }
+    .sidebar-upgrade-btn {
+      display: flex; align-items: center; gap: 6px; width: calc(100% - 24px); margin: 4px 12px 0;
+      background: linear-gradient(135deg, #f59e0b, #d97706); border: none; border-radius: 9px;
+      color: #000; font-size: 12px; font-weight: 800; padding: 10px 12px;
+      cursor: pointer; transition: opacity .15s; margin-top: auto;
+    }
+    .sidebar-upgrade-btn:hover { opacity: .9; }
+    .sidebar-spacer { flex: 1; min-height: 12px; }
+    .sidebar-light-btn {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      background: rgba(255,255,255,.04); border: 1px solid #1a2740; border-radius: 8px;
+      color: #64748b; font-size: 11px; font-weight: 600; padding: 7px 10px;
+      cursor: pointer; transition: all .15s; font-family: inherit;
+    }
+    body.light .sidebar-light-btn { background: #f1f5f9; border-color: #e2e8f0; color: #0f172a; }
+    .sidebar-light-btn:hover { border-color: #334155; color: #94a3b8; }
+    body.light .sidebar-light-btn:hover { border-color: #cbd5e1; }
+    .sidebar-sync-last { font-size: 10px; color: #334155; padding: 2px 10px 4px; }
 
-    /* ── Controls ── */
-    .controls { display: flex; align-items: center; gap: 10px; }
+    /* ── Main content area ── */
+    .main-wrap { margin-left: 220px; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ── Controls (hidden - moved to sidebar) ── */
+    .controls { display: none; }
     .btn-group { display:flex; background:#0f1a2e; border:1px solid #1e2d45; border-radius:10px; padding:3px; gap:2px; }
+    body.light .btn-group { background:#f1f5f9; border-color:#e2e8f0; }
     .btn-filter {
       padding: 5px 14px; border-radius: 7px; font-size: 12px; font-weight: 600;
       border: none; cursor: pointer; background: transparent; color: #64748b;
@@ -60,7 +201,7 @@
     }
 
     /* ── Main ── */
-    main { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; max-width: 1600px; margin: 0 auto; }
+    main { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
 
     /* ── KPI Grid ── */
     #kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
@@ -235,6 +376,54 @@
     .milestone-bar-fill { height:100%; border-radius:4px; transition: width .6s ease; }
     .milestone-vals { display:flex; justify-content:space-between; font-size:10px; color:#334155; font-weight:600; }
 
+    /* ── Hour Heatmap ── */
+    .heatmap-wrap { overflow-x: auto; }
+    .heatmap-grid { display: grid; grid-template-columns: 48px repeat(18,1fr); gap: 2px; min-width: 520px; }
+    .hm-cell {
+      height: 26px; border-radius: 4px; background: #0f1a2e;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: transparent; cursor: default;
+      transition: opacity .15s;
+    }
+    .hm-cell:hover { opacity: .8; }
+    .hm-label { font-size: 10px; color: #475569; font-weight: 600; display: flex; align-items: center; }
+    .hm-hour-label { font-size: 9px; color: #334155; text-align: center; padding: 2px 0; }
+
+    /* ── Score badge ── */
+    .score-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 22px; border-radius: 6px;
+      font-size: 11px; font-weight: 800; letter-spacing: -.3px;
+    }
+    .score-hi  { background: rgba(74,222,128,.15); color: #4ade80; }
+    .score-mid { background: rgba(251,191,36,.12);  color: #fbbf24; }
+    .score-lo  { background: rgba(248,113,113,.12); color: #f87171; }
+
+    /* ── Goals ── */
+    .goal-item { display:flex; flex-direction:column; gap:7px; padding:14px 0; border-bottom:1px solid #0f1a2e; }
+    .goal-item:last-child { border-bottom:none; padding-bottom:0; }
+    .goal-header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .goal-label  { font-size:13px; font-weight:600; color:#e2e8f0; flex:1; }
+    .goal-meta   { font-size:11px; color:#475569; }
+    .goal-pace   { font-size:11px; color:#64748b; }
+    .goal-del    { background:none; border:none; color:#334155; cursor:pointer; font-size:15px; line-height:1; padding:0 2px; }
+    .goal-del:hover { color:#f87171; }
+    .goal-add-row { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+    .goal-input  { background:#0f1a2e; border:1px solid #1e2d45; border-radius:8px; color:#e2e8f0; font-size:12px; padding:7px 10px; flex:1; min-width:120px; }
+    .goal-input:focus { outline:none; border-color:#6366f1; }
+    .goal-select { background:#0f1a2e; border:1px solid #1e2d45; border-radius:8px; color:#e2e8f0; font-size:12px; padding:7px 10px; }
+    .goal-btn    { background:#6366f1; border:none; border-radius:8px; color:#fff; font-size:12px; font-weight:700; padding:7px 14px; cursor:pointer; white-space:nowrap; }
+    .goal-btn:hover { background:#818cf8; }
+
+    /* ── Patterns ── */
+    .pattern-card { background:#0a1220; border:1px solid #1a2740; border-radius:10px; padding:14px 16px; }
+    .pattern-stat { display:flex; align-items:baseline; gap:6px; margin-bottom:4px; }
+    .pattern-num  { font-size:22px; font-weight:800; color:#f1f5f9; letter-spacing:-.5px; }
+    .pattern-lbl  { font-size:11px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+    .pattern-insights { display:flex; flex-direction:column; gap:10px; }
+    .pattern-insight  { display:flex; gap:10px; align-items:flex-start; font-size:13px; color:#94a3b8; line-height:1.5; }
+    .pattern-dot { width:6px; height:6px; border-radius:50%; background:#818cf8; margin-top:6px; flex-shrink:0; }
+
     /* ── Pipeline Kanban ── */
     .pipeline-board { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; align-items:start; }
     .pipeline-col { background:#080d14; border:1px solid #1a2740; border-radius:10px; padding:10px; min-height:160px; }
@@ -373,8 +562,159 @@
     .sent-pos { background:#4ade8022; color:#4ade80; }
     .sent-neg { background:#f8717122; color:#f87171; }
     .sent-q   { background:#818cf822; color:#818cf8; }
+    /* ── Sync button ── */
+    .sync-btn {
+      display:flex; align-items:center; gap:6px;
+      background:#0f1a2e; border:1px solid #1e2d45; border-radius:9px;
+      color:#64748b; font-size:11px; font-weight:700; padding:6px 12px;
+      cursor:pointer; transition:all .15s; white-space:nowrap;
+    }
+    .sync-btn:hover:not(:disabled) { border-color:#818cf8; color:#818cf8; }
+    .sync-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .sync-btn.syncing { color:#818cf8; border-color:#818cf8; }
+    .sync-spin { display:inline-block; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .sync-last { font-size:10px; color:#334155; white-space:nowrap; }
+
+    /* ── Custom date range ── */
+    .date-range-wrap { display:flex; align-items:center; gap:6px; }
+    .date-input {
+      background:#0f1a2e; border:1px solid #1e2d45; border-radius:8px;
+      color:#94a3b8; font-size:11px; padding:5px 8px; width:120px;
+      cursor:pointer; transition:border-color .15s;
+    }
+    .date-input:focus { outline:none; border-color:#6366f1; color:#e2e8f0; }
+    .date-input::-webkit-calendar-picker-indicator { filter:invert(.4); cursor:pointer; }
+
+    /* ── Competitor Tab ── */
+    .compete-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+    .channel-card {
+      background:#0a1220; border:1px solid #1a2740; border-radius:14px;
+      padding:18px; display:flex; flex-direction:column; gap:12px; position:relative;
+      transition:border-color .2s;
+    }
+    .channel-card:hover { border-color:#2d3f5c; }
+    .channel-card.is-you { border-color:#6366f133; }
+    .channel-card-header { display:flex; align-items:center; gap:12px; }
+    .channel-avatar { width:44px; height:44px; border-radius:50%; object-fit:cover; background:#1a2740; flex-shrink:0; }
+    .channel-name   { font-size:14px; font-weight:700; color:#f1f5f9; line-height:1.3; }
+    .channel-handle { font-size:11px; color:#475569; }
+    .channel-you-badge { font-size:9px; background:#6366f1; color:#fff; border-radius:6px; padding:1px 6px; font-weight:700; }
+    .channel-stats  { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .channel-stat   { display:flex; flex-direction:column; gap:2px; }
+    .channel-stat-val { font-size:18px; font-weight:800; color:#f1f5f9; letter-spacing:-.4px; }
+    .channel-stat-lbl { font-size:10px; color:#475569; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+    .channel-del { position:absolute; top:12px; right:12px; background:none; border:none; color:#334155; cursor:pointer; font-size:16px; line-height:1; }
+    .channel-del:hover { color:#f87171; }
+    .add-competitor-row { display:flex; gap:8px; margin-bottom:20px; }
+    .add-competitor-input { flex:1; background:#0f1a2e; border:1px solid #1e2d45; border-radius:10px; color:#e2e8f0; font-size:13px; padding:9px 14px; }
+    .add-competitor-input:focus { outline:none; border-color:#6366f1; }
+    .add-competitor-btn { background:#6366f1; border:none; border-radius:10px; color:#fff; font-size:13px; font-weight:700; padding:9px 18px; cursor:pointer; white-space:nowrap; }
+    .add-competitor-btn:hover { background:#818cf8; }
+    .add-competitor-btn:disabled { opacity:.5; cursor:not-allowed; }
+    .compare-bar-wrap { display:flex; flex-direction:column; gap:16px; }
+    .compare-row { display:flex; flex-direction:column; gap:6px; }
+    .compare-label { font-size:11px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+    .compare-bars  { display:flex; flex-direction:column; gap:4px; }
+    .compare-bar-row { display:flex; align-items:center; gap:10px; }
+    .compare-bar-name { font-size:11px; color:#94a3b8; width:120px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
+    .compare-bar-bg   { flex:1; height:8px; background:#0f1a2e; border-radius:4px; overflow:hidden; }
+    .compare-bar-fill { height:100%; border-radius:4px; transition:width .6s ease; }
+    .compare-bar-val  { font-size:11px; font-weight:700; color:#e2e8f0; width:60px; text-align:right; flex-shrink:0; }
+
+    /* ── Thumbnail Lab ── */
+    .thumb-lab-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+    .change-thumb-btn { display:none; margin-top:6px; background:none; border:1px solid #334155; color:#94a3b8; font-size:11px; padding:4px 10px; border-radius:6px; cursor:pointer; width:100%; }
+    .change-thumb-btn:hover { border-color:#6366f1; color:#818cf8; }
+    .thumb-lab-slot.has-upload .change-thumb-btn { display:block; }
+    .thumb-lab-slot { display:flex; flex-direction:column; gap:12px; }
+    .thumb-upload-zone {
+      border:2px dashed #1e2d45; border-radius:14px; aspect-ratio:16/9;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:10px; cursor:pointer; transition:border-color .2s; position:relative; overflow:hidden;
+      background:#0a1220;
+    }
+    .thumb-upload-zone:hover { border-color:#6366f1; }
+    .thumb-upload-zone.has-image { border-color:#1e2d45; }
+    .thumb-upload-zone img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:12px; }
+    .thumb-upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+    .thumb-upload-hint { font-size:12px; color:#475569; text-align:center; pointer-events:none; }
+    .thumb-upload-icon { color:#334155; pointer-events:none; }
+    .thumb-label-input {
+      background:#0f1a2e; border:1px solid #1e2d45; border-radius:8px;
+      color:#e2e8f0; font-size:13px; padding:8px 12px; width:100%;
+    }
+    .thumb-label-input:focus { outline:none; border-color:#6366f1; }
+    .yt-grid-preview { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .yt-video-card { display:flex; flex-direction:column; gap:8px; cursor:pointer; border-radius:8px; padding:4px; transition:background .15s; }
+    .yt-video-card:hover { background:rgba(255,255,255,.04); }
+    .yt-thumb-wrap { position:relative; aspect-ratio:16/9; border-radius:8px; overflow:hidden; background:#1a2740; }
+    .yt-thumb-wrap img { width:100%; height:100%; object-fit:cover; }
+    .yt-duration { position:absolute; bottom:4px; right:4px; background:rgba(0,0,0,.85); color:#fff; font-size:10px; font-weight:700; padding:1px 5px; border-radius:3px; }
+    .yt-thumb-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#334155; font-size:11px; }
+    .yt-card-meta { display:flex; gap:8px; }
+    .yt-channel-avatar { width:28px; height:28px; border-radius:50%; background:#1a2740; flex-shrink:0; object-fit:cover; }
+    .yt-card-info { flex:1; min-width:0; }
+    .yt-card-title { font-size:12px; font-weight:600; color:#f1f5f9; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .yt-card-sub   { font-size:11px; color:#64748b; margin-top:2px; }
+    .yt-card-candidate { outline:2px solid #6366f1; border-radius:8px; }
+    .lab-settings-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:20px; background:#07111f; border:1px solid #1e2d45; border-radius:12px; padding:14px 16px; }
+    .lab-settings-row label { font-size:11px; color:#64748b; margin-right:4px; }
+    .lab-channel-name { background:#0f1a2e; border:1px solid #1e2d45; border-radius:8px; color:#e2e8f0; font-size:13px; padding:6px 10px; width:180px; }
+    .lab-channel-name:focus { outline:none; border-color:#6366f1; }
+    .lab-avatar-btn { width:36px; height:36px; border-radius:50%; border:2px solid #1e2d45; cursor:pointer; overflow:hidden; flex-shrink:0; background:#1a2740; padding:0; }
+    .lab-avatar-btn:hover { border-color:#6366f1; }
+    .lab-avatar-btn svg, .lab-avatar-btn img { width:100%; height:100%; display:block; }
+    .lab-filter-btn { background:#0f1a2e; border:1px solid #1e2d45; color:#64748b; font-size:11px; font-weight:600; padding:5px 12px; border-radius:20px; cursor:pointer; transition:all .15s; }
+    .lab-filter-btn:hover { border-color:#6366f1; color:#818cf8; }
+    .lab-filter-btn.active { background:#6366f133; border-color:#6366f1; color:#818cf8; }
+    .lab-title-counter { font-size:11px; color:#64748b; margin-top:2px; text-align:right; }
+    .lab-title-counter.warn { color:#f59e0b; }
+    .lab-title-counter.over { color:#f87171; }
+    .yt-grid-preview.blur-test .yt-thumb-wrap img,
+    .yt-grid-preview.blur-test .yt-thumb-wrap .yt-thumb-placeholder { filter:blur(6px); }
+    .yt-grid-preview.gray-test .yt-thumb-wrap img { filter:grayscale(1); }
+    .yt-grid-preview.mobile-view { grid-template-columns:repeat(2,1fr); }
+    /* ── Suggest titles ── */
+    .lab-suggestions { display:flex; flex-direction:column; gap:4px; margin-top:4px; }
+    .lab-suggestion-pill { background:#0f1a2e; border:1px solid #1e2d45; border-radius:6px; padding:6px 10px; font-size:11px; color:#94a3b8; cursor:pointer; text-align:left; transition:all .15s; }
+    .lab-suggestion-pill:hover { border-color:#6366f1; color:#e2e8f0; background:#6366f108; }
+    body.light .lab-suggestion-pill { background:#f8fafc; border-color:#e2e8f0; color:#475569; }
+    body.light .lab-suggestion-pill:hover { border-color:#6366f1; color:#0f172a; }
+    /* ── Outlier tab ── */
+    .outlier-hero { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+    .outlier-stat { background:#07111f; border:1px solid #1e2d45; border-radius:12px; padding:16px; text-align:center; }
+    body.light .outlier-stat { background:#f8fafc; border-color:#e2e8f0; }
+    .outlier-stat-val { font-size:26px; font-weight:800; color:#f1f5f9; }
+    body.light .outlier-stat-val { color:#0f172a; }
+    .outlier-stat-lbl { font-size:11px; color:#475569; margin-top:3px; }
+    .outlier-grid { display:flex; flex-direction:column; gap:10px; }
+    .outlier-card { display:grid; grid-template-columns:180px 1fr auto; gap:16px; align-items:center; background:#07111f; border:1px solid #1e2d45; border-radius:12px; padding:12px 16px; transition:border-color .15s; }
+    .outlier-card:hover { border-color:#6366f155; }
+    body.light .outlier-card { background:#f8fafc; border-color:#e2e8f0; }
+    .outlier-thumb { aspect-ratio:16/9; border-radius:8px; overflow:hidden; background:#1a2740; }
+    .outlier-thumb img { width:100%; height:100%; object-fit:cover; }
+    .outlier-title { font-size:13px; font-weight:600; color:#f1f5f9; line-height:1.4; margin-bottom:6px; }
+    body.light .outlier-title { color:#0f172a; }
+    .outlier-meta { font-size:11px; color:#64748b; display:flex; gap:14px; flex-wrap:wrap; }
+    .outlier-badge { display:flex; flex-direction:column; align-items:center; gap:2px; min-width:72px; }
+    .outlier-mult { font-size:28px; font-weight:900; line-height:1; }
+    .outlier-mult-lbl { font-size:10px; color:#64748b; text-transform:uppercase; letter-spacing:.05em; }
+    .mult-10x { color:#f87171; } .mult-5x { color:#fb923c; } .mult-2x { color:#facc15; } .mult-avg { color:#4ade80; }
+    /* Light mode YouTube feed */
+    .yt-feed-light { background:#f9f9f9; border-radius:12px; padding:16px; }
+    .yt-feed-light .yt-video-card:hover { background:rgba(0,0,0,.04); }
+    .yt-feed-light .yt-card-title { color:#0f0f0f; }
+    .yt-feed-light .yt-card-sub   { color:#606060; }
+    .yt-feed-light .yt-thumb-wrap { background:#e0e0e0; }
+    /* Zoom modal */
+    .lab-zoom-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:9999; align-items:center; justify-content:center; cursor:zoom-out; }
+    .lab-zoom-overlay.open { display:flex; }
+    .lab-zoom-overlay img { max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 0 60px rgba(0,0,0,.6); }
+
     /* ── Tab nav ── */
-    .tab-nav { display:flex; gap:0; background:#080d14; border-bottom:1px solid #1a2740; padding:0 28px; }
+    .tab-nav { display:flex; gap:0; background:#080d14; border-bottom:1px solid #1a2740; padding:0 28px; position:sticky; top:0; z-index:50; overflow-x:auto; }
+    body.light .tab-nav { background:#ffffff; border-bottom-color:#e2e8f0; }
     .tab-btn { background:none; border:none; border-bottom:2px solid transparent; color:#475569; font-size:11px; font-weight:700; padding:14px 18px; cursor:pointer; transition:color .15s,border-color .15s; text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; }
     .tab-btn:hover:not(.active) { color:#94a3b8; }
     .tab-btn.active { color:#e2e8f0; border-bottom-color:#818cf8; }
@@ -383,43 +723,191 @@
     .tab-panel.active { display:flex; }
     .analytics-controls { transition:opacity .2s; }
     .analytics-controls.hidden { opacity:0; pointer-events:none; }
+
+    /* ── Light mode additional overrides ── */
+    body.light .kpi-card { background:#ffffff; border-color:#e2e8f0; }
+    body.light .kpi-value { color:#0f172a; }
+    body.light .kpi-label { color:#64748b; }
+    body.light .tab-panel { background:#f1f5f9; }
+    body.light select { background:#f8fafc; border-color:#e2e8f0; color:#0f172a; }
+    body.light .btn-group { background:#f1f5f9; border-color:#e2e8f0; }
+    body.light .score-badge.score-hi  { background:rgba(22,163,74,.12); color:#16a34a; }
+    body.light .score-badge.score-mid { background:rgba(202,138,4,.12);  color:#ca8a04; }
+    body.light .score-badge.score-lo  { background:rgba(220,38,38,.12);  color:#dc2626; }
+    body.light .hm-cell { background:#f1f5f9; }
+    body.light .ideas-output { background:#f8fafc; border-color:#e2e8f0; color:#0f172a; }
+    body.light table thead tr { background:#f8fafc; }
+    body.light table tr:nth-child(even) td { background:#f8fafc; }
+    body.light .tab-btn { color:#64748b; }
+    body.light .tab-btn.active { color:#6366f1; border-bottom-color:#6366f1; }
+
+    /* ── Login Modal ── */
+    #login-modal, #upgrade-modal {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7);
+      z-index: 2000; align-items: center; justify-content: center;
+    }
+    #login-modal.open, #upgrade-modal.open { display: flex; }
+    .modal-card {
+      background: #0d1524; border: 1px solid #1a2740; border-radius: 16px;
+      padding: 32px; width: 380px; max-width: 95vw; position: relative;
+    }
+    body.light .modal-card { background: #ffffff; border-color: #e2e8f0; box-shadow: 0 8px 40px rgba(0,0,0,.15); }
+    .modal-close {
+      position: absolute; top: 14px; right: 14px;
+      background: none; border: none; color: #64748b; font-size: 20px;
+      cursor: pointer; line-height: 1; padding: 4px 8px; border-radius: 6px;
+    }
+    .modal-close:hover { color: #e2e8f0; background: rgba(255,255,255,.06); }
+    body.light .modal-close:hover { color: #0f172a; background: #f1f5f9; }
+    .modal-title { font-size: 20px; font-weight: 800; color: #f1f5f9; margin-bottom: 24px; }
+    body.light .modal-title { color: #0f172a; }
+    .modal-field { margin-bottom: 16px; }
+    .modal-label { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .07em; display: block; margin-bottom: 6px; }
+    .modal-input {
+      width: 100%; background: #080d14; border: 1px solid #1a2740; border-radius: 9px;
+      color: #e2e8f0; font-size: 13px; padding: 10px 12px; box-sizing: border-box; font-family: inherit;
+    }
+    body.light .modal-input { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
+    .modal-input:focus { outline: none; border-color: #6366f1; }
+    .modal-submit {
+      width: 100%; background: linear-gradient(135deg, #6366f1, #7c3aed); border: none;
+      border-radius: 9px; color: #fff; font-size: 13px; font-weight: 700; padding: 11px;
+      cursor: pointer; font-family: inherit; margin-top: 4px;
+    }
+    .modal-submit:hover { opacity: .9; }
+    .modal-error { font-size: 12px; color: #f87171; margin-top: 10px; display: none; }
+
+    /* ── Upgrade Modal ── */
+    .upgrade-card-wrap { display: flex; gap: 14px; margin: 20px 0; flex-wrap: wrap; }
+    .upgrade-plan-card {
+      flex: 1; min-width: 140px; background: #080d14; border: 2px solid #1a2740;
+      border-radius: 12px; padding: 18px 16px;
+    }
+    body.light .upgrade-plan-card { background: #f8fafc; border-color: #e2e8f0; }
+    .upgrade-plan-card.premium { border-color: #f59e0b44; background: rgba(245,158,11,.05); }
+    .upgrade-plan-name { font-size: 13px; font-weight: 800; color: #f1f5f9; margin-bottom: 4px; }
+    body.light .upgrade-plan-name { color: #0f172a; }
+    .upgrade-plan-price { font-size: 24px; font-weight: 900; color: #f1f5f9; margin-bottom: 12px; }
+    body.light .upgrade-plan-price { color: #0f172a; }
+    .upgrade-plan-price.gold { color: #f59e0b; }
+    .upgrade-feature { font-size: 11px; color: #64748b; padding: 4px 0; display: flex; align-items: center; gap: 6px; }
+    body.light .upgrade-feature { color: #475569; }
+    .upgrade-feature.available { color: #4ade80; }
+    body.light .upgrade-feature.available { color: #16a34a; }
+    .upgrade-btn {
+      width: 100%; background: linear-gradient(135deg, #f59e0b, #d97706); border: none;
+      border-radius: 9px; color: #000; font-size: 13px; font-weight: 800; padding: 12px;
+      cursor: pointer; font-family: inherit; margin-top: 8px;
+    }
+    .upgrade-btn:hover { opacity: .9; }
+    .upgrade-modal-wide { width: 560px; }
   </style>
 </head>
 <body>
 
-<!-- ── Header ──────────────────────────────────────────────────────────── -->
-<header>
-  <div class="brand">
+<!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
+<aside class="sidebar">
+  <!-- Brand -->
+  <div class="sidebar-brand">
     <div class="brand-icon">
-      <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
         <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
       </svg>
     </div>
     <div>
-      <div class="brand-name">Nils Glenn's Dashboard</div>
-      <div class="brand-sub">Content &amp; Social Analytics</div>
+      <div class="brand-name">Nils Glenn</div>
+      <div class="brand-sub">Content Analytics</div>
     </div>
   </div>
 
-  <div class="controls">
-    <div class="platform-switch">
-      <button class="platform-btn active" data-platform="youtube">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-        YouTube
-      </button>
-      <button class="platform-btn" data-platform="instagram">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
-        Instagram
-      </button>
-    </div>
-    <div class="btn-group">
-      <button class="btn-filter" data-range="7">7d</button>
-      <button class="btn-filter" data-range="14">14d</button>
-      <button class="btn-filter active" data-range="30">30d</button>
-      <button class="btn-filter" data-range="90">90d</button>
-    </div>
+  <!-- Login -->
+  <div class="sidebar-section">
+    <button class="sidebar-login-btn" id="login-btn" onclick="openLoginModal()">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Sign In
+    </button>
+    <div class="sidebar-user-info" id="sidebar-user-info" style="display:none;"></div>
   </div>
-</header>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- Platform switcher -->
+  <div class="sidebar-section">
+    <span class="sidebar-label">Platform</span>
+    <button class="sidebar-btn active" data-platform="youtube">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      YouTube
+    </button>
+    <button class="sidebar-btn" data-platform="instagram">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+      Instagram
+    </button>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- Date range presets -->
+  <div class="sidebar-section">
+    <span class="sidebar-label">Date Range</span>
+    <button class="sidebar-range-btn" data-range="7">Last 7 days</button>
+    <button class="sidebar-range-btn" data-range="14">Last 14 days</button>
+    <button class="sidebar-range-btn active" data-range="30">Last 30 days</button>
+    <button class="sidebar-range-btn" data-range="90">Last 90 days</button>
+    <button class="sidebar-range-btn" data-range="365">Last year</button>
+  </div>
+
+  <!-- Custom date range -->
+  <div class="sidebar-section">
+    <span class="sidebar-label">Custom range</span>
+    <input type="date" class="sidebar-date-input" id="date-from" title="From" />
+    <input type="date" class="sidebar-date-input" id="date-to" title="To" />
+  </div>
+
+  <!-- Sync -->
+  <div class="sidebar-section">
+    <button class="sidebar-sync-btn" id="sync-btn" title="Sync latest data">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="sync-icon"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+      Sync Now
+    </button>
+    <div class="sidebar-sync-last" id="sync-last"></div>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
+  <!-- Light/Dark toggle -->
+  <div class="sidebar-section">
+    <button class="sidebar-light-btn" id="light-mode-btn" onclick="toggleLightMode()">
+      <span id="light-mode-icon">☀️</span> Toggle theme
+    </button>
+  </div>
+
+  <!-- Spacer pushes upgrade to bottom -->
+  <div class="sidebar-spacer"></div>
+
+  <!-- Upgrade button -->
+  <button class="sidebar-upgrade-btn" onclick="openUpgradeModal()">
+    ⭐ Upgrade to Premium
+  </button>
+</aside>
+
+<!-- Keep old controls hidden for JS compatibility -->
+<div class="controls" style="display:none;">
+  <div class="platform-switch" style="display:none;">
+    <button class="platform-btn active" data-platform="youtube">YouTube</button>
+    <button class="platform-btn" data-platform="instagram">Instagram</button>
+  </div>
+  <div class="btn-group" style="display:none;">
+    <button class="btn-filter" data-range="7">7d</button>
+    <button class="btn-filter" data-range="14">14d</button>
+    <button class="btn-filter active" data-range="30">30d</button>
+    <button class="btn-filter" data-range="90">90d</button>
+    <button class="btn-filter" data-range="365">1y</button>
+  </div>
+  <div class="date-range-wrap" id="custom-date-wrap" style="display:none;"></div>
+</div>
+
+<!-- ── Main Wrap ─────────────────────────────────────────────────────────── -->
+<div class="main-wrap">
 
 <!-- ── Tab Nav ──────────────────────────────────────────────────────────── -->
 <nav class="tab-nav">
@@ -443,6 +931,15 @@
   </button>
   <button class="tab-btn" data-tab="thumbnails">
     <span class="tab-icon">🖼️</span>Thumbnails
+  </button>
+  <button class="tab-btn" data-tab="compete">
+    <span class="tab-icon">⚔️</span>Compete
+  </button>
+  <button class="tab-btn" data-tab="lab">
+    <span class="tab-icon">🧪</span>Thumb Lab
+  </button>
+  <button class="tab-btn" data-tab="outliers">
+    <span class="tab-icon">🚀</span>Outliers
   </button>
 </nav>
 
@@ -534,6 +1031,24 @@
       </div>
     </div>
 
+    <!-- Hour Heatmap -->
+    <div class="card" id="heatmap-section">
+      <div style="margin-bottom:16px;">
+        <span class="card-title">Best Hour to Post</span>
+        <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views by day &amp; hour — darker = better performance</p>
+      </div>
+      <div class="heatmap-wrap"><div id="heatmap-grid"></div></div>
+    </div>
+
+    <!-- Content Patterns -->
+    <div class="card" id="patterns-section">
+      <div style="margin-bottom:16px;">
+        <span class="card-title">What Makes Your Top Videos Win</span>
+        <p style="font-size:11px;color:#334155;margin-top:3px;">Patterns from your top 20% of videos vs the rest</p>
+      </div>
+      <div id="patterns-inner"><p style="color:#475569;font-size:13px;">Loading patterns…</p></div>
+    </div>
+
     <!-- Keyword Gap -->
     <div class="charts-grid-half" id="keyword-gap-section">
       <div class="card">
@@ -581,6 +1096,28 @@
           <p style="font-size:11px;color:#334155;margin-top:3px;">Progress to your next goals — ETA based on recent growth rate</p>
         </div>
         <div id="milestones-inner"></div>
+      </div>
+    </div>
+
+    <!-- Goals Tracker -->
+    <div class="card" id="goals-section">
+      <div style="margin-bottom:16px;">
+        <span class="card-title">Goals</span>
+        <p style="font-size:11px;color:#334155;margin-top:3px;">Track custom targets with live pace &amp; ETA</p>
+      </div>
+      <div id="goals-inner"></div>
+      <div class="goal-add-row">
+        <input class="goal-input" id="goal-label" placeholder="Goal name (e.g. 100K Subscribers)" />
+        <select class="goal-select" id="goal-metric">
+          <option value="subscribers_yt">YouTube Subscribers</option>
+          <option value="subscribers_ig">Instagram Followers</option>
+          <option value="views_total">Total Views (all-time)</option>
+          <option value="views_monthly">Monthly Views</option>
+          <option value="likes_monthly">Monthly Likes</option>
+        </select>
+        <input class="goal-input" id="goal-target" type="number" placeholder="Target (e.g. 100000)" style="max-width:160px;" />
+        <input class="goal-input" id="goal-date" type="date" style="max-width:150px;" />
+        <button class="goal-btn" id="goal-add-btn">+ Add Goal</button>
       </div>
     </div>
 
@@ -742,11 +1279,187 @@
     </div>
   </div><!-- /tab-thumbnails -->
 
+  <!-- ══ Compete Tab ══ -->
+  <div class="tab-panel" id="tab-compete">
+    <div class="card">
+      <div style="margin-bottom:18px;">
+        <span class="card-title">Competitor Tracking</span>
+        <p style="font-size:11px;color:#334155;margin-top:3px;">Add YouTube channels to benchmark against your performance</p>
+      </div>
+      <div class="add-competitor-row">
+        <input class="add-competitor-input" id="competitor-input" placeholder="Paste a YouTube URL, @handle, or channel ID…" />
+        <button class="add-competitor-btn" id="competitor-add-btn">+ Add Channel</button>
+      </div>
+      <div id="compete-error" style="color:#f87171;font-size:12px;margin-bottom:12px;display:none;"></div>
+      <div class="compete-grid" id="compete-cards"></div>
+    </div>
+
+    <div class="card" id="compete-compare-section" style="display:none;">
+      <div style="margin-bottom:18px;">
+        <span class="card-title">Head-to-Head Comparison</span>
+        <p style="font-size:11px;color:#334155;margin-top:3px;">You vs competitors — all public channel data</p>
+      </div>
+      <div class="compare-bar-wrap" id="compete-compare"></div>
+    </div>
+  </div><!-- /tab-compete -->
+
+  <!-- ══ Thumb Lab Tab ══ -->
+  <div class="tab-panel" id="tab-lab">
+    <div class="card">
+      <div style="margin-bottom:20px;">
+        <span class="card-title">Thumbnail A/B Lab</span>
+        <p style="font-size:11px;color:#334155;margin-top:3px;">Upload two thumbnails and see how they look in the YouTube feed</p>
+      </div>
+
+      <!-- Upload row -->
+      <!-- Channel settings -->
+      <div class="lab-settings-row">
+        <button class="lab-avatar-btn" id="lab-avatar-btn" title="Randomize avatar" onclick="randomizeLabAvatar()"></button>
+        <div>
+          <label>Your channel name</label>
+          <input class="lab-channel-name" id="lab-channel-name" placeholder="My Channel" />
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="lab-filter-btn" id="btn-light"  onclick="toggleLabFilter('light')">☀️ Light mode</button>
+          <button class="lab-filter-btn" id="btn-blur"   onclick="toggleLabFilter('blur')">👁 Blur test</button>
+          <button class="lab-filter-btn" id="btn-gray"   onclick="toggleLabFilter('gray')">◑ Grayscale</button>
+          <button class="lab-filter-btn" id="btn-mobile" onclick="toggleLabFilter('mobile')">📱 Mobile view</button>
+          <button class="lab-filter-btn" id="btn-shuffle" onclick="shuffleLabFillers()">🔀 Shuffle</button>
+        </div>
+      </div>
+
+      <!-- Upload row -->
+      <div class="thumb-lab-grid" style="margin-bottom:24px;">
+        <div class="thumb-lab-slot" id="slot-wrap-a">
+          <div style="font-size:11px;font-weight:700;color:#818cf8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Option A</div>
+          <div class="thumb-upload-zone" id="zone-a">
+            <div class="thumb-upload-icon"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+            <div class="thumb-upload-hint">Click or drag to upload<br><span style="color:#334155;">PNG, JPG · 1280×720 ideal</span></div>
+            <input type="file" id="upload-a" accept="image/*" />
+          </div>
+          <button class="change-thumb-btn" onclick="document.getElementById('upload-a').click()">↩ Change thumbnail</button>
+          <input class="thumb-label-input" id="title-a" placeholder="Video title A…" />
+          <div class="lab-title-counter" id="counter-a">0 / 60</div>
+          <button class="lab-filter-btn" id="suggest-a" onclick="suggestTitles('a')" style="display:none;width:100%;margin-top:2px;">✨ Suggest titles</button>
+          <div class="lab-suggestions" id="suggestions-a"></div>
+        </div>
+        <div class="thumb-lab-slot" id="slot-wrap-b">
+          <div style="font-size:11px;font-weight:700;color:#f472b6;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Option B</div>
+          <div class="thumb-upload-zone" id="zone-b">
+            <div class="thumb-upload-icon"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+            <div class="thumb-upload-hint">Click or drag to upload<br><span style="color:#334155;">PNG, JPG · 1280×720 ideal</span></div>
+            <input type="file" id="upload-b" accept="image/*" />
+          </div>
+          <button class="change-thumb-btn" onclick="document.getElementById('upload-b').click()">↩ Change thumbnail</button>
+          <input class="thumb-label-input" id="title-b" placeholder="Video title B…" />
+          <div class="lab-title-counter" id="counter-b">0 / 60</div>
+          <button class="lab-filter-btn" id="suggest-b" onclick="suggestTitles('b')" style="display:none;width:100%;margin-top:2px;">✨ Suggest titles</button>
+          <div class="lab-suggestions" id="suggestions-b"></div>
+        </div>
+        <div class="thumb-lab-slot" id="slot-wrap-c">
+          <div style="font-size:11px;font-weight:700;color:#34d399;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Option C</div>
+          <div class="thumb-upload-zone" id="zone-c">
+            <div class="thumb-upload-icon"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+            <div class="thumb-upload-hint">Click or drag to upload<br><span style="color:#334155;">PNG, JPG · 1280×720 ideal</span></div>
+            <input type="file" id="upload-c" accept="image/*" />
+          </div>
+          <button class="change-thumb-btn" onclick="document.getElementById('upload-c').click()">↩ Change thumbnail</button>
+          <input class="thumb-label-input" id="title-c" placeholder="Video title C…" />
+          <div class="lab-title-counter" id="counter-c">0 / 60</div>
+          <button class="lab-filter-btn" id="suggest-c" onclick="suggestTitles('c')" style="display:none;width:100%;margin-top:2px;">✨ Suggest titles</button>
+          <div class="lab-suggestions" id="suggestions-c"></div>
+        </div>
+      </div>
+
+      <!-- YouTube grid preview -->
+      <div style="margin-bottom:14px;display:flex;align-items:center;gap:12px;">
+        <span class="card-title" style="font-size:14px;">YouTube Feed Preview</span>
+        <p style="font-size:11px;color:#334155;margin:0;">How your thumbnails look among real videos in the feed</p>
+      </div>
+      <div class="yt-grid-preview" id="yt-preview-grid">
+        <div style="grid-column:1/-1;color:#334155;font-size:13px;text-align:center;padding:30px;">Upload thumbnails above to see the preview</div>
+      </div>
+    </div>
+  </div><!-- /tab-lab -->
+
+  <!-- ══ Outliers Tab ══ -->
+  <div class="tab-panel" id="tab-outliers">
+    <!-- Mode toggle -->
+    <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <button class="outlier-mode-btn active" id="mode-btn-mine" onclick="setOutlierMode('mine')">📊 My Channel</button>
+      <button class="outlier-mode-btn" id="mode-btn-yt" onclick="setOutlierMode('youtube')">🌍 YouTube Search</button>
+    </div>
+
+    <!-- My Channel panel -->
+    <div id="outlier-panel-mine">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <span class="card-title">Your Outlier Videos</span>
+            <p style="font-size:11px;color:#475569;margin-top:3px;">Compared against your channel median — not mean, so one viral hit doesn't skew the baseline</p>
+          </div>
+          <div class="btn-group">
+            <button class="btn-filter active" data-outlier-sort="ratio" onclick="setOutlierSort('ratio',this)">By Multiplier</button>
+            <button class="btn-filter" data-outlier-sort="views" onclick="setOutlierSort('views',this)">By Raw Views</button>
+          </div>
+        </div>
+        <div class="outlier-hero">
+          <div class="outlier-stat"><div class="outlier-stat-val" id="out-total">—</div><div class="outlier-stat-lbl">Videos analyzed</div></div>
+          <div class="outlier-stat"><div class="outlier-stat-val" id="out-avg">—</div><div class="outlier-stat-lbl">Median views/video</div></div>
+          <div class="outlier-stat"><div class="outlier-stat-val" id="out-top-mult" style="color:#f87171;">—</div><div class="outlier-stat-lbl">Best multiplier</div></div>
+          <div class="outlier-stat"><div class="outlier-stat-val" id="out-count-10x" style="color:#fb923c;">—</div><div class="outlier-stat-lbl">Videos 5x+ median</div></div>
+        </div>
+        <div class="outlier-grid" id="outlier-grid">
+          <div style="color:#475569;text-align:center;padding:40px;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- YouTube Search panel -->
+    <div id="outlier-panel-yt" style="display:none;">
+      <div class="card" style="margin-bottom:16px;">
+        <div style="margin-bottom:16px;">
+          <span class="card-title">YouTube Outlier Finder</span>
+          <p style="font-size:11px;color:#475569;margin-top:3px;">Find videos that massively outperformed their own channel's average — across all of YouTube</p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+          <div style="flex:1;min-width:200px;">
+            <div style="font-size:11px;color:#64748b;margin-bottom:6px;">Topic / niche</div>
+            <input id="yt-outlier-q" class="lab-channel-name" style="width:100%;font-size:13px;padding:8px 12px;" placeholder="e.g. ancient civilizations, biblical history…" />
+          </div>
+          <div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:6px;">Sort by</div>
+            <select id="yt-outlier-order" style="background:#0f1a2e;border:1px solid #1e2d45;color:#e2e8f0;font-size:12px;padding:8px 10px;border-radius:8px;cursor:pointer;">
+              <option value="viewCount">Most Viewed</option>
+              <option value="relevance">Most Relevant</option>
+              <option value="date">Most Recent</option>
+              <option value="rating">Top Rated</option>
+            </select>
+          </div>
+          <button id="yt-outlier-btn" class="sync-btn" style="padding:8px 20px;font-size:13px;font-weight:700;height:auto;" onclick="searchYTOutliers()">🔍 Find Outliers</button>
+        </div>
+        <div id="yt-outlier-cache-note" style="font-size:10px;color:#334155;margin-top:8px;display:none;">⚡ Cached result · <a href="#" onclick="searchYTOutliers(true);return false;" style="color:#6366f1;">refresh</a></div>
+      </div>
+      <div class="outlier-hero" id="yt-outlier-hero" style="display:none;">
+        <div class="outlier-stat"><div class="outlier-stat-val" id="yt-out-count">—</div><div class="outlier-stat-lbl">Videos found</div></div>
+        <div class="outlier-stat"><div class="outlier-stat-val" id="yt-out-top-mult" style="color:#f87171;">—</div><div class="outlier-stat-lbl">Top multiplier</div></div>
+        <div class="outlier-stat"><div class="outlier-stat-val" id="yt-out-5x">—</div><div class="outlier-stat-lbl">Videos 5x+ channel avg</div></div>
+        <div class="outlier-stat"><div class="outlier-stat-val" id="yt-out-channels">—</div><div class="outlier-stat-lbl">Unique channels</div></div>
+      </div>
+      <div class="outlier-grid" id="yt-outlier-grid"></div>
+    </div>
+  </div><!-- /tab-outliers -->
+
+  <!-- Zoom overlay for thumb lab -->
+  <div class="lab-zoom-overlay" id="lab-zoom-overlay" onclick="this.classList.remove('open')">
+    <img id="lab-zoom-img" src="" alt="" />
+  </div>
+
   <!-- Thumbnail Modal (global) -->
   <div id="thumb-modal" onclick="if(event.target===this)this.classList.remove('open')"></div>
 
   <!-- Pipeline Modal (global, outside panels) -->
-  <div id="pipeline-modal">
+  <div id="pipeline-modal" style="z-index:1000;">
     <div class="pipeline-modal-box">
       <div class="pm-title" id="pm-title-text">New Content Idea</div>
       <div class="pm-field">
@@ -789,6 +1502,59 @@
   </div>
 
 </main>
+
+</div><!-- /.main-wrap -->
+
+<!-- ── Login Modal ──────────────────────────────────────────────────────── -->
+<div id="login-modal" onclick="if(event.target===this)closeLoginModal()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeLoginModal()">×</button>
+    <div class="modal-title">Sign In</div>
+    <div class="modal-field">
+      <label class="modal-label" for="login-email">Email</label>
+      <input class="modal-input" id="login-email" type="email" placeholder="you@example.com" autocomplete="email" />
+    </div>
+    <div class="modal-field">
+      <label class="modal-label" for="login-password">Password</label>
+      <input class="modal-input" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="modal-submit" id="login-submit-btn" onclick="submitLogin()">Sign In</button>
+    <div class="modal-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ── Upgrade Modal ─────────────────────────────────────────────────────── -->
+<div id="upgrade-modal" onclick="if(event.target===this)closeUpgradeModal()">
+  <div class="modal-card upgrade-modal-wide">
+    <button class="modal-close" onclick="closeUpgradeModal()">×</button>
+    <div class="modal-title">Choose Your Plan</div>
+    <div class="upgrade-card-wrap">
+      <div class="upgrade-plan-card">
+        <div class="upgrade-plan-name">Free</div>
+        <div class="upgrade-plan-price">$0</div>
+        <div class="upgrade-feature available">✓ Analytics dashboard</div>
+        <div class="upgrade-feature available">✓ Pipeline & checklist</div>
+        <div class="upgrade-feature available">✓ 5 AI ideas/month</div>
+        <div class="upgrade-feature">✗ Advanced analytics</div>
+        <div class="upgrade-feature">✗ Export data</div>
+        <div class="upgrade-feature">✗ Priority sync</div>
+        <div class="upgrade-feature">✗ Custom branding</div>
+      </div>
+      <div class="upgrade-plan-card premium">
+        <div class="upgrade-plan-name" style="color:#f59e0b;">Premium</div>
+        <div class="upgrade-plan-price gold">$9.99<span style="font-size:14px;font-weight:600;color:#94a3b8;">/mo</span></div>
+        <div class="upgrade-feature available">✓ Everything in Free</div>
+        <div class="upgrade-feature available">✓ AI ideas unlimited</div>
+        <div class="upgrade-feature available">✓ Advanced analytics</div>
+        <div class="upgrade-feature available">✓ Export data</div>
+        <div class="upgrade-feature available">✓ Priority sync</div>
+        <div class="upgrade-feature available">✓ Custom branding</div>
+        <button class="upgrade-btn" id="upgrade-checkout-btn" onclick="startCheckout()">Upgrade to Premium</button>
+      </div>
+    </div>
+    <div id="upgrade-error" style="font-size:12px;color:#f87171;margin-top:4px;display:none;"></div>
+  </div>
+</div>
 
 <script>
 // ── State ─────────────────────────────────────────────────────────────────
@@ -1611,6 +2377,201 @@ function renderSubGrowth(history) {
 }
 
 // ── Posts table ───────────────────────────────────────────────────────────
+// ── Score Badge ───────────────────────────────────────────────────────────
+function scoreBadge(score) {
+  if (score == null) return '<span style="color:#334155;font-size:11px;">—</span>';
+  const cls = score >= 70 ? 'score-hi' : score >= 40 ? 'score-mid' : 'score-lo';
+  return `<span class="score-badge ${cls}">${score}</span>`;
+}
+
+// ── Hour Heatmap ──────────────────────────────────────────────────────────
+function renderHeatmap(heatmapData) {
+  const container = document.getElementById('heatmap-grid');
+  if (!heatmapData || !heatmapData.length) {
+    container.innerHTML = '<p style="color:#475569;font-size:12px;">Not enough data yet — keep posting!</p>';
+    return;
+  }
+
+  // Hours 6am–11pm (6–23)
+  const HOURS = Array.from({length:18}, (_,i) => i + 6);
+  const DAYS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const ORDER = [1,2,3,4,5,6,0];
+
+  // Build lookup: dow → hour → avg_views
+  const map = {};
+  heatmapData.forEach(d => {
+    if (!map[d.dow]) map[d.dow] = {};
+    map[d.dow][d.hour] = { avg_views: Number(d.avg_views), count: Number(d.count) };
+  });
+
+  const allVals = heatmapData.map(d => Number(d.avg_views));
+  const maxV = Math.max(...allVals, 1);
+  const isIG = state.platform === 'instagram';
+
+  let html = '<div class="heatmap-grid">';
+
+  // Header row: hour labels
+  html += '<div class="hm-label"></div>';
+  HOURS.forEach(h => {
+    const lbl = h === 12 ? '12p' : h < 12 ? `${h}a` : `${h-12}p`;
+    html += `<div class="hm-hour-label">${lbl}</div>`;
+  });
+
+  // Data rows
+  ORDER.forEach(dow => {
+    html += `<div class="hm-label">${DAYS[dow]}</div>`;
+    HOURS.forEach(h => {
+      const cell = map[dow]?.[h];
+      const v = cell ? cell.avg_views : 0;
+      const intensity = v / maxV;
+      const [r,g,b] = isIG ? [244,114,182] : [129,140,248];
+      const bg = v > 0
+        ? `rgba(${r},${g},${b},${(0.1 + intensity * 0.85).toFixed(2)})`
+        : '#0f1a2e';
+      const tip = v > 0
+        ? `title="${DAYS[dow]} ${h < 12 ? h+'am' : h===12 ? '12pm' : (h-12)+'pm'}: avg ${Number(v).toLocaleString()} views (${cell.count} post${cell.count>1?'s':''})"` : '';
+      html += `<div class="hm-cell" style="background:${bg}" ${tip}></div>`;
+    });
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ── Goals ─────────────────────────────────────────────────────────────────
+let _goalsData = [];
+let _goalsCurrents = {};  // metric → current value, populated at refresh
+
+async function loadGoals() {
+  try {
+    _goalsData = await fetch('/api/goals').then(r => r.json());
+    renderGoals();
+  } catch(e) { console.warn('goals load:', e.message); }
+}
+
+function renderGoals() {
+  const inner = document.getElementById('goals-inner');
+  if (!_goalsData.length) {
+    inner.innerHTML = '<p style="color:#475569;font-size:12px;margin-bottom:4px;">No goals yet — add one below.</p>';
+    return;
+  }
+
+  function eta(current, target, today, targetDate) {
+    if (!targetDate) return null;
+    const msLeft = new Date(targetDate) - new Date(today);
+    const daysLeft = Math.round(msLeft / 86400000);
+    return daysLeft > 0 ? daysLeft : 0;
+  }
+
+  function paceNeeded(current, target, daysLeft) {
+    if (!daysLeft) return null;
+    const needed = (target - current) / daysLeft;
+    return needed > 0 ? needed : 0;
+  }
+
+  const METRIC_LABELS = {
+    subscribers_yt: 'YouTube Subscribers',
+    subscribers_ig: 'Instagram Followers',
+    views_total:    'Total Views',
+    views_monthly:  'Monthly Views',
+    likes_monthly:  'Monthly Likes',
+  };
+
+  inner.innerHTML = _goalsData.map(g => {
+    const current = _goalsCurrents[g.metric] || 0;
+    const target  = Number(g.target_value);
+    const pct     = Math.min(100, current > 0 ? Math.round((current / target) * 100) : 0);
+    const today   = new Date().toISOString().split('T')[0];
+    const daysLeft = g.target_date ? eta(current, target, today, g.target_date) : null;
+    const pace     = daysLeft != null ? paceNeeded(current, target, daysLeft) : null;
+    const done     = current >= target;
+
+    const dateStr = g.target_date
+      ? `<span class="goal-meta">By ${new Date(g.target_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>`
+      : '';
+    const paceStr = pace != null && !done
+      ? `<span class="goal-pace">Need ${pace < 1 ? pace.toFixed(2) : Math.round(pace).toLocaleString()}/day · ${daysLeft} days left</span>`
+      : done ? `<span style="color:#4ade80;font-size:11px;font-weight:700;">✓ Achieved!</span>` : '';
+
+    const color = done ? '#4ade80' : pct > 60 ? '#818cf8' : '#fbbf24';
+
+    return `<div class="goal-item">
+      <div class="goal-header">
+        <span class="goal-label">${g.label}</span>
+        <span class="goal-meta">${fmtNum(current)} / ${fmtNum(target)} ${METRIC_LABELS[g.metric] || ''}</span>
+        <button class="goal-del" onclick="deleteGoal(${g.id})" title="Remove goal">×</button>
+      </div>
+      <div class="milestone-bar-bg">
+        <div class="milestone-bar-fill" style="width:${pct}%;background:${color};"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <span style="font-size:10px;color:#334155;font-weight:600;">${pct}% complete</span>
+        <div style="display:flex;gap:12px;align-items:center;">${dateStr}${paceStr}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function deleteGoal(id) {
+  await fetch(`/api/goals/${id}`, { method: 'DELETE' });
+  _goalsData = _goalsData.filter(g => g.id !== id);
+  renderGoals();
+}
+
+async function addGoal() {
+  const label  = document.getElementById('goal-label').value.trim();
+  const metric = document.getElementById('goal-metric').value;
+  const target = document.getElementById('goal-target').value;
+  const date   = document.getElementById('goal-date').value;
+  if (!label || !target) return;
+  const g = await fetch('/api/goals', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ label, metric, target_value: target, target_date: date || null }),
+  }).then(r => r.json());
+  if (!g.error) {
+    _goalsData.push(g);
+    document.getElementById('goal-label').value = '';
+    document.getElementById('goal-target').value = '';
+    document.getElementById('goal-date').value = '';
+    renderGoals();
+  }
+}
+
+// ── Content Patterns ──────────────────────────────────────────────────────
+async function loadPatterns() {
+  const inner = document.getElementById('patterns-inner');
+  try {
+    const data = await fetch(`/api/patterns?platform=${state.platform}`).then(r => r.json());
+    if (data.insufficient_data || !data.insights) {
+      inner.innerHTML = '<p style="color:#475569;font-size:13px;">Not enough posts to find patterns yet. Keep creating!</p>';
+      return;
+    }
+
+    const statCards = [
+      { num: data.top_avg_views?.toLocaleString() || '—', lbl: 'Avg Views (Top 20%)' },
+      { num: data.all_avg_views?.toLocaleString() || '—', lbl: 'Channel Average Views' },
+      { num: data.top_day || '—',                         lbl: 'Best Day to Post' },
+      { num: data.top_hour || '—',                        lbl: 'Best Hour to Post' },
+    ].map(s => `
+      <div class="pattern-card">
+        <div class="pattern-stat">
+          <span class="pattern-num">${s.num}</span>
+        </div>
+        <div class="pattern-lbl">${s.lbl}</div>
+      </div>`).join('');
+
+    const bullets = data.insights.map(i =>
+      `<div class="pattern-insight"><div class="pattern-dot"></div><span>${i}</span></div>`
+    ).join('');
+
+    inner.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px;">${statCards}</div>
+      <div class="pattern-insights">${bullets}</div>`;
+  } catch(e) {
+    inner.innerHTML = `<p style="color:#f87171;font-size:12px;">Error: ${e.message}</p>`;
+  }
+}
+
 function renderPosts(posts) {
   const container = document.getElementById('posts-container');
   if (!posts.length) {
@@ -1625,6 +2586,7 @@ function renderPosts(posts) {
 
   table.innerHTML = `<thead><tr>
     <th>Post</th><th>Platform</th><th>Date</th>
+    <th class="r">Score</th>
     <th class="r">Views</th><th class="r">Likes</th>
     ${showYT
       ? '<th class="r">Avg View</th><th class="r">Watch Time</th>'
@@ -1659,6 +2621,7 @@ function renderPosts(posts) {
       </td>
       <td>${badge}</td>
       <td style="font-size:12px;color:#64748b;white-space:nowrap;">${fmtDateLong(p.published_at)}</td>
+      <td style="text-align:right;">${scoreBadge(p.score)}</td>
       <td style="text-align:right;font-size:13px;font-weight:700;">${fmtNum(p.views)}</td>
       <td style="text-align:right;font-size:13px;color:#94a3b8;">${fmtNum(p.likes)}</td>
       ${showYT
@@ -1673,6 +2636,597 @@ function renderPosts(posts) {
   table.appendChild(tbody);
   container.innerHTML = '';
   container.appendChild(table);
+}
+
+// ── Competitor Tracking ───────────────────────────────────────────────────
+let _competitors  = [];
+let _competitorsLoaded = false;
+let _myChannelStats = null;
+
+async function loadCompetitors() {
+  try {
+    const [comps, myStats] = await Promise.all([
+      fetch('/api/competitors').then(r => r.json()),
+      fetch('/api/my-channel').then(r => r.json()).catch(() => null),
+    ]);
+    _competitors   = Array.isArray(comps) ? comps : [];
+    _myChannelStats = myStats && !myStats.error ? myStats : null;
+    renderCompeteCards();
+    renderCompareChart();
+  } catch(e) { console.warn('competitors:', e.message); }
+}
+
+async function addCompetitor() {
+  const input = document.getElementById('competitor-input').value.trim();
+  const errEl = document.getElementById('compete-error');
+  const btn   = document.getElementById('competitor-add-btn');
+  if (!input) return;
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try {
+    const result = await fetch('/api/competitors', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ input }),
+    }).then(r => r.json());
+    if (result.error) throw new Error(result.error);
+    if (!_competitors.find(c => c.channel_id === result.channel_id)) {
+      _competitors.push(result);
+    }
+    document.getElementById('competitor-input').value = '';
+    renderCompeteCards();
+    renderCompareChart();
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = '+ Add Channel';
+  }
+}
+
+async function removeCompetitor(id) {
+  await fetch(`/api/competitors/${id}`, { method: 'DELETE' });
+  _competitors = _competitors.filter(c => c.id !== id);
+  renderCompeteCards();
+  renderCompareChart();
+}
+
+function renderCompeteCards() {
+  const grid = document.getElementById('compete-cards');
+  const myStats = _myChannelStats;
+
+  const allChannels = [
+    ...(myStats ? [{ ...myStats, is_you: true }] : []),
+    ..._competitors,
+  ];
+
+  if (!allChannels.length) {
+    grid.innerHTML = '<p style="color:#475569;font-size:13px;">No channels yet — add one above.</p>';
+    return;
+  }
+
+  grid.innerHTML = allChannels.map(c => {
+    const avatar = c.avatar_url
+      ? `<img class="channel-avatar" src="${c.avatar_url}" alt="" onerror="this.style.display='none'">`
+      : `<div class="channel-avatar" style="background:#1a2740;display:flex;align-items:center;justify-content:center;font-size:18px;">📺</div>`;
+    const delBtn = c.is_you ? '' : `<button class="channel-del" onclick="removeCompetitor(${c.id})" title="Remove">×</button>`;
+    const youBadge = c.is_you ? '<span class="channel-you-badge">YOU</span>' : '';
+    const avgV = c.avg_recent_views ? `<div class="channel-stat"><div class="channel-stat-val">${fmtNum(c.avg_recent_views)}</div><div class="channel-stat-lbl">Avg Views/Video</div></div>` : '';
+    const ppm  = c.posts_per_month  ? `<div class="channel-stat"><div class="channel-stat-val">${c.posts_per_month}</div><div class="channel-stat-lbl">Posts/Month</div></div>` : '';
+    return `
+      <div class="channel-card${c.is_you ? ' is-you' : ''}">
+        ${delBtn}
+        <div class="channel-card-header">
+          ${avatar}
+          <div>
+            <div class="channel-name">${c.name || c.channel_id} ${youBadge}</div>
+            <div class="channel-handle">${c.handle ? '@' + c.handle.replace('@','') : ''}</div>
+          </div>
+        </div>
+        <div class="channel-stats">
+          <div class="channel-stat">
+            <div class="channel-stat-val">${fmtNum(c.subscribers || c.subscriber_count || 0)}</div>
+            <div class="channel-stat-lbl">Subscribers</div>
+          </div>
+          <div class="channel-stat">
+            <div class="channel-stat-val">${fmtNum(c.total_views || c.view_count || 0)}</div>
+            <div class="channel-stat-lbl">Total Views</div>
+          </div>
+          <div class="channel-stat">
+            <div class="channel-stat-val">${fmtNum(c.video_count || 0)}</div>
+            <div class="channel-stat-lbl">Videos</div>
+          </div>
+          ${avgV}${ppm}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderCompareChart() {
+  const section = document.getElementById('compete-compare-section');
+  const wrap    = document.getElementById('compete-compare');
+  const myStats = _myChannelStats;
+  const all = [
+    ...(myStats ? [{ name: 'You', is_you: true, subscribers: myStats.subscribers, total_views: myStats.total_views, avg_recent_views: myStats.avg_recent_views }] : []),
+    ..._competitors.map(c => ({ name: c.name || c.channel_id, subscribers: c.subscribers || 0, total_views: c.total_views || 0, avg_recent_views: c.avg_recent_views || 0 })),
+  ];
+  if (all.length < 2) { section.style.display = 'none'; return; }
+  section.style.display = '';
+
+  const metrics = [
+    { key: 'subscribers',       label: 'Subscribers',         color: (i,you) => you ? '#818cf8' : '#334155' },
+    { key: 'total_views',       label: 'Total Channel Views',  color: (i,you) => you ? '#fbbf24' : '#334155' },
+    { key: 'avg_recent_views',  label: 'Avg Views (Recent 20 Videos)', color: (i,you) => you ? '#4ade80' : '#334155' },
+  ];
+
+  wrap.innerHTML = metrics.map(m => {
+    const vals  = all.map(c => Number(c[m.key] || 0));
+    const maxV  = Math.max(...vals, 1);
+    const bars  = all.map((c, i) => {
+      const pct   = Math.round((vals[i] / maxV) * 100);
+      const color = c.is_you ? (m.color(i, true)) : '#2d3f5c';
+      return `<div class="compare-bar-row">
+        <div class="compare-bar-name" title="${c.name}">${c.is_you ? '⭐ ' : ''}${c.name}</div>
+        <div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+        <div class="compare-bar-val">${fmtNum(vals[i])}</div>
+      </div>`;
+    }).join('');
+    return `<div class="compare-row"><div class="compare-label">${m.label}</div><div class="compare-bars">${bars}</div></div>`;
+  }).join('');
+}
+
+// ── Thumbnail Lab ──────────────────────────────────────────────────────────
+const labImages  = {};
+const labTitles  = { a: '', b: '', c: '' };
+let   _labFillers     = [];
+let   _labFillersPool = []; // shuffled working copy
+let   _labAvatarSvg   = '';
+let   _labChannelName = '';
+let   _labFilters     = new Set();
+
+const FILLER_CHANNELS = [
+  'Bright Side','Veritasium','Kurzgesagt','Mark Rober','MrBeast',
+  'Wendover Productions','CGP Grey','Tom Scott','SmarterEveryDay','Vsauce',
+  'Johnny Harris','Real Engineering','NileRed','RealLifeLore','TED-Ed',
+];
+const FILLER_AVATAR_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#8b5cf6','#ec4899','#14b8a6','#6366f1','#84cc16'];
+const STATIC_FILLERS = [
+  { title:'The Video That Changed Everything', dur:'14:22', views:randFakeViews(), ago:randFakeAgo() },
+  { title:'Why This Works Better Than Expected', dur:'8:47',  views:randFakeViews(), ago:randFakeAgo() },
+  { title:'Inside the World Nobody Sees',        dur:'21:03', views:randFakeViews(), ago:randFakeAgo() },
+  { title:'The Real Story Behind the Data',      dur:'11:55', views:randFakeViews(), ago:randFakeAgo() },
+  { title:'What Happens When You Try This',      dur:'6:31',  views:randFakeViews(), ago:randFakeAgo() },
+  { title:'Nobody Expected This Result',         dur:'17:14', views:randFakeViews(), ago:randFakeAgo() },
+  { title:'The Secret They Never Told You',      dur:'19:08', views:randFakeViews(), ago:randFakeAgo() },
+  { title:'This Changed How I Think Forever',    dur:'12:40', views:randFakeViews(), ago:randFakeAgo() },
+  { title:'How It Actually Works',               dur:'10:15', views:randFakeViews(), ago:randFakeAgo() },
+];
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function randFakeViews() {
+  const n = randInt(50, 3000) * 1000;
+  return n >= 1e6 ? (n/1e6).toFixed(1).replace(/\.0$/,'') + 'M' : Math.round(n/1000) + 'K';
+}
+function randFakeAgo() {
+  const opts = ['today','1 day ago','2 days ago','3 days ago','5 days ago','1 week ago','2 weeks ago','1 month ago'];
+  return opts[randInt(0, opts.length - 1)];
+}
+
+function shuffleArray(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = randInt(0, i);
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function generateAvatarSvg() {
+  const hue    = randInt(0, 360);
+  const letter = String.fromCharCode(randInt(65, 90));
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="hsl(${hue},65%,40%)"/><text x="18" y="23" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="700" fill="#fff">${letter}</text></svg>`;
+}
+
+function randomizeLabAvatar() {
+  _labAvatarSvg = generateAvatarSvg();
+  const btn = document.getElementById('lab-avatar-btn');
+  if (btn) btn.innerHTML = _labAvatarSvg;
+  saveLabSession();
+  renderLabGrid();
+}
+
+function toggleLabFilter(f) {
+  if (_labFilters.has(f)) _labFilters.delete(f);
+  else _labFilters.add(f);
+  document.getElementById(`btn-${f}`)?.classList.toggle('active', _labFilters.has(f));
+  applyLabFilters();
+}
+
+function applyLabFilters() {
+  const grid = document.getElementById('yt-preview-grid');
+  grid.classList.toggle('blur-test',    _labFilters.has('blur'));
+  grid.classList.toggle('gray-test',    _labFilters.has('gray'));
+  grid.classList.toggle('mobile-view',  _labFilters.has('mobile'));
+  grid.classList.toggle('yt-feed-light',_labFilters.has('light'));
+}
+
+function shuffleLabFillers() {
+  shuffleArray(FILLER_CHANNELS);
+  // Re-randomize views/ago on static fillers
+  STATIC_FILLERS.forEach(f => { f.views = randFakeViews(); f.ago = randFakeAgo(); });
+  if (_labFillers.length) shuffleArray(_labFillers);
+  renderLabGrid();
+}
+
+async function loadLabFillers() {
+  try {
+    const rows = await fetch('/api/thumbnails?platform=youtube&sort=views').then(r => r.json());
+    _labFillers = (rows || []).filter(v => v.thumbnail_url).slice(0, 20);
+    shuffleArray(_labFillers);
+  } catch(e) { _labFillers = []; }
+  shuffleArray(FILLER_CHANNELS);
+}
+
+// ── LocalStorage session save/restore ─────────────────────────────────────
+function saveLabSession() {
+  try {
+    const data = {
+      titles: labTitles,
+      images: labImages,
+      channelName: _labChannelName || document.getElementById('lab-channel-name')?.value || '',
+      avatarSvg: _labAvatarSvg,
+    };
+    localStorage.setItem('lab_session', JSON.stringify(data));
+  } catch(e) {}
+}
+
+function restoreLabSession() {
+  try {
+    const raw = localStorage.getItem('lab_session');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data.channelName) {
+      _labChannelName = data.channelName;
+      const inp = document.getElementById('lab-channel-name');
+      if (inp) inp.value = data.channelName;
+    }
+    if (data.avatarSvg) {
+      _labAvatarSvg = data.avatarSvg;
+      const btn = document.getElementById('lab-avatar-btn');
+      if (btn) btn.innerHTML = _labAvatarSvg;
+    }
+    ['a','b','c'].forEach(slot => {
+      if (data.titles?.[slot]) {
+        labTitles[slot] = data.titles[slot];
+        const inp = document.getElementById(`title-${slot}`);
+        if (inp) {
+          inp.value = labTitles[slot];
+          const len = labTitles[slot].length;
+          const ctr = document.getElementById(`counter-${slot}`);
+          if (ctr) {
+            ctr.textContent = `${len} / 60`;
+            ctr.className = 'lab-title-counter' + (len > 70 ? ' over' : len > 55 ? ' warn' : '');
+          }
+        }
+      }
+      if (data.images?.[slot]) {
+        labImages[slot] = data.images[slot];
+        const zone = document.getElementById(`zone-${slot}`);
+        const wrap = document.getElementById(`slot-wrap-${slot}`);
+        if (zone) {
+          zone.classList.add('has-image');
+          let img = zone.querySelector('img.lab-preview');
+          if (!img) {
+            img = document.createElement('img');
+            img.className = 'lab-preview';
+            img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:6px;display:block;';
+            zone.appendChild(img);
+          }
+          img.src = labImages[slot];
+          const hint = zone.querySelector('.thumb-upload-hint');
+          const icon = zone.querySelector('.thumb-upload-icon');
+          if (hint) hint.style.display = 'none';
+          if (icon) icon.style.display = 'none';
+        }
+        if (wrap) wrap.classList.add('has-upload');
+        const sugBtn = document.getElementById(`suggest-${slot}`);
+        if (sugBtn) sugBtn.style.display = '';
+      }
+    });
+    if (Object.keys(labImages).length) renderLabGrid();
+  } catch(e) {}
+}
+
+function setupLabUpload(slot) {
+  const zone  = document.getElementById(`zone-${slot}`);
+  const input = document.getElementById(`upload-${slot}`);
+  const wrap  = document.getElementById(`slot-wrap-${slot}`);
+
+  zone.addEventListener('click', () => { if (!labImages[slot]) input.click(); });
+
+  input.addEventListener('change', e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    input.value = '';
+    const reader = new FileReader();
+    reader.onload = ev => {
+      labImages[slot] = ev.target.result;
+      zone.classList.add('has-image');
+      let img = zone.querySelector('img.lab-preview');
+      if (!img) {
+        img = document.createElement('img');
+        img.className = 'lab-preview';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:6px;display:block;';
+        zone.appendChild(img);
+      }
+      img.src = labImages[slot];
+      zone.querySelector('.thumb-upload-hint').style.display = 'none';
+      zone.querySelector('.thumb-upload-icon').style.display = 'none';
+      wrap.classList.add('has-upload');
+      const sugBtn = document.getElementById(`suggest-${slot}`);
+      if (sugBtn) sugBtn.style.display = '';
+      saveLabSession();
+      renderLabGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  const titleInput = document.getElementById(`title-${slot}`);
+  const counterEl  = document.getElementById(`counter-${slot}`);
+  titleInput.addEventListener('input', e => {
+    labTitles[slot] = e.target.value;
+    const len = labTitles[slot].length;
+    counterEl.textContent = `${len} / 60`;
+    counterEl.className = 'lab-title-counter' + (len > 70 ? ' over' : len > 55 ? ' warn' : '');
+    saveLabSession();
+    renderLabGrid();
+  });
+}
+
+// Zoom overlay
+function openLabZoom(src) {
+  const overlay = document.getElementById('lab-zoom-overlay');
+  const img     = document.getElementById('lab-zoom-img');
+  img.src = src;
+  overlay.classList.add('open');
+}
+
+function renderLabGrid() {
+  const grid = document.getElementById('yt-preview-grid');
+  const candidates = ['a','b','c'].filter(s => labImages[s]);
+  if (!candidates.length) return;
+
+  const myName   = _labChannelName || document.getElementById('lab-channel-name')?.value || 'Your Channel';
+  const myAvatar = _labAvatarSvg ? `data:image/svg+xml;base64,${btoa(_labAvatarSvg)}` : null;
+
+  function fmtViewsShort(n) {
+    if (!n) return '—';
+    if (n >= 1e6) return (n/1e6).toFixed(1).replace(/\.0$/,'') + 'M';
+    if (n >= 1e3) return (n/1e3).toFixed(0) + 'K';
+    return String(n);
+  }
+  function timeAgo(iso) {
+    if (!iso) return '';
+    const d = Math.floor((Date.now() - new Date(iso)) / 86400000);
+    if (d === 0) return 'today';
+    if (d < 30)  return `${d} day${d===1?'':'s'} ago`;
+    if (d < 365) return `${Math.floor(d/30)} mo ago`;
+    return `${Math.floor(d/365)}y ago`;
+  }
+
+  function videoCard(img, title, dur, views, ago, candidateSlot, fillerIdx) {
+    const isCandidate = !!candidateSlot;
+    const thumbHtml = img
+      ? `<img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;" onclick="event.stopPropagation();openLabZoom('${img.length < 500 ? img : '#'}')">`
+      : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#0f1a2e;"><svg width="32" height="32" viewBox="0 0 24 24" fill="#334155"><polygon points="5,3 19,12 5,21"/></svg></div>`;
+    // For candidate cards with data URL, enable zoom via onclick on the wrap
+    const zoomAttr = (isCandidate && img) ? `onclick="openLabZoom(labImages['${candidateSlot}'])" style="cursor:zoom-in;"` : '';
+
+    let avatarHtml;
+    if (isCandidate && myAvatar) {
+      avatarHtml = `<img class="yt-channel-avatar" src="${myAvatar}" alt="">`;
+    } else if (isCandidate) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="#3b4fd8"/><text x="18" y="23" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#fff">${(myName[0]||'Y').toUpperCase()}</text></svg>`;
+      avatarHtml = `<img class="yt-channel-avatar" src="data:image/svg+xml;base64,${btoa(svg)}" alt="">`;
+    } else {
+      const color = FILLER_AVATAR_COLORS[(fillerIdx||0) % FILLER_AVATAR_COLORS.length];
+      const name  = FILLER_CHANNELS[(fillerIdx||0) % FILLER_CHANNELS.length] || 'Channel';
+      const svg   = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="${color}"/><text x="18" y="23" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#fff">${name[0]}</text></svg>`;
+      avatarHtml  = `<img class="yt-channel-avatar" src="data:image/svg+xml;base64,${btoa(svg)}" alt="">`;
+    }
+    const chanName = isCandidate
+      ? (myName || 'Your Channel')
+      : (FILLER_CHANNELS[(fillerIdx||0) % FILLER_CHANNELS.length] || 'Channel');
+
+    const labelColors = { a:'#818cf8', b:'#f472b6', c:'#34d399' };
+    const badge = isCandidate
+      ? `<div style="position:absolute;top:6px;left:6px;background:${labelColors[candidateSlot]};color:#0f172a;font-size:10px;font-weight:800;padding:2px 7px;border-radius:4px;letter-spacing:.04em;">OPTION ${candidateSlot.toUpperCase()}</div>`
+      : '';
+
+    return `
+      <div class="yt-video-card${isCandidate ? ' yt-card-candidate' : ''}">
+        <div class="yt-thumb-wrap" style="position:relative;" ${zoomAttr}>
+          ${isCandidate ? `<img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;">` : thumbHtml}
+          <div class="yt-duration">${dur}</div>
+          ${badge}
+        </div>
+        <div class="yt-card-meta">
+          ${avatarHtml}
+          <div class="yt-card-info">
+            <div class="yt-card-title">${title || 'Your Video Title'}</div>
+            <div class="yt-card-sub">${chanName} · ${views} · ${ago}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  let fi = 0;
+  function nextFiller() {
+    const idx = fi++;
+    if (idx < _labFillers.length) {
+      const v = _labFillers[idx];
+      return videoCard(v.thumbnail_url, v.title || 'Video', '—', fmtViewsShort(v.views), timeAgo(v.published_at), null, idx);
+    }
+    const si = (idx - _labFillers.length) % STATIC_FILLERS.length;
+    const f  = STATIC_FILLERS[si];
+    return videoCard(null, f.title, f.dur, f.views, f.ago, null, idx);
+  }
+
+  const TOTAL = 12;
+  const slotCount = candidates.length;
+  const positions = slotCount === 1 ? [0] : slotCount === 2 ? [0, 4] : [0, 4, 8];
+  const grid12 = new Array(TOTAL).fill(null);
+  candidates.forEach((s, i) => { grid12[positions[i]] = s; });
+
+  const items = grid12.map(s =>
+    s ? videoCard(labImages[s], labTitles[s] || `Option ${s.toUpperCase()} — Your Title`, '10:24', '—', 'just now', s, null)
+      : nextFiller()
+  );
+
+  grid.innerHTML = items.join('');
+  applyLabFilters();
+}
+
+// ── Light mode ────────────────────────────────────────────────────────────
+function toggleLightMode() {
+  const isLight = document.body.classList.toggle('light');
+  const icon = document.getElementById('light-mode-icon');
+  if (icon) icon.textContent = isLight ? '🌙' : '☀️';
+  try { localStorage.setItem('theme', isLight ? 'light' : 'dark'); } catch(e) {}
+}
+(function() {
+  try {
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light');
+      const icon = document.getElementById('light-mode-icon');
+      if (icon) icon.textContent = '🌙';
+    }
+  } catch(e) {}
+})();
+
+// ── Outliers ──────────────────────────────────────────────────────────────
+let _outliersData = [];
+let _outlierSort  = 'ratio';
+let _outliersLoaded = false;
+
+async function loadOutliers() {
+  const grid = document.getElementById('outlier-grid');
+  grid.innerHTML = '<div style="color:#475569;text-align:center;padding:40px;font-size:13px;">Loading…</div>';
+  try {
+    const platform = state.platform || 'youtube';
+    _outliersData = await fetch(`/api/outliers?platform=${platform}`).then(r => r.json());
+    renderOutliers();
+  } catch(e) {
+    grid.innerHTML = `<div style="color:#f87171;text-align:center;padding:40px;">${e.message}</div>`;
+  }
+}
+
+function setOutlierSort(sort, btn) {
+  _outlierSort = sort;
+  document.querySelectorAll('[data-outlier-sort]').forEach(b => b.classList.toggle('active', b === btn));
+  renderOutliers();
+}
+
+function renderOutliers() {
+  if (!_outliersData.length) {
+    document.getElementById('outlier-grid').innerHTML = '<div style="color:#475569;text-align:center;padding:40px;font-size:13px;">No video data found. Sync your channel first.</div>';
+    return;
+  }
+
+  const rows = [..._outliersData];
+  if (_outlierSort === 'views') rows.sort((a,b) => Number(b.views) - Number(a.views));
+  else rows.sort((a,b) => Number(b.view_ratio) - Number(a.view_ratio));
+
+  const avgViews = Number(rows[0]?.avg_views || 0);
+  const total    = Number(rows[0]?.total_videos || rows.length);
+  const topMult  = Number(rows[0]?.view_ratio || 0);
+  const count5x  = rows.filter(r => Number(r.view_ratio) >= 5).length;
+
+  document.getElementById('out-total').textContent  = total.toLocaleString();
+  document.getElementById('out-avg').textContent    = fmtNum(Math.round(avgViews));
+  document.getElementById('out-top-mult').textContent = topMult.toFixed(1) + 'x';
+  document.getElementById('out-count-10x').textContent = count5x;
+
+  function multClass(r) {
+    if (r >= 10) return 'mult-10x';
+    if (r >= 5)  return 'mult-5x';
+    if (r >= 2)  return 'mult-2x';
+    return 'mult-avg';
+  }
+  function multLabel(r) {
+    if (r >= 10) return '🔥 OUTLIER';
+    if (r >= 5)  return '🚀 GREAT';
+    if (r >= 2)  return '✅ ABOVE AVG';
+    return '📊 AVG';
+  }
+
+  document.getElementById('outlier-grid').innerHTML = rows.slice(0, 30).map(r => {
+    const ratio  = Number(r.view_ratio || 0);
+    const views  = Number(r.views || 0);
+    const er     = Number(r.engagement_rate || 0).toFixed(1);
+    const thumb  = r.thumbnail_url
+      ? `<img src="${r.thumbnail_url}" alt="" onerror="this.parentElement.innerHTML='<div style=height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;>▶</div>'">`
+      : `<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#334155;font-size:20px;">▶</div>`;
+    const pubDate = r.published_at ? new Date(r.published_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+    return `
+      <div class="outlier-card">
+        <div class="outlier-thumb">${thumb}</div>
+        <div>
+          <div class="outlier-title">${r.title || '—'}</div>
+          <div class="outlier-meta">
+            <span>👁 ${fmtNum(views)} views</span>
+            ${er > 0 ? `<span>❤️ ${er}% ER</span>` : ''}
+            ${r.ctr ? `<span>🖱 ${Number(r.ctr).toFixed(1)}% CTR</span>` : ''}
+            ${r.watch_time_minutes ? `<span>⏱ ${fmtNum(Math.round(r.watch_time_minutes))} min watched</span>` : ''}
+            ${pubDate ? `<span>📅 ${pubDate}</span>` : ''}
+          </div>
+        </div>
+        <div class="outlier-badge">
+          <div class="outlier-mult ${multClass(ratio)}">${ratio.toFixed(1)}x</div>
+          <div class="outlier-mult-lbl">${multLabel(ratio)}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Lab: AI title suggestions ──────────────────────────────────────────────
+async function suggestTitles(slot) {
+  const img = labImages[slot];
+  if (!img) return;
+  const btn  = document.getElementById(`suggest-${slot}`);
+  const box  = document.getElementById(`suggestions-${slot}`);
+  btn.textContent = '⏳ Thinking…';
+  btn.disabled = true;
+  box.innerHTML = '';
+  try {
+    const data = await fetch('/api/lab/suggest-titles', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: img }),
+    }).then(r => r.json());
+    if (data.error) throw new Error(data.error);
+    box.innerHTML = (data.titles || []).map(t =>
+      `<button class="lab-suggestion-pill" onclick="applyLabTitle('${slot}', this.textContent)">${t}</button>`
+    ).join('');
+  } catch(e) {
+    box.innerHTML = `<div style="font-size:11px;color:#f87171;padding:4px 0;">${e.message}</div>`;
+  } finally {
+    btn.textContent = '✨ Suggest titles';
+    btn.disabled = false;
+  }
+}
+
+function applyLabTitle(slot, title) {
+  labTitles[slot] = title;
+  const inp = document.getElementById(`title-${slot}`);
+  if (inp) inp.value = title;
+  const len = title.length;
+  const ctr = document.getElementById(`counter-${slot}`);
+  if (ctr) {
+    ctr.textContent = `${len} / 60`;
+    ctr.className = 'lab-title-counter' + (len > 70 ? ' over' : len > 55 ? ' warn' : '');
+  }
+  saveLabSession();
+  renderLabGrid();
 }
 
 // ── Loading ───────────────────────────────────────────────────────────────
@@ -1718,11 +3272,23 @@ async function refresh() {
     renderEngChart(dash.daily);
     renderTrajectory(insights.trajectory || []);
     renderBestDay(insights.dayofweek || [], dowByPlatform);
+    renderHeatmap(insights.hour_heatmap || []);
     renderCalendar(insights.trajectory || []);
     renderKeywords(insights.keywords || []);
     renderKeywordGap(kwGap);
     renderSubGrowth(subHistory || []);
     renderPosts(dash.posts);
+    loadPatterns();
+
+    // Populate goals current values from live data
+    _goalsCurrents = {
+      subscribers_yt: fol.youtube  || 0,
+      subscribers_ig: fol.instagram || 0,
+      views_total:    Number(alltime.views)      || 0,
+      views_monthly:  Number(dash.kpis?.views?.value) || 0,
+      likes_monthly:  Number(dash.kpis?.likes?.value) || 0,
+    };
+    renderGoals();
 
   } catch(err) {
     document.getElementById('kpi-grid').innerHTML =
@@ -1733,6 +3299,64 @@ async function refresh() {
 }
 
 // ── Controls ──────────────────────────────────────────────────────────────
+// ── Sync ──────────────────────────────────────────────────────────────────
+let _lastSynced = null;
+
+function updateSyncLabel() {
+  const el = document.getElementById('sync-last');
+  if (!_lastSynced) { el.textContent = ''; return; }
+  const secs = Math.round((Date.now() - _lastSynced) / 1000);
+  el.textContent = secs < 60 ? 'just now' : secs < 3600 ? `${Math.round(secs/60)}m ago` : `${Math.round(secs/3600)}h ago`;
+}
+
+async function runSync() {
+  const btn  = document.getElementById('sync-btn');
+  btn.disabled = true;
+  btn.classList.add('syncing');
+  btn.innerHTML = `<svg class="sync-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> Syncing…`;
+
+  try {
+    const result = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ platform: state.platform }),
+    }).then(r => r.json());
+
+    _lastSynced = Date.now();
+    updateSyncLabel();
+
+    const yt = result.results?.youtube;
+    const ig = result.results?.instagram;
+    const parts = [];
+    if (yt && !yt.error) parts.push(`YT: ${yt.upserted} videos`);
+    if (yt?.error)       parts.push(`YT error: ${yt.error}`);
+    if (ig && !ig.error) parts.push(`IG: ${ig.upserted} posts`);
+    if (ig?.error)       parts.push(`IG error: ${ig.error}`);
+
+    document.getElementById('sync-last').textContent = parts.join(' · ') || 'Done';
+    await refresh();
+  } catch(e) {
+    document.getElementById('sync-last').textContent = 'Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove('syncing');
+    btn.innerHTML = `<svg id="sync-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg> Sync Now`;
+  }
+}
+
+// ── Custom date range ──────────────────────────────────────────────────────
+function applyCustomDates() {
+  const from = document.getElementById('date-from').value;
+  const to   = document.getElementById('date-to').value;
+  if (!from || !to) return;
+  const days = Math.max(1, Math.round((new Date(to) - new Date(from)) / 86400000));
+  state.range = days;
+  // Deactivate all preset buttons when custom range is used
+  document.querySelectorAll('[data-range]').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sidebar-range-btn').forEach(b => b.classList.remove('active'));
+  refresh();
+}
+
 function switchPlatform(platform) {
   // Revenue card: YouTube only
   const revenueCard = document.getElementById('revenue-card');
@@ -1748,6 +3372,17 @@ function switchPlatform(platform) {
 }
 
 function setupControls() {
+  // Sidebar platform buttons
+  document.querySelectorAll('.sidebar [data-platform]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.platform = btn.dataset.platform;
+      document.querySelectorAll('[data-platform]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      switchPlatform(state.platform);
+      refresh();
+    });
+  });
+  // Also keep hidden platform-btn in sync
   document.querySelectorAll('.platform-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       state.platform = btn.dataset.platform;
@@ -1757,11 +3392,31 @@ function setupControls() {
       refresh();
     });
   });
+  // Sidebar range buttons
+  document.querySelectorAll('.sidebar-range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.range = parseInt(btn.dataset.range);
+      // Clear all range active states
+      document.querySelectorAll('.sidebar-range-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('[data-range]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Clear custom date inputs
+      document.getElementById('date-from').value = '';
+      document.getElementById('date-to').value = '';
+      refresh();
+    });
+  });
+  // Hidden btn-filter range buttons
   document.querySelectorAll('[data-range]').forEach(btn => {
     btn.addEventListener('click', () => {
       state.range = parseInt(btn.dataset.range);
       document.querySelectorAll('[data-range]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active'); refresh();
+      document.querySelectorAll('.sidebar-range-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Clear custom date inputs
+      document.getElementById('date-from').value = '';
+      document.getElementById('date-to').value = '';
+      refresh();
     });
   });
   document.getElementById('sort-select').addEventListener('change', e => {
@@ -2396,6 +4051,103 @@ function ideaCopy(i) {
   if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy title', 1200); }
 }
 
+// ── Login Modal ───────────────────────────────────────────────────────────
+let _authToken = null, _authUser = null;
+
+function openLoginModal() {
+  document.getElementById('login-modal').classList.add('open');
+  setTimeout(() => document.getElementById('login-email').focus(), 50);
+}
+function closeLoginModal() {
+  document.getElementById('login-modal').classList.remove('open');
+}
+
+async function submitLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('login-error');
+  const btn      = document.getElementById('login-submit-btn');
+  errEl.style.display = 'none';
+  if (!email || !password) { errEl.textContent = 'Email and password are required.'; errEl.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    }).then(r => r.json());
+    if (!res.ok) throw new Error(res.error || 'Login failed');
+    _authToken = res.token;
+    _authUser  = res.user;
+    try { localStorage.setItem('auth_token', _authToken); } catch(e) {}
+    updateAuthUI();
+    closeLoginModal();
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+
+function updateAuthUI() {
+  const loginBtn  = document.getElementById('login-btn');
+  const userInfo  = document.getElementById('sidebar-user-info');
+  if (_authUser) {
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (userInfo) {
+      userInfo.style.display = 'block';
+      userInfo.innerHTML = `<span style="color:#4ade80;font-size:10px;">✓ Signed in</span><br>${_authUser.email}<br>
+        <button onclick="logoutAuth()" style="background:none;border:none;color:#f87171;font-size:10px;cursor:pointer;padding:2px 0;font-family:inherit;">Sign out</button>`;
+    }
+  } else {
+    if (loginBtn) loginBtn.style.display = '';
+    if (userInfo) userInfo.style.display = 'none';
+  }
+}
+
+function logoutAuth() {
+  _authToken = null; _authUser = null;
+  try { localStorage.removeItem('auth_token'); } catch(e) {}
+  updateAuthUI();
+}
+
+async function restoreAuth() {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json());
+    if (res.user) { _authToken = token; _authUser = res.user; updateAuthUI(); }
+  } catch(e) {}
+}
+
+// ── Upgrade Modal ─────────────────────────────────────────────────────────
+function openUpgradeModal() {
+  document.getElementById('upgrade-modal').classList.add('open');
+}
+function closeUpgradeModal() {
+  document.getElementById('upgrade-modal').classList.remove('open');
+}
+
+async function startCheckout() {
+  const btn   = document.getElementById('upgrade-checkout-btn');
+  const errEl = document.getElementById('upgrade-error');
+  errEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Redirecting…';
+  try {
+    const res = await fetch('/api/stripe/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    }).then(r => r.json());
+    if (res.error) throw new Error(res.error);
+    window.location.href = res.url;
+  } catch(e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Upgrade to Premium';
+  }
+}
+
 // ── Tabs ──────────────────────────────────────────────────────────────────
 let activeTab = 'analytics';
 
@@ -2403,10 +4155,6 @@ function switchTab(tab) {
   activeTab = tab;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
-
-  // Show/hide analytics controls (platform + date) — hidden on Pipeline tab
-  const controls = document.querySelector('.controls');
-  if (controls) controls.style.visibility = tab === 'pipeline' ? 'hidden' : '';
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────
@@ -2415,13 +4163,34 @@ document.addEventListener('DOMContentLoaded', () => {
   switchPlatform(state.platform);
   refresh();
   loadPipeline();
+  loadGoals();
+  restoreAuth();
+
+  // Handle post-upgrade redirect
+  if (new URLSearchParams(window.location.search).get('upgraded') === '1') {
+    history.replaceState(null, '', '/');
+    openUpgradeModal();
+  }
+
+  document.getElementById('goal-add-btn').addEventListener('click', addGoal);
+  document.getElementById('sync-btn').addEventListener('click', runSync);
+
+  // Sidebar date inputs — do NOT pre-fill with dates (let presets be active)
+  document.getElementById('date-from').addEventListener('change', applyCustomDates);
+  document.getElementById('date-to').addEventListener('change', applyCustomDates);
+
+  // Login modal keyboard
+  document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') submitLogin(); });
+  document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') submitLogin(); });
 
   // Tab switching
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       switchTab(btn.dataset.tab);
-      if (btn.dataset.tab === 'comments'   && !_commentsLoaded) loadComments();
-      if (btn.dataset.tab === 'thumbnails' && !_thumbLoaded)    loadThumbnails();
+      if (btn.dataset.tab === 'comments'   && !_commentsLoaded)   loadComments();
+      if (btn.dataset.tab === 'thumbnails' && !_thumbLoaded)      loadThumbnails();
+      if (btn.dataset.tab === 'compete'    && !_competitorsLoaded)  { loadCompetitors(); _competitorsLoaded = true; }
+      if (btn.dataset.tab === 'outliers'   && !_outliersLoaded)    { loadOutliers(); _outliersLoaded = true; }
     });
   });
 
@@ -2450,7 +4219,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       document.getElementById('thumb-modal')?.classList.remove('open');
+      document.getElementById('lab-zoom-overlay')?.classList.remove('open');
       pipelineCloseModal();
+      closeLoginModal();
+      closeUpgradeModal();
     }
   });
 
@@ -2475,6 +4247,22 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('checklist-reset').addEventListener('click', () => {
     _checkedIds.clear(); renderChecklist();
+  });
+
+  // Competitor tracking
+  document.getElementById('competitor-add-btn').addEventListener('click', addCompetitor);
+  document.getElementById('competitor-input').addEventListener('keydown', e => { if (e.key === 'Enter') addCompetitor(); });
+
+  // Thumbnail A/B lab
+  setupLabUpload('a');
+  setupLabUpload('b');
+  setupLabUpload('c');
+  loadLabFillers().then(() => restoreLabSession());
+  randomizeLabAvatar();
+  document.getElementById('lab-channel-name').addEventListener('input', e => {
+    _labChannelName = e.target.value;
+    saveLabSession();
+    renderLabGrid();
   });
 
   document.getElementById('pipeline-new-btn').addEventListener('click', () => pipelineOpenModal(null));
