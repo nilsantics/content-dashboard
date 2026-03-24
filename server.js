@@ -6,10 +6,21 @@ const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
-const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+
+// Support Vercel-Supabase integration vars, manual DATABASE_URL, or build from parts
+const connectionString =
+  process.env.POSTGRES_URL ||
+  process.env.POSTGRES_URL_NON_POOLING ||
+  process.env.DATABASE_URL ||
+  (process.env.POSTGRES_HOST
+    ? `postgresql://${process.env.POSTGRES_USER}:${encodeURIComponent(process.env.POSTGRES_PASSWORD)}@${process.env.POSTGRES_HOST}/${process.env.POSTGRES_DATABASE || 'postgres'}`
+    : null);
+
 const pool = new Pool({
   connectionString,
-  ssl: connectionString?.includes('supabase') ? { rejectUnauthorized: false } : false,
+  ssl: connectionString?.includes('supabase') || connectionString?.includes('pooler')
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
 pool.query(`
