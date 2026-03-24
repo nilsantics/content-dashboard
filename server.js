@@ -18,9 +18,7 @@ const connectionString =
 
 const pool = new Pool({
   connectionString,
-  ssl: connectionString?.includes('supabase') || connectionString?.includes('pooler')
-    ? { rejectUnauthorized: false }
-    : false,
+  ssl: { rejectUnauthorized: false },
 });
 
 pool.query(`
