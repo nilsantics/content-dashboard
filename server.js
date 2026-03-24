@@ -4,7 +4,10 @@ const { Pool } = require('pg');
 const path = require('path');
 
 const app = express();
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL?.includes('supabase') ? { rejectUnauthorized: false } : false,
+});
 
 pool.query(`
   CREATE TABLE IF NOT EXISTS subscriber_snapshots (
