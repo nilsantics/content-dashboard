@@ -1,0 +1,2518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nils Glenn's Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #080d14; color: #e2e8f0; min-height: 100vh; }
+    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: #0d1524; }
+    ::-webkit-scrollbar-thumb { background: #2d3f5c; border-radius: 3px; }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #0d1524 0%, #111927 100%);
+      border-bottom: 1px solid rgba(99,102,241,.2);
+      padding: 0 28px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 4px 24px rgba(0,0,0,.4);
+    }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .brand-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(99,102,241,.4);
+    }
+    .brand-name { font-size: 16px; font-weight: 700; color: #f1f5f9; letter-spacing: -.3px; }
+    .brand-sub  { font-size: 11px; color: #64748b; font-weight: 400; margin-top: 1px; }
+
+    /* ── Controls ── */
+    .controls { display: flex; align-items: center; gap: 10px; }
+    .btn-group { display:flex; background:#0f1a2e; border:1px solid #1e2d45; border-radius:10px; padding:3px; gap:2px; }
+    .btn-filter {
+      padding: 5px 14px; border-radius: 7px; font-size: 12px; font-weight: 600;
+      border: none; cursor: pointer; background: transparent; color: #64748b;
+      transition: all .15s ease; white-space: nowrap;
+    }
+    .btn-filter:hover { color: #94a3b8; background: rgba(255,255,255,.04); }
+    .btn-filter.active { background: linear-gradient(135deg,#6366f1,#7c3aed); color: #fff; box-shadow: 0 2px 8px rgba(99,102,241,.35); }
+
+    /* ── Main ── */
+    main { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; max-width: 1600px; margin: 0 auto; }
+
+    /* ── KPI Grid ── */
+    #kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+
+    /* ── KPI Card ── */
+    .kpi-card {
+      background: #0d1524; border: 1px solid #1a2740;
+      border-radius: 14px; padding: 18px 18px 14px;
+      display: flex; flex-direction: column; gap: 10px;
+      position: relative; overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .kpi-card:hover { border-color: #2d3f5c; box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+    .kpi-accent { position:absolute; top:0; left:0; right:0; height:2px; border-radius:14px 14px 0 0; }
+    .kpi-header { display:flex; align-items:center; justify-content:space-between; }
+    .kpi-label-row { display:flex; align-items:center; gap:5px; }
+    .kpi-label { font-size:11px; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+    .kpi-icon-wrap { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; opacity:.8; }
+    .kpi-value { font-size:28px; font-weight:800; color:#f1f5f9; letter-spacing:-.5px; line-height:1; }
+    .kpi-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .change-badge {
+      font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+      display: inline-flex; align-items: center; gap: 2px;
+    }
+    .up   { color:#4ade80; background:rgba(74,222,128,.1); }
+    .down { color:#f87171; background:rgba(248,113,113,.1); }
+    .neutral { color:#64748b; }
+    .kpi-period { font-size:10px; color:#475569; }
+    .kpi-sparkline { height: 44px; margin: 0 -2px; }
+
+    /* ── Tooltip ── */
+    .tip-wrap { position:relative; display:inline-flex; cursor:default; }
+    .tip-wrap .tip {
+      visibility:hidden; opacity:0; transition:opacity .15s;
+      position:absolute; bottom:calc(100%+8px); left:50%; transform:translateX(-50%);
+      background:#0a1220; border:1px solid #1e2d45; color:#94a3b8;
+      font-size:11.5px; line-height:1.55; padding:10px 12px; border-radius:10px;
+      width:230px; white-space:normal; z-index:200; pointer-events:none;
+      box-shadow:0 8px 24px rgba(0,0,0,.5);
+    }
+    .tip-wrap .tip::after {
+      content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+      border:5px solid transparent; border-top-color:#1e2d45;
+    }
+    .tip-wrap:hover .tip { visibility:visible; opacity:1; }
+    .tip-icon {
+      width:13px; height:13px; border-radius:50%; background:#1e2d45; color:#64748b;
+      font-size:8px; font-weight:800; display:inline-flex; align-items:center;
+      justify-content:center; flex-shrink:0;
+    }
+
+    /* ── Section cards ── */
+    .card { background:#0d1524; border:1px solid #1a2740; border-radius:14px; padding:20px; }
+    .card-title { font-size:11px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.07em; }
+
+    /* ── Charts rows ── */
+    .charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:14px; }
+    .charts-grid-half { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    @media(max-width:900px){ .charts-grid,.charts-grid-half { grid-template-columns:1fr; } }
+
+    /* ── All-time banner ── */
+    .alltime-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1px;
+      background: #1a2740;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #1a2740;
+    }
+    .alltime-pill {
+      background: #0d1524;
+      padding: 16px 20px;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .alltime-label { font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .07em; }
+    .alltime-value { font-size: 24px; font-weight: 800; color: #f1f5f9; letter-spacing: -.4px; line-height: 1; }
+    .alltime-sub   { font-size: 11px; color: #334155; }
+
+    /* ── Posts table ── */
+    .posts-table { width:100%; border-collapse:collapse; }
+    .posts-table th {
+      text-align:left; padding:8px 12px; font-size:10px; color:#475569;
+      font-weight:700; text-transform:uppercase; letter-spacing:.07em;
+      border-bottom:1px solid #1a2740;
+    }
+    .posts-table th.r { text-align:right; }
+    .posts-table td { padding:11px 12px; border-bottom:1px solid #0f1a2e; vertical-align:middle; }
+    .posts-table tr:last-child td { border-bottom:none; }
+    .posts-table tr:hover td { background:rgba(99,102,241,.04); }
+    .badge { font-size:9px; font-weight:800; padding:3px 8px; border-radius:20px; white-space:nowrap; letter-spacing:.04em; }
+    .badge-ig { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); color:#fff; }
+    .badge-yt { background:#dc2626; color:#fff; }
+    .thumb-wrap { position:relative; width:52px; height:40px; min-width:52px; border-radius:7px; overflow:hidden; }
+    .thumb-wrap img { width:52px; height:40px; object-fit:cover; display:block; }
+    .thumb-ph { position:absolute;inset:0;background:#1a2740;display:flex;align-items:center;justify-content:center; }
+
+    /* ── Calendar ── */
+    .cal-wrap { display:flex; flex-direction:column; gap:3px; }
+    .cal-row  { display:flex; align-items:center; gap:3px; }
+    .cal-day-lbl { width:24px; font-size:9px; color:#475569; font-weight:600; text-align:right; padding-right:4px; flex-shrink:0; }
+    .cal-cell {
+      flex:1; aspect-ratio:1; min-width:10px; max-width:18px;
+      border-radius:2px; background:#0f1a2e; cursor:default;
+      transition: transform .1s;
+    }
+    .cal-cell:hover { transform: scale(1.3); z-index:1; }
+    .cal-cell.p1 { background:#312e81; }
+    .cal-cell.p2 { background:#4338ca; }
+    .cal-cell.p3 { background:#6366f1; }
+    .cal-future { background:#080d14 !important; }
+
+    /* ── Skeleton ── */
+    .skeleton {
+      background:linear-gradient(90deg,#0d1524 25%,#142033 50%,#0d1524 75%);
+      background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:14px;
+    }
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* ── Select ── */
+    select {
+      background:#0f1a2e; border:1px solid #1e2d45; color:#e2e8f0;
+      font-size:12px; font-weight:600; padding:6px 12px; border-radius:8px;
+      cursor:pointer; outline:none; font-family:inherit;
+    }
+    select:hover { border-color:#2d3f5c; }
+
+    /* ── YT callout ── */
+    .callout {
+      background: linear-gradient(135deg, rgba(220,38,38,.08), rgba(220,38,38,.03));
+      border: 1px solid rgba(220,38,38,.25); border-radius:12px; padding:14px 16px;
+      display:flex; align-items:center; gap:12px; font-size:13px; color:#94a3b8;
+    }
+    .callout strong { color:#fca5a5; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:10px; padding:48px 20px; text-align:center;
+    }
+    .empty-state p   { font-size:13px; color:#475569; }
+    .empty-state small { font-size:11px; color:#334155; }
+
+    /* ── Revenue estimator ── */
+    .cpm-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px; border-radius: 4px;
+      background: linear-gradient(90deg, #6366f1 var(--pct,40%), #1e2d45 var(--pct,40%));
+      outline: none; cursor: pointer; margin: 6px 0;
+    }
+    .cpm-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #818cf8; border: 2px solid #0d1524;
+      box-shadow: 0 0 6px rgba(99,102,241,.6); cursor: pointer;
+    }
+    .rev-stat { display:flex; flex-direction:column; gap:3px; flex:1; }
+    .rev-stat-label { font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.06em; }
+    .rev-stat-value { font-size:22px; font-weight:800; color:#4ade80; letter-spacing:-.4px; line-height:1; }
+    .rev-stat-sub   { font-size:11px; color:#334155; }
+
+    /* ── Milestone bars ── */
+    .milestone {
+      display: flex; flex-direction: column; gap: 6px;
+      padding: 12px 0; border-bottom: 1px solid #0f1a2e;
+    }
+    .milestone:last-child { border-bottom: none; padding-bottom: 0; }
+    .milestone-header { display:flex; align-items:center; justify-content:space-between; }
+    .milestone-label  { font-size:12px; font-weight:600; color:#e2e8f0; }
+    .milestone-eta    { font-size:11px; color:#475569; font-weight:500; }
+    .milestone-bar-bg { height:6px; background:#0f1a2e; border-radius:4px; overflow:hidden; }
+    .milestone-bar-fill { height:100%; border-radius:4px; transition: width .6s ease; }
+    .milestone-vals { display:flex; justify-content:space-between; font-size:10px; color:#334155; font-weight:600; }
+
+    /* ── Pipeline Kanban ── */
+    .pipeline-board { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; align-items:start; }
+    .pipeline-col { background:#080d14; border:1px solid #1a2740; border-radius:10px; padding:10px; min-height:160px; }
+    .pipeline-col-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 2px; }
+    .pipeline-col-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+    .pipeline-count { font-size:10px; color:#475569; background:#0d1524; padding:1px 6px; border-radius:10px; }
+    .pipeline-card { background:#0d1524; border:1px solid #1a2740; border-radius:8px; padding:10px; margin-bottom:8px; cursor:grab; user-select:none; transition:border-color .15s,transform .1s; position:relative; }
+    .pipeline-card:active { cursor:grabbing; transform:scale(1.02); }
+    .pipeline-card.drag-over-card { border-color:#818cf8; }
+    .pipeline-col.drag-over { border-color:#818cf8; background:#0d1524cc; }
+    .pipeline-card-title { font-size:12px; font-weight:600; color:#e2e8f0; line-height:1.35; margin-bottom:5px; }
+    .pipeline-card-meta { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .pipeline-badge { font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; text-transform:uppercase; }
+    .badge-youtube { background:#818cf822; color:#818cf8; border:1px solid #818cf844; }
+    .badge-instagram { background:#f472b622; color:#f472b6; border:1px solid #f472b644; }
+    .badge-both { background:#fbbf2422; color:#fbbf24; border:1px solid #fbbf2444; }
+    .pipeline-date { font-size:10px; color:#475569; }
+    .pipeline-notes { font-size:10px; color:#475569; margin-top:5px; line-height:1.4; border-top:1px solid #1a2740; padding-top:5px; white-space:pre-wrap; }
+    .pipeline-add-btn { width:100%; background:none; border:1px dashed #1a2740; border-radius:7px; color:#334155; font-size:11px; padding:7px; cursor:pointer; transition:border-color .15s,color .15s; margin-top:2px; }
+    .pipeline-add-btn:hover { border-color:#818cf8; color:#818cf8; }
+    .pipeline-card-actions { position:absolute; top:7px; right:7px; display:none; gap:4px; }
+    .pipeline-card:hover .pipeline-card-actions { display:flex; }
+    .pipeline-act-btn { background:#0f1a2e; border:1px solid #1a2740; border-radius:4px; color:#64748b; font-size:10px; padding:2px 5px; cursor:pointer; }
+    .pipeline-act-btn:hover { color:#e2e8f0; border-color:#334155; }
+    /* Modal */
+    #pipeline-modal { display:none; position:fixed; inset:0; background:#00000080; z-index:1000; align-items:center; justify-content:center; }
+    #pipeline-modal.open { display:flex; }
+    .pipeline-modal-box { background:#0d1524; border:1px solid #1a2740; border-radius:14px; padding:24px; width:380px; max-width:95vw; }
+    .pm-title { font-size:13px; font-weight:700; color:#e2e8f0; margin-bottom:18px; }
+    .pm-field { margin-bottom:12px; }
+    .pm-label { font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; display:block; }
+    .pm-input { width:100%; background:#080d14; border:1px solid #1a2740; border-radius:7px; color:#e2e8f0; font-size:12px; padding:8px 10px; box-sizing:border-box; }
+    .pm-input:focus { outline:none; border-color:#818cf8; }
+    .pm-row { display:flex; gap:8px; }
+    .pm-row .pm-field { flex:1; }
+    .pm-actions { display:flex; gap:8px; margin-top:4px; }
+    .pm-save { flex:1; background:#818cf8; border:none; border-radius:7px; color:#fff; font-size:12px; font-weight:700; padding:9px; cursor:pointer; }
+    .pm-save:hover { background:#6366f1; }
+    .pm-cancel { background:#0f1a2e; border:1px solid #1a2740; border-radius:7px; color:#64748b; font-size:12px; padding:9px 14px; cursor:pointer; }
+    .pm-cancel:hover { color:#e2e8f0; }
+
+    /* ── Thumbnail Gallery ── */
+    .thumb-grid { display:grid; gap:12px; }
+    .thumb-grid.size-small  { grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); }
+    .thumb-grid.size-medium { grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); }
+    .thumb-grid.size-large  { grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); }
+    .thumb-card { position:relative; border-radius:10px; overflow:hidden; background:#080d14; border:1px solid #1a2740; cursor:pointer; transition:transform .15s,border-color .15s; }
+    .thumb-card:hover { transform:translateY(-2px); border-color:#818cf844; }
+    .thumb-card:hover .thumb-overlay { opacity:1; }
+    .thumb-img-wrap { position:relative; width:100%; padding-top:56.25%; background:#0d1524; }
+    .thumb-img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+    .thumb-rank { position:absolute; top:6px; left:6px; background:#000000aa; color:#fff; font-size:9px; font-weight:800; padding:2px 6px; border-radius:4px; backdrop-filter:blur(4px); }
+    .thumb-platform-dot { position:absolute; top:6px; right:6px; width:8px; height:8px; border-radius:50%; }
+    .thumb-overlay { position:absolute; inset:0; background:linear-gradient(to top, #000000cc 0%, transparent 50%); opacity:0; transition:opacity .2s; display:flex; align-items:flex-end; padding:8px; }
+    .thumb-overlay-views { font-size:11px; font-weight:700; color:#fff; }
+    .thumb-info { padding:8px 10px; }
+    .thumb-title { font-size:11px; color:#cbd5e1; font-weight:600; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:5px; }
+    .thumb-stats { display:flex; gap:8px; flex-wrap:wrap; }
+    .thumb-stat { font-size:10px; color:#475569; }
+    .thumb-stat strong { color:#94a3b8; }
+    /* Thumbnail Modal */
+    #thumb-modal { display:none; position:fixed; inset:0; background:#00000090; z-index:2000; align-items:center; justify-content:center; padding:20px; }
+    #thumb-modal.open { display:flex; }
+    .thumb-modal-box { background:#0d1524; border:1px solid #1a2740; border-radius:16px; max-width:760px; width:100%; overflow:hidden; }
+    .thumb-modal-img { width:100%; aspect-ratio:16/9; object-fit:cover; display:block; background:#080d14; }
+    .thumb-modal-body { padding:20px; }
+    .thumb-modal-title { font-size:16px; font-weight:700; color:#e2e8f0; margin-bottom:12px; line-height:1.35; }
+    .thumb-modal-stats { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:14px; }
+    .thumb-modal-stat { display:flex; flex-direction:column; gap:2px; }
+    .thumb-modal-stat-label { font-size:9px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.07em; }
+    .thumb-modal-stat-value { font-size:18px; font-weight:800; color:#e2e8f0; }
+    .thumb-modal-actions { display:flex; gap:8px; }
+    .thumb-modal-btn { font-size:11px; font-weight:700; padding:7px 14px; border-radius:7px; cursor:pointer; border:none; }
+    /* ── AI Ideas ── */
+    .idea-card { background:#080d14; border:1px solid #1a2740; border-radius:10px; padding:16px; position:relative; transition:border-color .15s; }
+    .idea-card:hover { border-color:#818cf844; }
+    .idea-num { font-size:10px; font-weight:700; color:#818cf8; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
+    .idea-title { font-size:15px; font-weight:700; color:#e2e8f0; line-height:1.35; margin-bottom:10px; }
+    .idea-label { font-size:9px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.07em; margin-bottom:3px; }
+    .idea-text { font-size:12px; color:#94a3b8; line-height:1.55; margin-bottom:10px; }
+    .idea-actions { display:flex; gap:8px; }
+    .idea-action-btn { font-size:10px; font-weight:600; padding:5px 10px; border-radius:6px; cursor:pointer; border:none; }
+    .idea-add-btn { background:#818cf822; color:#818cf8; }
+    .idea-add-btn:hover { background:#818cf833; }
+    .idea-copy-btn { background:#1a2740; color:#64748b; }
+    .idea-copy-btn:hover { color:#e2e8f0; }
+    @keyframes ideas-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .ideas-generating { animation: ideas-pulse 1.2s ease-in-out infinite; }
+    /* ── Upload Checklist ── */
+    .cl-category { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#475569; padding:10px 0 4px; }
+    .cl-category:first-child { padding-top:0; }
+    .cl-item { display:flex; align-items:center; gap:10px; padding:8px 4px; border-radius:6px; cursor:pointer; transition:background .12s; }
+    .cl-item:hover { background:#0f1a2e; }
+    .cl-check { width:18px; height:18px; border-radius:5px; border:2px solid #1e2d45; flex-shrink:0; transition:background .15s,border-color .15s; display:flex; align-items:center; justify-content:center; }
+    .cl-check.checked { background:#818cf8; border-color:#818cf8; }
+    .cl-check.checked::after { content:'✓'; font-size:11px; color:#fff; font-weight:700; }
+    .cl-label { font-size:12px; color:#cbd5e1; flex:1; }
+    .cl-item.checked .cl-label { text-decoration:line-through; color:#334155; }
+    .cl-delete { font-size:10px; color:#334155; background:none; border:none; cursor:pointer; padding:2px 5px; border-radius:4px; opacity:0; }
+    .cl-item:hover .cl-delete { opacity:1; }
+    .cl-delete:hover { color:#f87171; background:#0f1a2e; }
+    .cl-cat-badge { font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; }
+    .cat-metadata     { background:#818cf822; color:#818cf8; }
+    .cat-visuals      { background:#fbbf2422; color:#fbbf24; }
+    .cat-engagement   { background:#4ade8022; color:#4ade80; }
+    .cat-promotion    { background:#f472b622; color:#f472b6; }
+    .cat-accessibility{ background:#38bdf822; color:#38bdf8; }
+    .cat-general      { background:#64748b22; color:#64748b; }
+    /* ── Keyword Gap ── */
+    .kw-row { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid #1a2740; }
+    .kw-row:last-child { border-bottom:none; }
+    .kw-word { font-size:13px; font-weight:700; color:#e2e8f0; }
+    .kw-bar-wrap { flex:1; margin:0 12px; height:5px; background:#0f1a2e; border-radius:3px; overflow:hidden; }
+    .kw-bar { height:100%; border-radius:3px; }
+    .kw-views { font-size:11px; color:#64748b; white-space:nowrap; }
+    .kw-badge { font-size:9px; font-weight:700; padding:1px 5px; border-radius:6px; margin-left:6px; }
+    .kw-gap-badge { background:#4ade8022; color:#4ade80; border:1px solid #4ade8044; }
+    .kw-low-badge { background:#f8717122; color:#f87171; border:1px solid #f8717144; }
+    /* ── Comments Explorer ── */
+    .comments-filter-btn { background:#080d14; border:1px solid #1a2740; border-radius:20px; color:#475569; font-size:11px; font-weight:600; padding:5px 12px; cursor:pointer; transition:all .15s; }
+    .comments-filter-btn:hover { border-color:#818cf8; color:#818cf8; }
+    .comments-filter-btn.active { background:#818cf8; border-color:#818cf8; color:#fff; }
+    .comment-row { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid #1a2740; }
+    .comment-row:last-child { border-bottom:none; }
+    .comment-avatar { width:32px; height:32px; border-radius:50%; flex-shrink:0; background:#1a2740; }
+    .comment-body { flex:1; min-width:0; }
+    .comment-author { font-size:11px; font-weight:700; color:#818cf8; margin-bottom:3px; }
+    .comment-text { font-size:12px; color:#cbd5e1; line-height:1.5; word-break:break-word; }
+    .comment-text a { color:#818cf8; text-decoration:none; }
+    .comment-meta { display:flex; gap:12px; margin-top:5px; }
+    .comment-meta span { font-size:10px; color:#475569; }
+    .comment-meta .cm-likes { color:#fbbf24; }
+    .comment-meta .cm-replies { color:#818cf8; }
+    .comment-highlight { background:#818cf822; padding:1px 3px; border-radius:3px; }
+    .comment-sentiment { font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; margin-left:4px; }
+    .sent-pos { background:#4ade8022; color:#4ade80; }
+    .sent-neg { background:#f8717122; color:#f87171; }
+    .sent-q   { background:#818cf822; color:#818cf8; }
+    /* ── Tab nav ── */
+    .tab-nav { display:flex; gap:0; background:#080d14; border-bottom:1px solid #1a2740; padding:0 28px; }
+    .tab-btn { background:none; border:none; border-bottom:2px solid transparent; color:#475569; font-size:11px; font-weight:700; padding:14px 18px; cursor:pointer; transition:color .15s,border-color .15s; text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; }
+    .tab-btn:hover:not(.active) { color:#94a3b8; }
+    .tab-btn.active { color:#e2e8f0; border-bottom-color:#818cf8; }
+    .tab-btn .tab-icon { margin-right:6px; opacity:.7; }
+    .tab-panel { display:none; flex-direction:column; gap:20px; }
+    .tab-panel.active { display:flex; }
+    .analytics-controls { transition:opacity .2s; }
+    .analytics-controls.hidden { opacity:0; pointer-events:none; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<header>
+  <div class="brand">
+    <div class="brand-icon">
+      <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-name">Nils Glenn's Dashboard</div>
+      <div class="brand-sub">Content &amp; Social Analytics</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="btn-group">
+      <button class="btn-filter active" data-platform="all">All</button>
+      <button class="btn-filter" data-platform="instagram">Instagram</button>
+      <button class="btn-filter" data-platform="youtube">YouTube</button>
+    </div>
+    <div class="btn-group">
+      <button class="btn-filter" data-range="7">7d</button>
+      <button class="btn-filter" data-range="14">14d</button>
+      <button class="btn-filter active" data-range="30">30d</button>
+      <button class="btn-filter" data-range="90">90d</button>
+    </div>
+  </div>
+</header>
+
+<!-- ── Tab Nav ──────────────────────────────────────────────────────────── -->
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="analytics">
+    <span class="tab-icon">📊</span>Analytics
+  </button>
+  <button class="tab-btn" data-tab="insights">
+    <span class="tab-icon">💡</span>Insights
+  </button>
+  <button class="tab-btn" data-tab="growth">
+    <span class="tab-icon">📈</span>Growth
+  </button>
+  <button class="tab-btn" data-tab="pipeline">
+    <span class="tab-icon">🎬</span>Pipeline
+  </button>
+  <button class="tab-btn" data-tab="comments">
+    <span class="tab-icon">💬</span>Comments
+  </button>
+  <button class="tab-btn" data-tab="ideas">
+    <span class="tab-icon">🤖</span>AI Ideas
+  </button>
+  <button class="tab-btn" data-tab="thumbnails">
+    <span class="tab-icon">🖼️</span>Thumbnails
+  </button>
+</nav>
+
+<!-- ── Main ─────────────────────────────────────────────────────────────── -->
+<main>
+
+  <!-- ══ Analytics Tab ══ -->
+  <div class="tab-panel active" id="tab-analytics">
+
+    <!-- YouTube callout -->
+    <div id="yt-callout" style="display:none;" class="callout">
+      <svg width="18" height="18" fill="none" stroke="#f87171" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+      <span><strong>CTR</strong> is not available for this channel — it requires YouTube Studio impression data which isn't exposed via the Analytics API for all channel types.</span>
+    </div>
+
+    <!-- KPI Cards -->
+    <div id="kpi-grid"></div>
+
+    <!-- Views & Reach + Engagement Breakdown -->
+    <div class="charts-grid">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+          <span class="card-title">Views &amp; Reach</span>
+          <div id="vr-legend" style="display:flex;gap:16px;"></div>
+        </div>
+        <div style="position:relative;height:240px;"><canvas id="chart-vr"></canvas></div>
+      </div>
+      <div class="card">
+        <div style="margin-bottom:18px;"><span class="card-title">Engagement Breakdown</span></div>
+        <div style="position:relative;height:240px;"><canvas id="chart-eng"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Top Posts -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <span class="card-title">Top Performing Posts</span>
+        <select id="sort-select">
+          <option value="views">Sort: Views</option>
+          <option value="likes">Sort: Likes</option>
+          <option value="shares">Sort: Shares</option>
+          <option value="engagement_rate">Sort: Engagement Rate</option>
+        </select>
+      </div>
+      <div id="posts-container"></div>
+    </div>
+
+  </div><!-- /tab-analytics -->
+
+  <!-- ══ Insights Tab ══ -->
+  <div class="tab-panel" id="tab-insights">
+
+    <!-- Channel Trajectory + Best Day to Post -->
+    <div class="charts-grid">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+          <div>
+            <span class="card-title">Channel Trajectory</span>
+            <p style="font-size:11px;color:#334155;margin-top:3px;">Views per post over time — is the channel growing?</p>
+          </div>
+          <div id="traj-legend" style="display:flex;gap:12px;"></div>
+        </div>
+        <div style="position:relative;height:260px;"><canvas id="chart-traj"></canvas></div>
+      </div>
+      <div class="card">
+        <div style="margin-bottom:18px;">
+          <span class="card-title">Best Day to Post</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views per video by day published</p>
+        </div>
+        <div style="position:relative;height:260px;"><canvas id="chart-bestday"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Posting Calendar + Top Keywords -->
+    <div class="charts-grid-half">
+      <div class="card">
+        <div style="margin-bottom:16px;">
+          <span class="card-title">Posting Cadence</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Last 16 weeks — darker = more posts</p>
+        </div>
+        <div id="cal-container"></div>
+      </div>
+      <div class="card" id="keywords-section">
+        <div style="margin-bottom:18px;">
+          <span class="card-title">Title Keywords</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Words that appear in 2+ videos, ranked by avg views</p>
+        </div>
+        <div style="position:relative;height:260px;"><canvas id="chart-keywords"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Keyword Gap -->
+    <div class="charts-grid-half" id="keyword-gap-section">
+      <div class="card">
+        <div style="margin-bottom:16px;">
+          <span class="card-title">Keyword Gap — Try These Next</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Words in your top-performing videos, missing from your recent 10 titles</p>
+        </div>
+        <div id="kw-gap-list"></div>
+      </div>
+      <div class="card">
+        <div style="margin-bottom:16px;">
+          <span class="card-title">Low-Performing Keywords</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Words you use often but underperform channel average</p>
+        </div>
+        <div id="kw-used-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /tab-insights -->
+
+  <!-- ══ Growth Tab ══ -->
+  <div class="tab-panel" id="tab-growth">
+
+    <!-- All-time banner -->
+    <div id="alltime-banner"></div>
+
+    <!-- Revenue + Milestones -->
+    <div class="charts-grid-half">
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <span class="card-title">Revenue Estimator</span>
+            <p style="font-size:11px;color:#334155;margin-top:3px;">YouTube ad revenue estimate — adjust CPM for your audience</p>
+          </div>
+          <div class="tip-wrap" style="cursor:help;">
+            <span class="tip-icon">?</span>
+            <div class="tip" style="width:260px;">CPM (cost per mille) = what advertisers pay per 1,000 views. Biblical/history content typically earns $3–$8. Adjust to match your YouTube Studio actuals.</div>
+          </div>
+        </div>
+        <div id="revenue-inner"></div>
+      </div>
+      <div class="card">
+        <div style="margin-bottom:16px;">
+          <span class="card-title">Milestones</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Progress to your next goals — ETA based on recent growth rate</p>
+        </div>
+        <div id="milestones-inner"></div>
+      </div>
+    </div>
+
+    <!-- Subscriber Growth -->
+    <div class="card" id="sub-growth-section">
+      <div style="margin-bottom:18px;">
+        <span class="card-title">Subscriber &amp; Follower Growth</span>
+        <p style="font-size:11px;color:#334155;margin-top:3px;">Tracked every 6 hours</p>
+      </div>
+      <div id="sub-growth-inner"></div>
+    </div>
+
+  </div><!-- /tab-growth -->
+
+  <!-- ══ Pipeline Tab ══ -->
+  <div class="tab-panel" id="tab-pipeline">
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+        <div>
+          <span class="card-title">Content Pipeline</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Drag cards between stages to track your content from idea to published</p>
+        </div>
+        <button id="pipeline-new-btn" style="background:#818cf8;border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:7px 14px;cursor:pointer;">+ New Idea</button>
+      </div>
+      <div class="pipeline-board" id="pipeline-board"></div>
+    </div>
+
+    <!-- Upload Checklist -->
+    <div class="card" id="checklist-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <span class="card-title">Upload Checklist</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Run through this before every publish — check off as you go, resets each session</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span id="checklist-progress" style="font-size:11px;color:#475569;"></span>
+          <button id="checklist-reset" style="background:#0f1a2e;border:1px solid #1a2740;border-radius:7px;color:#64748b;font-size:11px;padding:6px 12px;cursor:pointer;">Reset</button>
+          <button id="checklist-add-btn" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;padding:6px 12px;cursor:pointer;">+ Add Item</button>
+        </div>
+      </div>
+      <div id="checklist-progress-bar" style="height:4px;background:#0f1a2e;border-radius:4px;overflow:hidden;margin-bottom:18px;">
+        <div id="checklist-progress-fill" style="height:100%;background:linear-gradient(90deg,#818cf8,#4ade80);border-radius:4px;transition:width .4s ease;width:0%;"></div>
+      </div>
+      <div id="checklist-body"></div>
+      <div id="checklist-add-form" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #1a2740;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input id="checklist-new-label" type="text" placeholder="New checklist item…"
+            style="flex:1;background:#080d14;border:1px solid #1a2740;border-radius:7px;color:#e2e8f0;font-size:12px;padding:8px 10px;min-width:200px;outline:none;">
+          <select id="checklist-new-cat" style="background:#080d14;border:1px solid #1a2740;border-radius:7px;color:#e2e8f0;font-size:12px;padding:8px 10px;">
+            <option value="metadata">Metadata</option>
+            <option value="visuals">Visuals</option>
+            <option value="engagement">Engagement</option>
+            <option value="promotion">Promotion</option>
+            <option value="accessibility">Accessibility</option>
+            <option value="general">General</option>
+          </select>
+          <button id="checklist-save-new" style="background:#4ade80;border:none;border-radius:7px;color:#000;font-size:11px;font-weight:700;padding:8px 14px;cursor:pointer;">Save</button>
+          <button id="checklist-cancel-new" style="background:#0f1a2e;border:1px solid #1a2740;border-radius:7px;color:#64748b;font-size:11px;padding:8px 12px;cursor:pointer;">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-pipeline -->
+
+  <!-- ══ Comments Tab ══ -->
+  <div class="tab-panel" id="tab-comments">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <span class="card-title">Comments Explorer</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Latest comments across your YouTube channel</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input id="comments-search" type="text" placeholder="Search comments…"
+            style="background:#080d14;border:1px solid #1a2740;border-radius:7px;color:#e2e8f0;font-size:12px;padding:7px 12px;width:200px;outline:none;">
+          <select id="comments-order" style="background:#080d14;border:1px solid #1a2740;border-radius:7px;color:#e2e8f0;font-size:12px;padding:7px 10px;">
+            <option value="time">Newest First</option>
+            <option value="relevance">Top Comments</option>
+          </select>
+          <button id="comments-load-btn" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;padding:7px 14px;cursor:pointer;">Load</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="comments-filter-btn active" data-sentiment="all">All</button>
+        <button class="comments-filter-btn" data-sentiment="positive">👍 Positive</button>
+        <button class="comments-filter-btn" data-sentiment="question">❓ Questions</button>
+        <button class="comments-filter-btn" data-sentiment="critical">👎 Critical</button>
+      </div>
+      <div id="comments-stats" style="display:flex;gap:16px;margin-bottom:14px;"></div>
+      <div id="comments-list"></div>
+      <div id="comments-more" style="text-align:center;margin-top:14px;display:none;">
+        <button id="comments-load-more" style="background:#0f1a2e;border:1px solid #1a2740;border-radius:7px;color:#64748b;font-size:11px;padding:8px 20px;cursor:pointer;">Load more</button>
+      </div>
+    </div>
+  </div><!-- /tab-comments -->
+
+  <!-- ══ AI Ideas Tab ══ -->
+  <div class="tab-panel" id="tab-ideas">
+    <div class="card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;">
+        <div>
+          <span class="card-title">AI Idea Generator</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Claude analyses your top performers & keywords to generate ranked video ideas</p>
+        </div>
+        <div id="ideas-api-warning" style="display:none;background:#f8717114;border:1px solid #f8717144;border-radius:8px;padding:8px 12px;font-size:11px;color:#f87171;max-width:320px;">
+          Add your <strong>ANTHROPIC_API_KEY</strong> to <code>.env</code> to enable this feature.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+        <input id="ideas-angle" type="text" placeholder="Optional focus (e.g. 'ancient Egypt', 'New Testament mysteries')…"
+          style="flex:1;min-width:220px;background:#080d14;border:1px solid #1a2740;border-radius:8px;color:#e2e8f0;font-size:12px;padding:9px 12px;outline:none;">
+        <select id="ideas-count" style="background:#080d14;border:1px solid #1a2740;border-radius:8px;color:#e2e8f0;font-size:12px;padding:9px 12px;">
+          <option value="5">5 ideas</option>
+          <option value="8" selected>8 ideas</option>
+          <option value="12">12 ideas</option>
+        </select>
+        <button id="ideas-generate-btn" style="background:linear-gradient(135deg,#818cf8,#6366f1);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:9px 20px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;">
+          <span id="ideas-btn-icon">✨</span> Generate Ideas
+        </button>
+      </div>
+
+      <div id="ideas-output" style="display:none;">
+        <div id="ideas-stream" style="font-size:13px;color:#cbd5e1;line-height:1.7;white-space:pre-wrap;font-family:inherit;"></div>
+        <div id="ideas-cards" style="display:flex;flex-direction:column;gap:12px;margin-top:4px;"></div>
+      </div>
+      <div id="ideas-empty" style="text-align:center;padding:48px 20px;color:#334155;">
+        <div style="font-size:40px;margin-bottom:12px;">🤖</div>
+        <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:6px;">Ready to generate ideas</div>
+        <div style="font-size:11px;color:#334155;">Claude will analyse your top videos and suggest ideas tailored to your channel</div>
+      </div>
+    </div>
+  </div><!-- /tab-ideas -->
+
+  <!-- ══ Thumbnails Tab ══ -->
+  <div class="tab-panel" id="tab-thumbnails">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <span class="card-title">Thumbnail Gallery</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Visual patterns in what's working — spot trends in style, color & composition</p>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <select id="thumb-sort" style="background:#080d14;border:1px solid #1a2740;border-radius:7px;color:#e2e8f0;font-size:12px;padding:7px 10px;">
+            <option value="views">Sort: Most Views</option>
+            <option value="engagement_rate">Sort: Engagement Rate</option>
+            <option value="likes">Sort: Most Likes</option>
+            <option value="published_at">Sort: Newest First</option>
+          </select>
+          <div class="btn-group" id="thumb-size-group">
+            <button class="btn-filter active" data-size="medium">Medium</button>
+            <button class="btn-filter" data-size="large">Large</button>
+            <button class="btn-filter" data-size="small">Small</button>
+          </div>
+        </div>
+      </div>
+      <div id="thumb-grid"></div>
+    </div>
+  </div><!-- /tab-thumbnails -->
+
+  <!-- Thumbnail Modal (global) -->
+  <div id="thumb-modal" onclick="if(event.target===this)this.classList.remove('open')"></div>
+
+  <!-- Pipeline Modal (global, outside panels) -->
+  <div id="pipeline-modal">
+    <div class="pipeline-modal-box">
+      <div class="pm-title" id="pm-title-text">New Content Idea</div>
+      <div class="pm-field">
+        <label class="pm-label">Title / Idea</label>
+        <input class="pm-input" id="pm-title" type="text" placeholder="e.g. The Real Story of King Hezekiah" />
+      </div>
+      <div class="pm-row">
+        <div class="pm-field">
+          <label class="pm-label">Stage</label>
+          <select class="pm-input" id="pm-stage">
+            <option value="idea">Idea</option>
+            <option value="scripting">Scripting</option>
+            <option value="filming">Filming</option>
+            <option value="editing">Editing</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+        <div class="pm-field">
+          <label class="pm-label">Platform</label>
+          <select class="pm-input" id="pm-platform">
+            <option value="">Both</option>
+            <option value="youtube">YouTube</option>
+            <option value="instagram">Instagram</option>
+          </select>
+        </div>
+      </div>
+      <div class="pm-field">
+        <label class="pm-label">Target Date</label>
+        <input class="pm-input" id="pm-date" type="date" />
+      </div>
+      <div class="pm-field">
+        <label class="pm-label">Notes</label>
+        <textarea class="pm-input" id="pm-notes" rows="3" placeholder="Research links, angle, hook idea…" style="resize:vertical;font-family:inherit;"></textarea>
+      </div>
+      <div class="pm-actions">
+        <button class="pm-cancel" id="pm-cancel">Cancel</button>
+        <button class="pm-save" id="pm-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+const state = { platform: 'all', range: 30, sort: 'views', cpm: 3.50 };
+const charts = {};
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function fmtNum(n) {
+  if (n == null) return '--';
+  n = Number(n);
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+  if (n >= 10_000)    return Math.round(n / 1_000) + 'K';
+  if (n >= 1_000)     return (n / 1_000).toFixed(1) + 'K';
+  return n.toLocaleString();
+}
+function fmtPct(n)  { return n == null ? '--' : Number(n).toFixed(2) + '%'; }
+function fmtCtr(n)  { return n == null ? '--' : Number(n).toFixed(1) + '%'; }
+function fmtDuration(secs) {
+  if (secs == null) return '--';
+  const s = Math.round(Number(secs));
+  const m = Math.floor(s / 60), r = s % 60;
+  return m + ':' + String(r).padStart(2,'0');
+}
+function fmtWatchTime(mins) {
+  if (mins == null) return '--';
+  const m = Math.round(Number(mins));
+  const h = m / 60;
+  if (h >= 1000) return (h / 1000).toFixed(1) + 'Kh';
+  if (h >= 1)    return Math.round(h).toLocaleString() + 'h';
+  return m.toLocaleString() + 'm';
+}
+function parseDate(s) { if (!s) return null; const d = new Date(s); return isNaN(d.getTime()) ? null : d; }
+function fmtDate(s) {
+  const d = parseDate(s); if (!d) return '';
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+}
+function fmtDateLong(s) {
+  const d = parseDate(s); if (!d) return '—';
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+function fmtMonthYear(s) {
+  const d = parseDate(s); if (!d) return '—';
+  return d.toLocaleDateString('en-US', { month:'short', year:'numeric' });
+}
+function fillDates(daily, range) {
+  const map = {};
+  daily.forEach(d => { map[d.date] = d; });
+  return Array.from({ length: range }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (range - 1 - i));
+    const key = d.toISOString().split('T')[0];
+    return map[key] || { date:key, views:0, reach:0, likes:0, comments:0, shares:0, saves:0, er:0 };
+  });
+}
+function changeBadge(change, period) {
+  if (change == null) return '<span class="neutral" style="font-size:11px;">—</span>';
+  const up  = change >= 0;
+  const cls = up ? 'up' : 'down';
+  const arr = up ? '↑' : '↓';
+  const p   = period ? `<span class="kpi-period">vs prev ${period}d</span>` : '';
+  return `<span class="change-badge ${cls}">${arr} ${Math.abs(change)}%</span>${p}`;
+}
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+window.thumbErr = function(img) {
+  img.style.display = 'none';
+  const ph = img.parentElement.querySelector('.thumb-ph');
+  if (ph) ph.style.display = 'flex';
+};
+
+// ── Card configs per platform ─────────────────────────────────────────────
+const SVG = {
+  eye:      '<path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>',
+  reach:    '<path d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>',
+  heart:    '<path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>',
+  users:    '<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>',
+  share:    '<path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>',
+  bookmark: '<path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>',
+  thumb:    '<path d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>',
+  chat:     '<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>',
+  clock:    '<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+  cursor:   '<path d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5"/>',
+  film:     '<path d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"/>',
+};
+
+const CARDS_ALL = [
+  { key:'views',           label:'Unique Viewers',  sparkKey:'views',  color:'#818cf8', bg:'rgba(99,102,241,.12)',  fmt:fmtNum,  icon:SVG.eye,
+    tip:'Total views/plays across all your content in the selected period.' },
+  { key:'reach',           label:'Reach',           sparkKey:'reach',  color:'#a78bfa', bg:'rgba(139,92,246,.12)',  fmt:fmtNum,  icon:SVG.reach,
+    tip:'Unique accounts that saw your content. Instagram only — YouTube does not expose this via the Data API.' },
+  { key:'engagement_rate', label:'Engagement Rate', sparkKey:'er',     color:'#fb7185', bg:'rgba(251,113,133,.12)', fmt:fmtPct,  icon:SVG.heart,
+    tip:'IG: (likes+comments+shares+saves) ÷ reach × 100. YT: (likes+comments) ÷ views × 100.' },
+  { key:'followers',       label:'Followers',       sparkKey:null,     color:'#34d399', bg:'rgba(52,211,153,.12)',  fmt:fmtNum,  icon:SVG.users,
+    tip:'Your current audience: Instagram followers + YouTube subscribers. Filter by platform to see each.' },
+  { key:'shares',          label:'Shares',          sparkKey:'shares', color:'#fbbf24', bg:'rgba(251,191,36,.12)',  fmt:fmtNum,  icon:SVG.share,
+    tip:'Times your posts were shared. Instagram only — YouTube does not expose share counts.' },
+  { key:'saves',           label:'Saves',           sparkKey:'saves',  color:'#60a5fa', bg:'rgba(96,165,250,.12)',  fmt:fmtNum,  icon:SVG.bookmark,
+    tip:'Times people saved your post to revisit later. Instagram only.' },
+];
+const CARDS_YT = [
+  { key:'views',              label:'Total Views',       sparkKey:'views',   color:'#818cf8', bg:'rgba(99,102,241,.12)',  fmt:fmtNum,       icon:SVG.eye,
+    tip:'Total view count across your YouTube videos in the selected period.' },
+  { key:'watch_time_minutes', label:'Watch Time',        sparkKey:null,      color:'#a78bfa', bg:'rgba(139,92,246,.12)',  fmt:fmtWatchTime,  icon:SVG.film,
+    tip:'Total minutes watched across all your videos in this period (YouTube Analytics).' },
+  { key:'ctr',                label:'Click-Through Rate',sparkKey:null,      color:'#fb7185', bg:'rgba(251,113,133,.12)', fmt:fmtCtr,       icon:SVG.cursor,
+    tip:'Avg % of people who clicked your video after seeing the thumbnail. Not available for this channel type.' },
+  { key:'followers',          label:'Subscribers',       sparkKey:null,      color:'#34d399', bg:'rgba(52,211,153,.12)',  fmt:fmtNum,       icon:SVG.users,
+    tip:'Your current YouTube subscriber count.' },
+  { key:'avg_view_duration',  label:'Avg View Duration', sparkKey:null,      color:'#fbbf24', bg:'rgba(251,191,36,.12)',  fmt:fmtDuration,  icon:SVG.clock,
+    tip:'Average seconds viewers watched per video in this period (YouTube Analytics).' },
+  { key:'engagement_rate',    label:'Engagement Rate',   sparkKey:'er',      color:'#60a5fa', bg:'rgba(96,165,250,.12)',  fmt:fmtPct,       icon:SVG.heart,
+    tip:'(Likes + Comments) ÷ Views × 100 averaged across videos in this period.' },
+];
+const CARDS_IG = [
+  { key:'views',           label:'Reel Views',      sparkKey:'views',  color:'#818cf8', bg:'rgba(99,102,241,.12)',  fmt:fmtNum,  icon:SVG.eye,
+    tip:'Total plays on your Instagram Reels in the selected period.' },
+  { key:'reach',           label:'Reach',           sparkKey:'reach',  color:'#a78bfa', bg:'rgba(139,92,246,.12)',  fmt:fmtNum,  icon:SVG.reach,
+    tip:'Unique accounts that saw your content at least once.' },
+  { key:'engagement_rate', label:'Engagement Rate', sparkKey:'er',     color:'#fb7185', bg:'rgba(251,113,133,.12)', fmt:fmtPct,  icon:SVG.heart,
+    tip:'(Likes + Comments + Shares + Saves) ÷ Reach × 100.' },
+  { key:'followers',       label:'Followers',       sparkKey:null,     color:'#34d399', bg:'rgba(52,211,153,.12)',  fmt:fmtNum,  icon:SVG.users,
+    tip:'Your current Instagram follower count.' },
+  { key:'shares',          label:'Shares',          sparkKey:'shares', color:'#fbbf24', bg:'rgba(251,191,36,.12)',  fmt:fmtNum,  icon:SVG.share,
+    tip:'Times your Reels were shared to other accounts or DMs.' },
+  { key:'saves',           label:'Saves',           sparkKey:'saves',  color:'#60a5fa', bg:'rgba(96,165,250,.12)',  fmt:fmtNum,  icon:SVG.bookmark,
+    tip:'Times people saved your post to their collections.' },
+];
+
+function getCards() {
+  if (state.platform === 'youtube')   return CARDS_YT;
+  if (state.platform === 'instagram') return CARDS_IG;
+  return CARDS_ALL;
+}
+
+// ── Revenue Estimator ─────────────────────────────────────────────────────
+let _revAlltime = null, _revKpis = null;
+
+function renderRevenue(alltime, kpis) {
+  if (alltime) _revAlltime = alltime;
+  if (kpis)    _revKpis    = kpis;
+  if (!_revAlltime || !_revKpis) return;
+
+  const inner = document.getElementById('revenue-inner');
+
+  const fmtMoney = n => n >= 1000
+    ? '$' + (n / 1000).toFixed(1) + 'K'
+    : '$' + Math.round(n).toLocaleString();
+
+  // Build HTML only once
+  if (!document.getElementById('cpm-slider')) {
+    const pct = Math.min(100, Math.round(((state.cpm - 0.5) / 14.5) * 100));
+    inner.innerHTML = `
+      <div style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:11px;color:#475569;font-weight:600;">CPM RATE</span>
+          <span id="cpm-display" style="font-size:18px;font-weight:800;color:#818cf8;"></span>
+        </div>
+        <input id="cpm-slider" type="range" class="cpm-slider"
+          min="0.5" max="15" step="0.25" value="${state.cpm}"
+          style="--pct:${pct}%;">
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:#334155;font-weight:600;margin-top:2px;">
+          <span>$0.50 <span style="color:#475569;">(low)</span></span>
+          <span style="color:#475569;">Typical: $3–$8</span>
+          <span>$15 <span style="color:#475569;">(premium)</span></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:4px;">
+        <div class="rev-stat">
+          <div class="rev-stat-label">This period</div>
+          <div class="rev-stat-value" id="rev-period"></div>
+          <div class="rev-stat-sub" id="rev-period-sub"></div>
+        </div>
+        <div style="width:1px;background:#1a2740;"></div>
+        <div class="rev-stat">
+          <div class="rev-stat-label">Projected / mo</div>
+          <div class="rev-stat-value" id="rev-proj" style="color:#fbbf24;"></div>
+          <div class="rev-stat-sub" id="rev-proj-sub"></div>
+        </div>
+        <div style="width:1px;background:#1a2740;"></div>
+        <div class="rev-stat">
+          <div class="rev-stat-label">All-time est.</div>
+          <div class="rev-stat-value" id="rev-total" style="color:#a78bfa;"></div>
+          <div class="rev-stat-sub" id="rev-total-sub"></div>
+        </div>
+      </div>`;
+
+    document.getElementById('cpm-slider').addEventListener('input', function() {
+      state.cpm = parseFloat(this.value);
+      const p = Math.min(100, Math.round(((state.cpm - 0.5) / 14.5) * 100));
+      this.style.setProperty('--pct', p + '%');
+      updateRevenueNumbers();
+    });
+  }
+
+  updateRevenueNumbers();
+}
+
+function updateRevenueNumbers() {
+  if (!_revAlltime || !_revKpis) return;
+  const totalViews = Number(_revAlltime.views) || 0;
+  const monthViews = Number(_revKpis.views?.value) || 0;
+  const cpm        = state.cpm;
+  const dailyViews = monthViews > 0 ? monthViews / state.range : 0;
+
+  const fmtMoney = n => n >= 1000
+    ? '$' + (n / 1000).toFixed(1) + 'K'
+    : '$' + Math.round(n).toLocaleString();
+
+  const el = id => document.getElementById(id);
+  if (!el('cpm-display')) return;
+  el('cpm-display').textContent    = '$' + cpm.toFixed(2);
+  el('rev-period').textContent     = fmtMoney((monthViews / 1000) * cpm);
+  el('rev-period-sub').textContent = fmtNum(monthViews) + ' views × $' + cpm.toFixed(2);
+  el('rev-proj').textContent       = fmtMoney((dailyViews * 30 / 1000) * cpm);
+  el('rev-proj-sub').textContent   = fmtNum(Math.round(dailyViews * 30)) + ' projected views';
+  el('rev-total').textContent      = fmtMoney((totalViews / 1000) * cpm);
+  el('rev-total-sub').textContent  = fmtNum(totalViews) + ' total views';
+}
+
+// ── Milestone Tracker ─────────────────────────────────────────────────────
+function renderMilestones(alltime, kpis, follYT, follIG) {
+  const inner = document.getElementById('milestones-inner');
+  if (!alltime) return;
+
+  const totalViews  = Number(alltime.views)    || 0;
+  const totalLikes  = Number(alltime.likes)    || 0;
+  const ytSubs      = follYT  || 0;
+  const igFollowers = follIG  || 0;
+
+  // Growth rates from current period
+  const monthViews = Number(kpis?.views?.value) || 0;
+  const monthLikes = Number(kpis?.likes?.value) || 0;
+  const viewsPerDay = monthViews > 0 ? monthViews / state.range : 0;
+  const likesPerDay = monthLikes > 0 ? monthLikes / state.range : 0;
+
+  // Sub growth: rough estimate — assume ~1.3% of views convert to subs
+  const subRatePerDay = viewsPerDay * 0.013;
+
+  function nextMilestone(current, ...steps) {
+    for (const s of steps) if (current < s) return s;
+    return steps[steps.length - 1] * 2;
+  }
+
+  function eta(current, target, ratePerDay) {
+    if (!ratePerDay || target <= current) return null;
+    const days = Math.ceil((target - current) / ratePerDay);
+    if (days > 730) return '2+ years';
+    if (days > 365) return `~${(days/365).toFixed(1)}y`;
+    if (days > 60)  return `~${Math.round(days/30)}mo`;
+    return `~${days}d`;
+  }
+
+  function milestoneBar(label, current, target, ratePerDay, color) {
+    const pct    = Math.min(100, (current / target) * 100);
+    const etaTxt = eta(current, target, ratePerDay);
+    return `
+      <div class="milestone">
+        <div class="milestone-header">
+          <span class="milestone-label">${label}</span>
+          <span class="milestone-eta">${etaTxt ? etaTxt : '<span style="color:#475569;">tracking…</span>'}</span>
+        </div>
+        <div class="milestone-bar-bg">
+          <div class="milestone-bar-fill" style="width:${pct}%;background:${color};"></div>
+        </div>
+        <div class="milestone-vals">
+          <span style="color:#94a3b8;">${fmtNum(current)} now</span>
+          <span>${Math.round(pct)}% → ${fmtNum(target)}</span>
+        </div>
+      </div>`;
+  }
+
+  const combined       = ytSubs + igFollowers;
+  const combinedTarget = nextMilestone(combined, 100000, 150000, 200000, 250000, 500000, 1000000);
+  const viewTarget     = nextMilestone(totalViews, 6e6, 10e6, 25e6, 50e6, 100e6);
+  const ytSubTarget    = nextMilestone(ytSubs, 100000, 250000, 500000, 1000000);
+  const igTarget       = nextMilestone(igFollowers, 10000, 25000, 50000, 100000, 150000, 250000, 500000);
+
+  // Estimate IG follower growth rate (~0.8% of IG views/day converts)
+  const igViewsPerDay  = viewsPerDay * 0.4; // rough IG share
+  const igRatePerDay   = igViewsPerDay * 0.008;
+  const combinedRate   = subRatePerDay + igRatePerDay;
+
+  inner.innerHTML =
+    milestoneBar(`${fmtNum(combinedTarget)} Combined Following`, combined, combinedTarget, combinedRate, 'linear-gradient(90deg,#818cf8,#f472b6)') +
+    milestoneBar(`${fmtNum(viewTarget)} Total Views`,            totalViews, viewTarget,  viewsPerDay,   '#fbbf24') +
+    milestoneBar(`YouTube 100K Subscribers`,                     ytSubs, ytSubTarget,    subRatePerDay, YT_COLOR) +
+    milestoneBar(`Instagram ${fmtNum(igTarget)} Followers`,      igFollowers, igTarget,  igRatePerDay,  IG_COLOR);
+}
+
+// ── All-time Banner ───────────────────────────────────────────────────────
+function renderAlltimeBanner(data) {
+  const banner = document.getElementById('alltime-banner');
+  if (!data || data.error) { banner.innerHTML = ''; return; }
+
+  const watchLabel = state.platform === 'all'
+    ? 'Watch Hours <span style="font-size:9px;color:#334155;">(YT only)</span>'
+    : 'Watch Hours';
+
+  banner.innerHTML = `
+    <div class="alltime-grid">
+      <div class="alltime-pill">
+        <div class="alltime-label">All-Time Views</div>
+        <div class="alltime-value">${fmtNum(data.views)}</div>
+        <div class="alltime-sub">total across all posts</div>
+      </div>
+      <div class="alltime-pill">
+        <div class="alltime-label">${watchLabel}</div>
+        <div class="alltime-value">${data.watch_hours > 0 ? fmtNum(data.watch_hours) + 'h' : '--'}</div>
+        <div class="alltime-sub">minutes people watched</div>
+      </div>
+      <div class="alltime-pill">
+        <div class="alltime-label">Total Posts</div>
+        <div class="alltime-value">${data.posts != null ? Number(data.posts).toLocaleString() : '--'}</div>
+        <div class="alltime-sub">videos &amp; reels published</div>
+      </div>
+      <div class="alltime-pill">
+        <div class="alltime-label">Total Likes</div>
+        <div class="alltime-value">${fmtNum(data.likes)}</div>
+        <div class="alltime-sub">${fmtNum(data.comments)} comments</div>
+      </div>
+      <div class="alltime-pill">
+        <div class="alltime-label">Active Since</div>
+        <div class="alltime-value" style="font-size:18px;">${fmtMonthYear(data.first_post)}</div>
+        <div class="alltime-sub">first post tracked</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── Platform breakdown row for KPI cards ─────────────────────────────────
+const YT_COLOR = '#818cf8';
+const IG_COLOR = '#f472b6';
+
+function platformBreakdown(key, byPlatform, follYT, follIG) {
+  if (state.platform !== 'all' || !byPlatform) return '';
+  const yt = byPlatform.youtube  || {};
+  const ig = byPlatform.instagram || {};
+  let ytVal, igVal;
+  switch (key) {
+    case 'views':           ytVal = fmtNum(yt.views);   igVal = fmtNum(ig.views);   break;
+    case 'reach':           ytVal = null;                igVal = fmtNum(ig.reach);   break;
+    case 'engagement_rate': ytVal = fmtPct(yt.er);      igVal = fmtPct(ig.er);      break;
+    case 'followers':       ytVal = fmtNum(follYT);     igVal = fmtNum(follIG);     break;
+    case 'likes':           ytVal = fmtNum(yt.likes);   igVal = fmtNum(ig.likes);   break;
+    case 'shares':          ytVal = null;                igVal = fmtNum(ig.shares);  break;
+    case 'saves':           ytVal = null;                igVal = fmtNum(ig.saves);   break;
+    default: return '';
+  }
+  const ytPart = ytVal != null
+    ? `<span style="color:${YT_COLOR};font-size:10px;font-weight:700;">▸ YT&nbsp;${ytVal}</span>` : '';
+  const igPart = igVal != null
+    ? `<span style="color:${IG_COLOR};font-size:10px;font-weight:700;">▸ IG&nbsp;${igVal}</span>` : '';
+  if (!ytPart && !igPart) return '';
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:1px;">${ytPart}${igPart}</div>`;
+}
+
+// ── Render KPIs ───────────────────────────────────────────────────────────
+function renderKPIs(kpis, daily, followersVal, byPlatform, follYT, follIG) {
+  const filled = fillDates(daily, state.range);
+  const grid   = document.getElementById('kpi-grid');
+  grid.innerHTML = '';
+  const cards = getCards();
+
+  cards.forEach((card, i) => {
+    const kpi    = kpis[card.key] || {};
+    const value  = card.key === 'followers' ? followersVal : kpi.value;
+    const change = card.key === 'followers' ? null : kpi.change;
+    const sparkData = card.sparkKey ? filled.map(d => Number(d[card.sparkKey]) || 0) : [];
+    const breakdown = platformBreakdown(card.key, byPlatform, follYT, follIG);
+
+    const el = document.createElement('div');
+    el.className = 'kpi-card';
+    el.innerHTML = `
+      <div class="kpi-accent" style="background:linear-gradient(90deg,${card.color},${card.color}44);"></div>
+      <div class="kpi-header">
+        <div class="kpi-label-row">
+          <span class="kpi-label">${card.label}</span>
+          <div class="tip-wrap">
+            <span class="tip-icon">?</span>
+            <div class="tip">${card.tip}</div>
+          </div>
+        </div>
+        <div class="kpi-icon-wrap" style="background:${card.bg};">
+          <svg width="14" height="14" fill="none" stroke="${card.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${card.icon}</svg>
+        </div>
+      </div>
+      <div class="kpi-value">${card.fmt ? card.fmt(value) : fmtNum(value)}</div>
+      <div class="kpi-meta">${changeBadge(change, state.range)}${breakdown}</div>
+      ${card.sparkKey ? `<div class="kpi-sparkline"><canvas id="sp-${card.key}-${i}"></canvas></div>` : ''}
+    `;
+    grid.appendChild(el);
+
+    if (card.sparkKey && sparkData.length) {
+      const cid = `sp-${card.key}-${i}`;
+      destroyChart(cid);
+      const ctx  = document.getElementById(cid).getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 44);
+      grad.addColorStop(0, card.color + '40');
+      grad.addColorStop(1, card.color + '00');
+      charts[cid] = new Chart(ctx, {
+        type: 'line',
+        data: { labels: filled.map(d=>d.date), datasets: [{ data: sparkData, borderColor: card.color,
+          backgroundColor: grad, fill:true, tension:.4, pointRadius:0, borderWidth:1.5 }] },
+        options: { responsive:true, maintainAspectRatio:false, animation:false,
+          plugins:{ legend:{display:false}, tooltip:{enabled:false} },
+          scales:{ x:{display:false}, y:{display:false, min:0} } }
+      });
+    }
+  });
+}
+
+// ── Views & Reach chart ───────────────────────────────────────────────────
+function renderVRChart(daily, dailyByPlatform) {
+  const filled = fillDates(daily, state.range);
+  destroyChart('vr');
+  const ctx = document.getElementById('chart-vr').getContext('2d');
+  const legend = document.getElementById('vr-legend');
+
+  const mkGrad = (r,g,b,a1,a2) => {
+    const g2 = ctx.createLinearGradient(0,0,0,240);
+    g2.addColorStop(0,`rgba(${r},${g},${b},${a1})`);
+    g2.addColorStop(1,`rgba(${r},${g},${b},${a2})`);
+    return g2;
+  };
+
+  let datasets;
+  if (state.platform === 'all' && dailyByPlatform) {
+    // Split into YT and IG lines
+    const ytFilled = fillDates(Object.values(dailyByPlatform.youtube || {}), state.range);
+    const igFilled = fillDates(Object.values(dailyByPlatform.instagram || {}), state.range);
+    datasets = [
+      { label:'YT Views', data:ytFilled.map(d=>Number(d.views)), borderColor:YT_COLOR,
+        backgroundColor:mkGrad(129,140,248,.3,.0), fill:true, tension:.4, pointRadius:0, pointHoverRadius:5, borderWidth:2.5 },
+      { label:'IG Views', data:igFilled.map(d=>Number(d.views)), borderColor:IG_COLOR,
+        backgroundColor:mkGrad(244,114,182,.2,.0), fill:true, tension:.4, pointRadius:0, pointHoverRadius:5, borderWidth:2 },
+    ];
+    legend.innerHTML = `
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:${YT_COLOR};font-weight:600;">
+        <span style="width:12px;height:2px;background:${YT_COLOR};border-radius:2px;display:inline-block;"></span>YT Views
+      </span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:${IG_COLOR};font-weight:600;">
+        <span style="width:12px;height:2px;background:${IG_COLOR};border-radius:2px;display:inline-block;"></span>IG Views
+      </span>`;
+  } else {
+    datasets = [
+      { label:'Views', data:filled.map(d=>Number(d.views)), borderColor:'#818cf8',
+        backgroundColor:mkGrad(99,102,241,.35,.0), fill:true, tension:.4, pointRadius:0, pointHoverRadius:5, borderWidth:2.5 },
+      { label:'Reach', data:filled.map(d=>Number(d.reach)), borderColor:'#a78bfa',
+        backgroundColor:mkGrad(139,92,246,.25,.0), fill:true, tension:.4, pointRadius:0, pointHoverRadius:5, borderWidth:2 },
+    ];
+    const col2 = state.platform === 'instagram' ? IG_COLOR : '#a78bfa';
+    const lbl2 = state.platform === 'instagram' ? 'Reach' : 'Reach';
+    legend.innerHTML = `
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#818cf8;font-weight:600;">
+        <span style="width:12px;height:2px;background:linear-gradient(90deg,#6366f1,#818cf8);border-radius:2px;display:inline-block;"></span>Views
+      </span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:${col2};font-weight:600;">
+        <span style="width:12px;height:2px;background:${col2};border-radius:2px;display:inline-block;"></span>${lbl2}
+      </span>`;
+  }
+
+  charts['vr'] = new Chart(ctx, {
+    type: 'line',
+    data: { labels: filled.map(d => fmtDate(d.date)), datasets },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ backgroundColor:'#0a1220', borderColor:'#1e2d45', borderWidth:1,
+          titleColor:'#64748b', bodyColor:'#e2e8f0', padding:12,
+          callbacks:{ label: c => ` ${c.dataset.label}: ${fmtNum(c.raw)}` } }
+      },
+      scales:{
+        x:{ grid:{ color:'rgba(30,45,69,.6)' }, ticks:{ color:'#475569', font:{size:11}, maxTicksLimit:8 } },
+        y:{ min:0, grid:{ color:'rgba(30,45,69,.6)' }, ticks:{ color:'#475569', font:{size:11}, callback:fmtNum } }
+      }
+    }
+  });
+}
+
+// ── Engagement chart ──────────────────────────────────────────────────────
+function renderEngChart(daily) {
+  const filled = fillDates(daily, state.range);
+  destroyChart('eng');
+  const ctx = document.getElementById('chart-eng').getContext('2d');
+  charts['eng'] = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels: filled.map(d => fmtDate(d.date)),
+      datasets:[
+        { label:'Likes',    data:filled.map(d=>Number(d.likes)),    backgroundColor:'rgba(244,114,182,.8)', borderRadius:3, stack:'e' },
+        { label:'Comments', data:filled.map(d=>Number(d.comments)), backgroundColor:'rgba(96,165,250,.8)',  borderRadius:3, stack:'e' },
+        { label:'Shares',   data:filled.map(d=>Number(d.shares)),   backgroundColor:'rgba(251,191,36,.8)',  borderRadius:3, stack:'e' },
+        { label:'Saves',    data:filled.map(d=>Number(d.saves)),    backgroundColor:'rgba(52,211,153,.8)',  borderRadius:3, stack:'e' },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:true, position:'bottom',
+          labels:{ color:'#64748b', font:{size:11}, boxWidth:10, padding:14 } },
+        tooltip:{ backgroundColor:'#0a1220', borderColor:'#1e2d45', borderWidth:1,
+          titleColor:'#64748b', bodyColor:'#e2e8f0', padding:12,
+          callbacks:{ label: c => ` ${c.dataset.label}: ${fmtNum(c.raw)}` } }
+      },
+      scales:{
+        x:{ stacked:true, grid:{ display:false }, ticks:{ color:'#475569', font:{size:10}, maxTicksLimit:8 } },
+        y:{ stacked:true, min:0, grid:{ color:'rgba(30,45,69,.6)' }, ticks:{ color:'#475569', font:{size:11}, callback:fmtNum } }
+      }
+    }
+  });
+}
+
+// ── Channel Trajectory ────────────────────────────────────────────────────
+function renderTrajectory(trajectory) {
+  destroyChart('traj');
+  const legend = document.getElementById('traj-legend');
+
+  if (!trajectory || !trajectory.length) {
+    legend.innerHTML = '';
+    return;
+  }
+
+  // Rolling 3-post average
+  const views = trajectory.map(p => Number(p.views));
+  const trend = views.map((_, i) => {
+    const slice = views.slice(Math.max(0, i - 2), i + 1);
+    return Math.round(slice.reduce((a,b)=>a+b,0) / slice.length);
+  });
+
+  const isAll = state.platform === 'all';
+  const ptColors = trajectory.map(p =>
+    p.platform === 'youtube' ? 'rgba(129,140,248,.9)' : 'rgba(244,114,182,.9)'
+  );
+
+  // Legend
+  if (isAll) {
+    legend.innerHTML = `
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#818cf8;font-weight:600;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#818cf8;display:inline-block;"></span>YouTube
+      </span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#f472b6;font-weight:600;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#f472b6;display:inline-block;"></span>Instagram
+      </span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#fbbf24;font-weight:600;">
+        <span style="width:20px;height:2px;background:#fbbf24;border-radius:2px;display:inline-block;opacity:.7;"></span>Trend
+      </span>`;
+  } else {
+    const col = state.platform === 'youtube' ? '#818cf8' : '#f472b6';
+    legend.innerHTML = `
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:${col};font-weight:600;">
+        <span style="width:10px;height:10px;border-radius:50%;background:${col};display:inline-block;"></span>Views per post
+      </span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#fbbf24;font-weight:600;">
+        <span style="width:20px;height:2px;background:#fbbf24;border-radius:2px;display:inline-block;opacity:.7;"></span>Trend
+      </span>`;
+  }
+
+  const ctx = document.getElementById('chart-traj').getContext('2d');
+  charts['traj'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: trajectory.map(p => fmtDate(p.date)),
+      datasets: [
+        {
+          label: 'Views',
+          data: views,
+          borderColor: 'transparent',
+          pointBackgroundColor: ptColors,
+          pointBorderColor: ptColors,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          showLine: false,
+          fill: false,
+          order: 2,
+        },
+        {
+          label: '3-post trend',
+          data: trend,
+          borderColor: 'rgba(251,191,36,.55)',
+          backgroundColor: 'transparent',
+          pointRadius: 0,
+          borderWidth: 2,
+          tension: 0.35,
+          fill: false,
+          order: 1,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          filter: item => item.datasetIndex === 0,
+          callbacks: {
+            title: items => {
+              const p = trajectory[items[0].dataIndex];
+              return (p.title || '').substring(0, 60) + (p.title?.length > 60 ? '…' : '');
+            },
+            label: c => {
+              const p = trajectory[c.dataIndex];
+              return ` ${fmtDate(p.date)} · ${fmtNum(c.raw)} views`;
+            },
+          },
+          backgroundColor:'#0a1220', borderColor:'#1e2d45', borderWidth:1,
+          titleColor:'#e2e8f0', bodyColor:'#94a3b8', padding:12,
+        }
+      },
+      scales: {
+        x: { grid:{color:'rgba(30,45,69,.6)'}, ticks:{color:'#475569',font:{size:10},maxTicksLimit:8} },
+        y: { min:0, grid:{color:'rgba(30,45,69,.6)'}, ticks:{color:'#475569',font:{size:11},callback:fmtNum} }
+      }
+    }
+  });
+}
+
+// ── Best Day to Post ──────────────────────────────────────────────────────
+function renderBestDay(dayofweek, dowByPlatform) {
+  destroyChart('bestday');
+  const ctx = document.getElementById('chart-bestday').getContext('2d');
+  if (!dayofweek || !dayofweek.length) return;
+
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const ORDER     = [1,2,3,4,5,6,0];
+  const dowMap    = {};
+  dayofweek.forEach(d => { dowMap[d.dow] = d; });
+  const labels = ORDER.map(i => DAY_NAMES[i]);
+
+  let datasets;
+  if (state.platform === 'all' && dowByPlatform) {
+    const ytMap = dowByPlatform.youtube   || {};
+    const igMap = dowByPlatform.instagram || {};
+    datasets = [
+      {
+        label: 'YouTube',
+        data:  ORDER.map(i => Number(ytMap[i]?.avg_views || 0)),
+        backgroundColor: `rgba(129,140,248,.75)`,
+        borderRadius: 4, borderSkipped: false,
+      },
+      {
+        label: 'Instagram',
+        data:  ORDER.map(i => Number(igMap[i]?.avg_views || 0)),
+        backgroundColor: `rgba(244,114,182,.75)`,
+        borderRadius: 4, borderSkipped: false,
+      },
+    ];
+  } else {
+    const rows = ORDER.map(i => ({ avg_views: Number(dowMap[i]?.avg_views || 0), count: Number(dowMap[i]?.count || 0) }));
+    const maxV = Math.max(...rows.map(r => r.avg_views), 1);
+    const col  = state.platform === 'instagram' ? IG_COLOR : YT_COLOR;
+    datasets = [{
+      label: 'Avg Views',
+      data:  rows.map(r => r.avg_views),
+      backgroundColor: rows.map(r => {
+        const hex = state.platform === 'instagram' ? '244,114,182' : '99,102,241';
+        return `rgba(${hex},${0.2 + (r.avg_views / maxV) * 0.8})`;
+      }),
+      borderRadius: 6, borderSkipped: false,
+    }];
+  }
+
+  charts['bestday'] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: state.platform === 'all',
+          position: 'top',
+          labels: { color:'#64748b', font:{size:11}, boxWidth:10, padding:12 }
+        },
+        tooltip: {
+          backgroundColor:'#0a1220', borderColor:'#1e2d45', borderWidth:1,
+          titleColor:'#64748b', bodyColor:'#e2e8f0', padding:12,
+          callbacks: { label: c => ` ${c.dataset.label}: ${fmtNum(c.raw)} avg views` }
+        }
+      },
+      scales: {
+        x: { min:0, grid:{color:'rgba(30,45,69,.6)'}, ticks:{color:'#475569',font:{size:11},callback:fmtNum} },
+        y: { grid:{display:false}, ticks:{color:'#e2e8f0',font:{size:13,weight:'600'}} }
+      }
+    }
+  });
+}
+
+// ── Posting Calendar ──────────────────────────────────────────────────────
+function renderCalendar(trajectory) {
+  const NUM_WEEKS = 16;
+  const container = document.getElementById('cal-container');
+
+  // Map of date → post count
+  const postDates = {};
+  (trajectory || []).forEach(p => {
+    const d = (p.date || '').substring(0, 10);
+    if (d) postDates[d] = (postDates[d] || 0) + 1;
+  });
+
+  // Start aligned to Monday, 16 weeks ago
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - NUM_WEEKS * 7);
+  const dow = startDate.getDay();
+  const toMon = dow === 0 ? -6 : 1 - dow;
+  startDate.setDate(startDate.getDate() + toMon);
+
+  // Build weeks[col][row] grid
+  const weeks = [];
+  const cur = new Date(startDate);
+  for (let w = 0; w < NUM_WEEKS; w++) {
+    const week = [];
+    for (let d = 0; d < 7; d++) {
+      const ds = cur.toISOString().split('T')[0];
+      week.push({ date: ds, count: postDates[ds] || 0, future: cur > today });
+      cur.setDate(cur.getDate() + 1);
+    }
+    weeks.push(week);
+  }
+
+  const DAY_LABELS = ['Mon','','Wed','','Fri','','Sun'];
+  let html = '<div class="cal-wrap">';
+
+  // Month labels row
+  html += '<div style="display:flex;gap:3px;padding-left:28px;margin-bottom:4px;">';
+  let lastMonth = -1;
+  weeks.forEach(week => {
+    const month = new Date(week[0].date).getMonth();
+    const lbl = month !== lastMonth
+      ? new Date(week[0].date).toLocaleDateString('en-US',{month:'short'})
+      : '';
+    html += `<div style="flex:1;min-width:10px;max-width:18px;font-size:9px;color:#475569;font-weight:600;overflow:hidden;">${lbl}</div>`;
+    lastMonth = month;
+  });
+  html += '</div>';
+
+  // Day rows
+  for (let d = 0; d < 7; d++) {
+    html += `<div class="cal-row">`;
+    html += `<div class="cal-day-lbl">${DAY_LABELS[d]}</div>`;
+    weeks.forEach(week => {
+      const cell = week[d];
+      let cls = 'cal-cell';
+      if (cell.future)       cls += ' cal-future';
+      else if (cell.count >= 2) cls += ' p3';
+      else if (cell.count === 1) cls += ' p1';
+      const tip = cell.count
+        ? `${cell.count} post${cell.count > 1 ? 's' : ''} — ${cell.date}`
+        : cell.date;
+      html += `<div class="${cls}" title="${tip}"></div>`;
+    });
+    html += '</div>';
+  }
+
+  // Legend
+  html += `<div style="display:flex;align-items:center;gap:5px;margin-top:10px;padding-left:28px;font-size:10px;color:#475569;">
+    <span>None</span>
+    <div style="width:10px;height:10px;border-radius:2px;background:#0f1a2e;"></div>
+    <div style="width:10px;height:10px;border-radius:2px;background:#312e81;"></div>
+    <div style="width:10px;height:10px;border-radius:2px;background:#6366f1;"></div>
+    <span>2+</span>
+  </div>`;
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ── Title Keywords ────────────────────────────────────────────────────────
+function renderKeywords(keywords) {
+  const section = document.getElementById('keywords-section');
+  if (state.platform !== 'youtube') {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+
+  destroyChart('keywords');
+  const ctx = document.getElementById('chart-keywords').getContext('2d');
+
+  if (!keywords || !keywords.length) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    return;
+  }
+
+  // Sort ascending so highest is at top of horizontal bar
+  const sorted = [...keywords].sort((a, b) => a.avg_views - b.avg_views);
+  const maxV = Math.max(...sorted.map(k => k.avg_views), 1);
+
+  charts['keywords'] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(k => k.word),
+      datasets: [{
+        label: 'Avg Views',
+        data:  sorted.map(k => k.avg_views),
+        backgroundColor: sorted.map(k => {
+          const ratio = k.avg_views / maxV;
+          return `rgba(99,102,241,${0.2 + ratio * 0.8})`;
+        }),
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor:'#0a1220', borderColor:'#1e2d45', borderWidth:1,
+          titleColor:'#64748b', bodyColor:'#e2e8f0', padding:12,
+          callbacks: {
+            label: c => {
+              const k = sorted[c.dataIndex];
+              return ` ${fmtNum(c.raw)} avg views (${k.count} videos)`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { min:0, grid:{color:'rgba(30,45,69,.6)'}, ticks:{color:'#475569',font:{size:11},callback:fmtNum} },
+        y: { grid:{display:false}, ticks:{color:'#e2e8f0',font:{size:12,weight:'600'}} }
+      }
+    }
+  });
+}
+
+// ── Subscriber Growth ─────────────────────────────────────────────────────
+function renderSubGrowth(history) {
+  const inner = document.getElementById('sub-growth-inner');
+
+  if (!history || history.length < 2) {
+    inner.innerHTML = `
+      <div class="empty-state">
+        <svg width="32" height="32" fill="none" stroke="#334155" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p>Subscriber history is being collected</p>
+        <small>A snapshot is saved every 6 hours. Check back soon to see your growth chart.</small>
+      </div>`;
+    return;
+  }
+
+  destroyChart('subgrowth');
+  inner.innerHTML = '<div style="position:relative;height:200px;"><canvas id="chart-subgrowth"></canvas></div>';
+  const ctx = document.getElementById('chart-subgrowth').getContext('2d');
+
+  const labels = history.map(d => fmtDate(d.date));
+  const gYT = ctx.createLinearGradient(0,0,0,200);
+  gYT.addColorStop(0,'rgba(129,140,248,.2)'); gYT.addColorStop(1,'rgba(129,140,248,.0)');
+  const gIG = ctx.createLinearGradient(0,0,0,200);
+  gIG.addColorStop(0,'rgba(244,114,182,.2)'); gIG.addColorStop(1,'rgba(244,114,182,.0)');
+
+  charts['subgrowth'] = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label:'YouTube Subscribers', data:history.map(d=>d.youtube||null),
+          borderColor:'#818cf8', backgroundColor:gYT, fill:true, tension:.3, pointRadius:3, borderWidth:2 },
+        { label:'Instagram Followers', data:history.map(d=>d.instagram||null),
+          borderColor:'#f472b6', backgroundColor:gIG, fill:true, tension:.3, pointRadius:3, borderWidth:2 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:true, position:'top', labels:{color:'#64748b',font:{size:11},boxWidth:10,padding:14} },
+        tooltip:{ backgroundColor:'#0a1220', borderColor:'#1e2d45', borderWidth:1,
+          titleColor:'#64748b', bodyColor:'#e2e8f0', padding:12,
+          callbacks:{ label: c => ` ${c.dataset.label}: ${fmtNum(c.raw)}` } }
+      },
+      scales:{
+        x:{ grid:{color:'rgba(30,45,69,.6)'}, ticks:{color:'#475569',font:{size:11},maxTicksLimit:8} },
+        y:{ grid:{color:'rgba(30,45,69,.6)'}, ticks:{color:'#475569',font:{size:11},callback:fmtNum} }
+      }
+    }
+  });
+}
+
+// ── Posts table ───────────────────────────────────────────────────────────
+function renderPosts(posts) {
+  const container = document.getElementById('posts-container');
+  if (!posts.length) {
+    container.innerHTML = '<p style="text-align:center;color:#475569;padding:40px;">No posts in this period.</p>';
+    return;
+  }
+  const table = document.createElement('table');
+  table.className = 'posts-table';
+  const isYT = state.platform === 'youtube';
+  const isAll = state.platform === 'all';
+  const showYT  = isYT || isAll;
+
+  table.innerHTML = `<thead><tr>
+    <th>Post</th><th>Platform</th><th>Date</th>
+    <th class="r">Views</th><th class="r">Likes</th>
+    ${showYT
+      ? '<th class="r">Avg View</th><th class="r">Watch Time</th>'
+      : '<th class="r">Shares</th>'}
+    <th class="r">Eng. Rate</th>
+  </tr></thead>`;
+  const tbody = document.createElement('tbody');
+
+  posts.forEach(p => {
+    const badge = p.platform === 'instagram'
+      ? '<span class="badge badge-ig">IG</span>'
+      : '<span class="badge badge-yt">YT</span>';
+
+    const title = p.title
+      ? `<span style="font-size:13px;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:380px;">${p.title.substring(0,140)}</span>`
+      : `<span style="font-size:13px;color:#475569;font-style:italic;">No caption</span>`;
+
+    const isThisYT = p.platform === 'youtube';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="thumb-wrap">
+            ${p.thumbnail_url ? `<img src="${p.thumbnail_url}" width="52" height="40" onerror="thumbErr(this)">` : ''}
+            <div class="thumb-ph" style="${p.thumbnail_url?'display:none;':''}">
+              <svg width="14" height="14" fill="none" stroke="#475569" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 9 4-4 4 4 4-5 6 8H3z"/></svg>
+            </div>
+          </div>
+          ${title}
+        </div>
+      </td>
+      <td>${badge}</td>
+      <td style="font-size:12px;color:#64748b;white-space:nowrap;">${fmtDateLong(p.published_at)}</td>
+      <td style="text-align:right;font-size:13px;font-weight:700;">${fmtNum(p.views)}</td>
+      <td style="text-align:right;font-size:13px;color:#94a3b8;">${fmtNum(p.likes)}</td>
+      ${showYT
+        ? `<td style="text-align:right;font-size:13px;color:#94a3b8;">${isThisYT && p.avg_view_duration != null ? fmtDuration(p.avg_view_duration) : '—'}</td>
+           <td style="text-align:right;font-size:13px;color:#94a3b8;">${isThisYT && p.watch_time_minutes != null ? fmtWatchTime(p.watch_time_minutes) : '—'}</td>`
+        : `<td style="text-align:right;font-size:13px;color:#94a3b8;">${p.shares != null ? fmtNum(p.shares) : '—'}</td>`
+      }
+      <td style="text-align:right;font-size:13px;color:#94a3b8;">${fmtPct(p.engagement_rate)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  container.innerHTML = '';
+  container.appendChild(table);
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────
+function showLoading() {
+  const grid = document.getElementById('kpi-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const el = document.createElement('div');
+    el.className = 'skeleton'; el.style.height = '150px';
+    grid.appendChild(el);
+  }
+}
+
+// ── Refresh ───────────────────────────────────────────────────────────────
+async function refresh() {
+  showLoading();
+  document.getElementById('yt-callout').style.display = 'none';
+
+  try {
+    const [dash, fol, alltime, insights, subHistory, kwGap] = await Promise.all([
+      fetch(`/api/dashboard?platform=${state.platform}&range=${state.range}&sort=${state.sort}`).then(r=>r.json()),
+      fetch(`/api/followers?platform=${state.platform}`).then(r=>r.json()),
+      fetch(`/api/alltime?platform=${state.platform}`).then(r=>r.json()).catch(()=>({})),
+      fetch(`/api/insights?platform=${state.platform}`).then(r=>r.json()).catch(()=>({})),
+      fetch(`/api/subscribers/history`).then(r=>r.json()).catch(()=>[]),
+      fetch(`/api/keyword-gap`).then(r=>r.json()).catch(()=>({})),
+    ]);
+    if (dash.error) throw new Error(dash.error);
+
+    if (state.platform === 'youtube') {
+      document.getElementById('yt-callout').style.display = 'flex';
+    }
+
+    const byPlatform = dash.by_platform || null;
+    const dailyByPlatform = dash.daily_by_platform || null;
+    const dowByPlatform = insights.dayofweek_by_platform || null;
+
+    renderAlltimeBanner(alltime);
+    renderRevenue(alltime, dash.kpis);
+    renderMilestones(alltime, dash.kpis, fol.youtube, fol.instagram);
+    renderKPIs(dash.kpis, dash.daily, fol.value, byPlatform, fol.youtube, fol.instagram);
+    renderVRChart(dash.daily, dailyByPlatform);
+    renderEngChart(dash.daily);
+    renderTrajectory(insights.trajectory || []);
+    renderBestDay(insights.dayofweek || [], dowByPlatform);
+    renderCalendar(insights.trajectory || []);
+    renderKeywords(insights.keywords || []);
+    renderKeywordGap(kwGap);
+    renderSubGrowth(subHistory || []);
+    renderPosts(dash.posts);
+
+  } catch(err) {
+    document.getElementById('kpi-grid').innerHTML =
+      `<div style="grid-column:1/-1;padding:20px;color:#f87171;background:#0d1524;border:1px solid rgba(248,113,113,.2);border-radius:14px;">
+        Error: ${err.message}
+      </div>`;
+  }
+}
+
+// ── Controls ──────────────────────────────────────────────────────────────
+function setupControls() {
+  document.querySelectorAll('[data-platform]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.platform = btn.dataset.platform;
+      document.querySelectorAll('[data-platform]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); refresh();
+    });
+  });
+  document.querySelectorAll('[data-range]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.range = parseInt(btn.dataset.range);
+      document.querySelectorAll('[data-range]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); refresh();
+    });
+  });
+  document.getElementById('sort-select').addEventListener('change', e => {
+    state.sort = e.target.value; refresh();
+  });
+}
+
+// ── Content Pipeline ──────────────────────────────────────────────────────
+const STAGES = [
+  { key: 'idea',      label: 'Idea',      color: '#64748b' },
+  { key: 'scripting', label: 'Scripting', color: '#fbbf24' },
+  { key: 'filming',   label: 'Filming',   color: '#f97316' },
+  { key: 'editing',   label: 'Editing',   color: '#818cf8' },
+  { key: 'published', label: 'Published', color: '#4ade80' },
+];
+
+let pipelineCards = [];
+let pipelineEditId = null;
+let dragCardId = null;
+
+async function loadPipeline() {
+  try {
+    const r = await fetch('/api/pipeline');
+    pipelineCards = await r.json();
+    renderPipeline();
+  } catch (e) { console.warn('Pipeline load failed:', e.message); }
+}
+
+function renderPipeline() {
+  const board = document.getElementById('pipeline-board');
+  board.innerHTML = STAGES.map(stage => {
+    const cards = pipelineCards.filter(c => c.stage === stage.key);
+    return `
+      <div class="pipeline-col" data-stage="${stage.key}"
+           ondragover="pipelineDragOver(event)" ondrop="pipelineDrop(event)" ondragleave="pipelineDragLeave(event)">
+        <div class="pipeline-col-header">
+          <span class="pipeline-col-title" style="color:${stage.color}">${stage.label}</span>
+          <span class="pipeline-count">${cards.length}</span>
+        </div>
+        ${cards.map(c => pipelineCardHTML(c)).join('')}
+        <button class="pipeline-add-btn" onclick="pipelineOpenModal(null,'${stage.key}')">+ Add</button>
+      </div>`;
+  }).join('');
+}
+
+function pipelineCardHTML(c) {
+  const badgeClass = c.platform === 'youtube' ? 'badge-youtube' : c.platform === 'instagram' ? 'badge-instagram' : 'badge-both';
+  const badgeLabel = c.platform === 'youtube' ? 'YouTube' : c.platform === 'instagram' ? 'Instagram' : 'Both';
+  const dateStr = c.target_date
+    ? `<span class="pipeline-date">🎯 ${c.target_date}</span>`
+    : '';
+  const notesStr = c.notes
+    ? `<div class="pipeline-notes">${escHtml(c.notes)}</div>`
+    : '';
+  return `
+    <div class="pipeline-card" draggable="true" data-id="${c.id}"
+         ondragstart="pipelineDragStart(event,${c.id})"
+         ondragend="pipelineDragEnd(event)">
+      <div class="pipeline-card-actions">
+        <button class="pipeline-act-btn" onclick="pipelineOpenModal(${c.id})">✎</button>
+        <button class="pipeline-act-btn" onclick="pipelineDelete(${c.id})" style="color:#f87171">✕</button>
+      </div>
+      <div class="pipeline-card-title">${escHtml(c.title)}</div>
+      <div class="pipeline-card-meta">
+        <span class="pipeline-badge ${badgeClass}">${badgeLabel}</span>
+        ${dateStr}
+      </div>
+      ${notesStr}
+    </div>`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function pipelineDragStart(e, id) {
+  dragCardId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => e.target.style.opacity = '0.4', 0);
+}
+function pipelineDragEnd(e) {
+  e.target.style.opacity = '';
+  document.querySelectorAll('.pipeline-col').forEach(el => el.classList.remove('drag-over'));
+}
+function pipelineDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+function pipelineDragLeave(e) {
+  if (!e.currentTarget.contains(e.relatedTarget)) {
+    e.currentTarget.classList.remove('drag-over');
+  }
+}
+async function pipelineDrop(e) {
+  e.preventDefault();
+  const col = e.currentTarget;
+  col.classList.remove('drag-over');
+  const newStage = col.dataset.stage;
+  const card = pipelineCards.find(c => c.id == dragCardId);
+  if (!card || card.stage === newStage) return;
+  card.stage = newStage;
+  renderPipeline();
+  await fetch(`/api/pipeline/${dragCardId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ stage: newStage }),
+  });
+}
+
+function pipelineOpenModal(id, defaultStage) {
+  pipelineEditId = id || null;
+  const card = id ? pipelineCards.find(c => c.id == id) : null;
+  document.getElementById('pm-title-text').textContent = card ? 'Edit Card' : 'New Content Idea';
+  document.getElementById('pm-title').value    = card?.title       || '';
+  document.getElementById('pm-stage').value    = card?.stage       || defaultStage || 'idea';
+  document.getElementById('pm-platform').value = card?.platform    || '';
+  document.getElementById('pm-date').value     = card?.target_date || '';
+  document.getElementById('pm-notes').value    = card?.notes       || '';
+  document.getElementById('pipeline-modal').classList.add('open');
+  document.getElementById('pm-title').focus();
+}
+
+function pipelineCloseModal() {
+  document.getElementById('pipeline-modal').classList.remove('open');
+  pipelineEditId = null;
+}
+
+async function pipelineSave() {
+  const payload = {
+    title:       document.getElementById('pm-title').value.trim(),
+    stage:       document.getElementById('pm-stage').value,
+    platform:    document.getElementById('pm-platform').value || null,
+    target_date: document.getElementById('pm-date').value || null,
+    notes:       document.getElementById('pm-notes').value.trim() || null,
+  };
+  if (!payload.title) { document.getElementById('pm-title').focus(); return; }
+  pipelineCloseModal();
+  if (pipelineEditId) {
+    await fetch(`/api/pipeline/${pipelineEditId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } else {
+    await fetch('/api/pipeline', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  }
+  await loadPipeline();
+}
+
+async function pipelineDelete(id) {
+  pipelineCards = pipelineCards.filter(c => c.id !== id);
+  renderPipeline();
+  await fetch(`/api/pipeline/${id}`, { method: 'DELETE' });
+}
+
+// ── Chart.js defaults ─────────────────────────────────────────────────────
+Chart.defaults.color = '#64748b';
+Chart.defaults.borderColor = '#1a2740';
+
+// ── Upload Checklist ──────────────────────────────────────────────────────
+let _checklistItems = [];
+let _checkedIds     = new Set();
+
+const CAT_LABELS = {
+  metadata:'Metadata', visuals:'Visuals', engagement:'Engagement',
+  promotion:'Promotion', accessibility:'Accessibility', general:'General'
+};
+
+async function loadChecklist() {
+  try {
+    _checklistItems = await fetch('/api/checklist').then(r => r.json());
+    renderChecklist();
+  } catch(e) { console.warn('checklist load:', e.message); }
+}
+
+function renderChecklist() {
+  const body = document.getElementById('checklist-body');
+  if (!body) return;
+
+  const total   = _checklistItems.length;
+  const checked = _checkedIds.size;
+  const pct     = total ? Math.round((checked / total) * 100) : 0;
+
+  document.getElementById('checklist-progress').textContent = `${checked}/${total} done`;
+  document.getElementById('checklist-progress-fill').style.width = pct + '%';
+
+  // Group by category
+  const cats = {};
+  for (const item of _checklistItems) {
+    if (!cats[item.category]) cats[item.category] = [];
+    cats[item.category].push(item);
+  }
+
+  const catOrder = ['visuals','metadata','engagement','promotion','accessibility','general'];
+  const sorted   = catOrder.filter(c => cats[c]).concat(Object.keys(cats).filter(c => !catOrder.includes(c)));
+
+  body.innerHTML = sorted.map(cat => `
+    <div class="cl-category">${CAT_LABELS[cat] || cat}</div>
+    ${(cats[cat]||[]).map(item => {
+      const sid       = String(item.id);
+      const isChecked = _checkedIds.has(sid);
+      return `
+        <div class="cl-item${isChecked ? ' checked' : ''}" data-id="${sid}" onclick="toggleCheck('${sid}')">
+          <div class="cl-check${isChecked ? ' checked' : ''}"></div>
+          <span class="cl-label">${escHtml(item.label)}</span>
+          <button class="cl-delete" onclick="event.stopPropagation();deleteChecklistItem('${sid}')">✕</button>
+        </div>`;
+    }).join('')}
+  `).join('');
+}
+
+function toggleCheck(id) {
+  if (_checkedIds.has(id)) _checkedIds.delete(id);
+  else                      _checkedIds.add(id);
+  renderChecklist();
+}
+
+async function deleteChecklistItem(id) {
+  _checklistItems = _checklistItems.filter(i => String(i.id) !== String(id));
+  _checkedIds.delete(String(id));
+  renderChecklist();
+  await fetch(`/api/checklist/${id}`, { method: 'DELETE' });
+}
+
+async function saveChecklistItem() {
+  const label = document.getElementById('checklist-new-label').value.trim();
+  const cat   = document.getElementById('checklist-new-cat').value;
+  if (!label) return;
+  document.getElementById('checklist-add-form').style.display = 'none';
+  document.getElementById('checklist-new-label').value = '';
+  const item = await fetch('/api/checklist', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ label, category: cat }),
+  }).then(r => r.json());
+  _checklistItems.push(item);
+  renderChecklist();
+}
+
+// ── Keyword Gap ───────────────────────────────────────────────────────────
+function renderKeywordGap(data) {
+  const gapEl  = document.getElementById('kw-gap-list');
+  const usedEl = document.getElementById('kw-used-list');
+  if (!gapEl || !usedEl) return;
+
+  const gap  = data?.gap  || [];
+  const used = data?.used || [];
+  const avgV = data?.avgViews || 1;
+
+  const kwRow = (word, views, barColor, pct, badge, badgeClass) => `
+    <div class="kw-row">
+      <span class="kw-word">${word} <span class="kw-badge ${badgeClass}">${badge}</span></span>
+      <div class="kw-bar-wrap"><div class="kw-bar" style="width:${pct}%;background:${barColor};"></div></div>
+      <span class="kw-views">${fmtNum(views)}</span>
+    </div>`;
+
+  if (!gap.length) {
+    gapEl.innerHTML = `<div style="color:#334155;font-size:12px;padding:12px 0;">Not enough data yet — need more YouTube videos.</div>`;
+  } else {
+    const maxV = gap[0].avgViews || 1;
+    gapEl.innerHTML = gap.map(k => kwRow(
+      k.word, k.avgViews, '#4ade80',
+      Math.round((k.avgViews / maxV) * 100),
+      `↑ ${Math.round((k.avgViews / avgV - 1) * 100)}% above avg`,
+      'kw-gap-badge'
+    )).join('');
+  }
+
+  if (!used.length) {
+    usedEl.innerHTML = `<div style="color:#334155;font-size:12px;padding:12px 0;">No underperforming patterns found.</div>`;
+  } else {
+    const maxV = avgV * 0.7;
+    usedEl.innerHTML = used.map(k => kwRow(
+      k.word, k.avgViews, '#f87171',
+      Math.max(5, Math.round((k.avgViews / maxV) * 100)),
+      `${Math.round((1 - k.avgViews / avgV) * 100)}% below avg`,
+      'kw-low-badge'
+    )).join('');
+  }
+}
+
+// ── Comments Explorer ─────────────────────────────────────────────────────
+let _commentsData = [], _commentsNextPage = null, _commentsLoaded = false, _commentsSentiment = 'all';
+
+const POS_WORDS = new Set(['amazing','love','great','awesome','excellent','incredible','best','wonderful','fantastic','thank','thanks','blessed','bless','brilliant','perfect','inspiring','inspired','beautiful','helpful','wow']);
+const NEG_WORDS = new Set(['bad','hate','wrong','boring','terrible','awful','stupid','disagree','incorrect','false','fake','lie','lying','misleading','disappointing','poor','worse','worst','unsubscribe']);
+
+function getSentimentType(text) {
+  const words = text.toLowerCase().split(/\W+/);
+  const pos = words.filter(w => POS_WORDS.has(w)).length;
+  const neg = words.filter(w => NEG_WORDS.has(w)).length;
+  if (neg > pos)          return 'critical';
+  if (pos > 0)            return 'positive';
+  if (text.includes('?')) return 'question';
+  return 'neutral';
+}
+
+function sentimentTag(type) {
+  if (type === 'critical') return '<span class="comment-sentiment sent-neg">👎 Critical</span>';
+  if (type === 'positive') return '<span class="comment-sentiment sent-pos">👍 Positive</span>';
+  if (type === 'question') return '<span class="comment-sentiment sent-q">❓ Question</span>';
+  return '';
+}
+
+function highlightSearch(text, query) {
+  if (!query) return text;
+  const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return text.replace(re, '<span class="comment-highlight">$1</span>');
+}
+
+function timeAgo(iso) {
+  const s = Math.round((Date.now() - new Date(iso)) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  if (s < 2592000) return Math.floor(s/86400) + 'd ago';
+  return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function renderComments() {
+  const query   = document.getElementById('comments-search')?.value.trim().toLowerCase() || '';
+  const list    = document.getElementById('comments-list');
+  const stats   = document.getElementById('comments-stats');
+  if (!list) return;
+
+  // Tag each comment with its sentiment type
+  const tagged = _commentsData.map(c => ({ ...c, _sent: getSentimentType(c.text) }));
+
+  // Filter by search text
+  let filtered = query
+    ? tagged.filter(c => c.text.toLowerCase().includes(query) || c.author.toLowerCase().includes(query))
+    : tagged;
+
+  // Filter by sentiment button
+  if (_commentsSentiment !== 'all') {
+    filtered = filtered.filter(c => c._sent === _commentsSentiment);
+  }
+
+  const totalLikes   = filtered.reduce((s,c) => s + c.likes, 0);
+  const totalReplies = filtered.reduce((s,c) => s + c.replyCount, 0);
+  const questions    = filtered.filter(c => c._sent === 'question').length;
+
+  stats.innerHTML = `
+    <span style="font-size:11px;color:#475569;"><strong style="color:#e2e8f0;">${filtered.length}</strong> shown</span>
+    <span style="font-size:11px;color:#475569;"><strong style="color:#fbbf24;">${totalLikes.toLocaleString()}</strong> likes</span>
+    <span style="font-size:11px;color:#475569;"><strong style="color:#818cf8;">${totalReplies.toLocaleString()}</strong> replies</span>
+    <span style="font-size:11px;color:#475569;"><strong style="color:#4ade80;">${questions}</strong> questions</span>`;
+
+  if (!filtered.length) {
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:#334155;font-size:13px;">No comments found${query ? ' matching "' + query + '"' : ''}.</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(c => `
+    <div class="comment-row">
+      <img class="comment-avatar" src="${c.authorPic}" onerror="this.style.visibility='hidden'" loading="lazy">
+      <div class="comment-body">
+        <div class="comment-author">${escHtml(c.author)} ${sentimentTag(c._sent)}</div>
+        <div class="comment-text">${highlightSearch(escHtml(c.text), query)}</div>
+        <div class="comment-meta">
+          <span>${timeAgo(c.publishedAt)}</span>
+          ${c.likes ? `<span class="cm-likes">♥ ${c.likes.toLocaleString()}</span>` : ''}
+          ${c.replyCount ? `<span class="cm-replies">↩ ${c.replyCount} repl${c.replyCount===1?'y':'ies'}</span>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function loadComments(append = false) {
+  const btn   = document.getElementById('comments-load-btn');
+  const order = document.getElementById('comments-order')?.value || 'time';
+  const list  = document.getElementById('comments-list');
+  if (!list) return;
+
+  if (!append) {
+    _commentsData = [];
+    _commentsNextPage = null;
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:#334155;font-size:13px;">Loading comments…</div>`;
+  }
+
+  if (btn) btn.textContent = 'Loading…';
+
+  try {
+    const params = new URLSearchParams({ limit: 100, order });
+    if (append && _commentsNextPage) params.set('pageToken', _commentsNextPage);
+    const data = await fetch('/api/comments?' + params).then(r => r.json());
+    if (data.error) throw new Error(data.error);
+
+    _commentsData = append ? [..._commentsData, ...data.comments] : data.comments;
+    _commentsNextPage = data.nextPageToken;
+    _commentsLoaded = true;
+
+    document.getElementById('comments-more').style.display = _commentsNextPage ? 'block' : 'none';
+    renderComments();
+  } catch (err) {
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:#f87171;font-size:13px;">${err.message}</div>`;
+  } finally {
+    if (btn) btn.textContent = 'Load';
+  }
+}
+
+// ── Thumbnail Gallery ─────────────────────────────────────────────────────
+let _thumbData = [], _thumbLoaded = false, _thumbSize = 'medium';
+
+async function loadThumbnails() {
+  const sort     = document.getElementById('thumb-sort')?.value || 'views';
+  const platform = state.platform === 'all' ? 'youtube' : state.platform;
+  const grid     = document.getElementById('thumb-grid');
+  if (!grid) return;
+
+  grid.innerHTML = `<div style="text-align:center;padding:48px;color:#334155;font-size:13px;">Loading thumbnails…</div>`;
+
+  try {
+    _thumbData = await fetch(`/api/thumbnails?platform=${platform}&sort=${sort}`).then(r => r.json());
+    _thumbLoaded = true;
+    renderThumbnails();
+  } catch (e) {
+    grid.innerHTML = `<div style="text-align:center;padding:48px;color:#f87171;font-size:13px;">${e.message}</div>`;
+  }
+}
+
+function renderThumbnails() {
+  const grid = document.getElementById('thumb-grid');
+  if (!grid) return;
+  grid.className = `thumb-grid size-${_thumbSize}`;
+
+  if (!_thumbData.length) {
+    grid.innerHTML = `<div style="text-align:center;padding:48px;color:#334155;font-size:13px;">No thumbnails found.</div>`;
+    return;
+  }
+
+  grid.innerHTML = _thumbData.map((v, i) => {
+    const dotColor = v.platform === 'youtube' ? '#818cf8' : '#f472b6';
+    const rank     = i + 1;
+    return `
+      <div class="thumb-card" onclick="openThumbModal(${i})">
+        <div class="thumb-img-wrap">
+          <img class="thumb-img" src="${v.thumbnail_url}" loading="lazy"
+               onerror="this.parentElement.style.background='#1a2740'">
+          <div class="thumb-rank">#${rank}</div>
+          <div class="thumb-platform-dot" style="background:${dotColor};"></div>
+          <div class="thumb-overlay">
+            <span class="thumb-overlay-views">${fmtNum(v.views)} views</span>
+          </div>
+        </div>
+        <div class="thumb-info">
+          <div class="thumb-title">${escHtml(v.title || '—')}</div>
+          <div class="thumb-stats">
+            <span class="thumb-stat"><strong>${fmtNum(v.views)}</strong> views</span>
+            <span class="thumb-stat"><strong>${v.engagement_rate ?? '—'}%</strong> ER</span>
+            <span class="thumb-stat"><strong>${fmtNum(v.likes)}</strong> likes</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openThumbModal(i) {
+  const v = _thumbData[i];
+  if (!v) return;
+  const modal = document.getElementById('thumb-modal');
+  modal.innerHTML = `
+    <div class="thumb-modal-box">
+      <img class="thumb-modal-img" src="${v.thumbnail_url}" onerror="this.style.background='#1a2740'">
+      <div class="thumb-modal-body">
+        <div class="thumb-modal-title">${escHtml(v.title || '—')}</div>
+        <div class="thumb-modal-stats">
+          <div class="thumb-modal-stat">
+            <div class="thumb-modal-stat-label">Views</div>
+            <div class="thumb-modal-stat-value">${fmtNum(v.views)}</div>
+          </div>
+          <div class="thumb-modal-stat">
+            <div class="thumb-modal-stat-label">Likes</div>
+            <div class="thumb-modal-stat-value">${fmtNum(v.likes)}</div>
+          </div>
+          <div class="thumb-modal-stat">
+            <div class="thumb-modal-stat-label">Comments</div>
+            <div class="thumb-modal-stat-value">${fmtNum(v.comments)}</div>
+          </div>
+          <div class="thumb-modal-stat">
+            <div class="thumb-modal-stat-label">Eng. Rate</div>
+            <div class="thumb-modal-stat-value">${v.engagement_rate ?? '—'}%</div>
+          </div>
+          ${v.watch_time_minutes ? `
+          <div class="thumb-modal-stat">
+            <div class="thumb-modal-stat-label">Watch Time</div>
+            <div class="thumb-modal-stat-value">${fmtWatchTime(v.watch_time_minutes)}</div>
+          </div>` : ''}
+          <div class="thumb-modal-stat">
+            <div class="thumb-modal-stat-label">Published</div>
+            <div class="thumb-modal-stat-value" style="font-size:12px;">${new Date(v.published_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+          </div>
+        </div>
+        <div class="thumb-modal-actions">
+          ${v.post_id && v.platform === 'youtube' ? `<a href="https://youtube.com/watch?v=${v.post_id}" target="_blank" rel="noopener"><button class="thumb-modal-btn" style="background:#818cf8;color:#fff;">Watch on YouTube ↗</button></a>` : ''}
+          <button class="thumb-modal-btn" style="background:#0f1a2e;border:1px solid #1a2740;color:#64748b;" onclick="document.getElementById('thumb-modal').classList.remove('open')">Close</button>
+        </div>
+      </div>
+    </div>`;
+  modal.classList.add('open');
+}
+
+// ── AI Idea Generator ─────────────────────────────────────────────────────
+function parseIdeas(text) {
+  // Parse numbered ideas from the streamed text
+  const ideas = [];
+  const blocks = text.split(/\n(?=\d+\. )/).filter(b => b.trim());
+  for (const block of blocks) {
+    const lines = block.trim().split('\n');
+    const titleLine = lines[0].replace(/^\d+\.\s*/, '').trim();
+    let hook = '', angle = '';
+    for (const line of lines.slice(1)) {
+      if (/^hook:/i.test(line)) hook = line.replace(/^hook:\s*/i, '').trim();
+      else if (/^angle:/i.test(line)) angle = line.replace(/^angle:\s*/i, '').trim();
+    }
+    if (titleLine) ideas.push({ title: titleLine, hook, angle });
+  }
+  return ideas;
+}
+
+function renderIdeaCards(ideas) {
+  const container = document.getElementById('ideas-cards');
+  container.innerHTML = ideas.map((idea, i) => `
+    <div class="idea-card">
+      <div class="idea-num">Idea ${i + 1}</div>
+      <div class="idea-title">${escHtml(idea.title)}</div>
+      ${idea.hook ? `<div class="idea-label">Why it'll perform</div><div class="idea-text">${escHtml(idea.hook)}</div>` : ''}
+      ${idea.angle ? `<div class="idea-label">Storytelling angle</div><div class="idea-text">${escHtml(idea.angle)}</div>` : ''}
+      <div class="idea-actions">
+        <button class="idea-action-btn idea-add-btn" onclick="ideaAddToPipeline(${i})">+ Add to Pipeline</button>
+        <button class="idea-action-btn idea-copy-btn" onclick="ideaCopy(${i})">Copy title</button>
+      </div>
+    </div>`).join('');
+}
+
+let _lastIdeas = [];
+
+async function generateIdeas() {
+  const btn      = document.getElementById('ideas-generate-btn');
+  const icon     = document.getElementById('ideas-btn-icon');
+  const stream   = document.getElementById('ideas-stream');
+  const cards    = document.getElementById('ideas-cards');
+  const output   = document.getElementById('ideas-output');
+  const empty    = document.getElementById('ideas-empty');
+  const angle    = document.getElementById('ideas-angle').value.trim();
+  const count    = parseInt(document.getElementById('ideas-count').value);
+
+  btn.disabled = true;
+  icon.textContent = '⏳';
+  btn.classList.add('ideas-generating');
+  stream.textContent = '';
+  cards.innerHTML = '';
+  output.style.display = 'block';
+  empty.style.display = 'none';
+  stream.style.display = 'block';
+
+  try {
+    const resp = await fetch('/api/ideas/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ angle, count }),
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: resp.statusText }));
+      if (err.error?.includes('ANTHROPIC_API_KEY')) {
+        document.getElementById('ideas-api-warning').style.display = 'block';
+      }
+      stream.textContent = 'Error: ' + (err.error || resp.statusText);
+      return;
+    }
+
+    // Read the streamed text
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      fullText += chunk;
+      stream.textContent = fullText;
+      stream.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+    // Once complete, parse into cards
+    stream.style.display = 'none';
+    _lastIdeas = parseIdeas(fullText);
+    if (_lastIdeas.length) renderIdeaCards(_lastIdeas);
+    else stream.style.display = 'block'; // fallback: show raw text
+
+  } catch (err) {
+    stream.textContent = 'Error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    icon.textContent = '✨';
+    btn.classList.remove('ideas-generating');
+  }
+}
+
+function ideaAddToPipeline(i) {
+  const idea = _lastIdeas[i];
+  if (!idea) return;
+  // Pre-fill the pipeline modal and switch to pipeline tab
+  switchTab('pipeline');
+  setTimeout(() => {
+    pipelineOpenModal(null, 'idea');
+    document.getElementById('pm-title').value = idea.title;
+    document.getElementById('pm-platform').value = 'youtube';
+    if (idea.hook || idea.angle) {
+      document.getElementById('pm-notes').value = [
+        idea.hook && 'Hook: ' + idea.hook,
+        idea.angle && 'Angle: ' + idea.angle,
+      ].filter(Boolean).join('\n\n');
+    }
+  }, 50);
+}
+
+function ideaCopy(i) {
+  const idea = _lastIdeas[i];
+  if (!idea) return;
+  navigator.clipboard.writeText(idea.title).catch(() => {});
+  // Brief visual feedback
+  const btns = document.querySelectorAll('.idea-copy-btn');
+  const btn = btns[i];
+  if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy title', 1200); }
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────
+let activeTab = 'analytics';
+
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+
+  // Show/hide analytics controls (platform + date) — hidden on Pipeline tab
+  const controls = document.querySelector('.controls');
+  if (controls) controls.style.visibility = tab === 'pipeline' ? 'hidden' : '';
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  setupControls();
+  refresh();
+  loadPipeline();
+
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.dataset.tab);
+      if (btn.dataset.tab === 'comments'   && !_commentsLoaded) loadComments();
+      if (btn.dataset.tab === 'thumbnails' && !_thumbLoaded)    loadThumbnails();
+    });
+  });
+
+  // Comments
+  document.getElementById('comments-load-btn').addEventListener('click', () => loadComments());
+  document.getElementById('comments-load-more').addEventListener('click', () => loadComments(true));
+  document.getElementById('comments-search').addEventListener('input', renderComments);
+  document.getElementById('comments-order').addEventListener('change', () => { _commentsLoaded = false; loadComments(); });
+  document.querySelectorAll('.comments-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _commentsSentiment = btn.dataset.sentiment;
+      document.querySelectorAll('.comments-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+      renderComments();
+    });
+  });
+
+  // Thumbnails
+  document.getElementById('thumb-sort').addEventListener('change', () => { _thumbLoaded = false; loadThumbnails(); });
+  document.querySelectorAll('#thumb-size-group .btn-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _thumbSize = btn.dataset.size;
+      document.querySelectorAll('#thumb-size-group .btn-filter').forEach(b => b.classList.toggle('active', b === btn));
+      renderThumbnails();
+    });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.getElementById('thumb-modal')?.classList.remove('open');
+      pipelineCloseModal();
+    }
+  });
+
+  // AI Ideas
+  document.getElementById('ideas-generate-btn').addEventListener('click', generateIdeas);
+  document.getElementById('ideas-angle').addEventListener('keydown', e => { if (e.key === 'Enter') generateIdeas(); });
+
+  // Checklist
+  loadChecklist();
+  document.getElementById('checklist-add-btn').addEventListener('click', () => {
+    const f = document.getElementById('checklist-add-form');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+    if (f.style.display !== 'none') document.getElementById('checklist-new-label').focus();
+  });
+  document.getElementById('checklist-cancel-new').addEventListener('click', () => {
+    document.getElementById('checklist-add-form').style.display = 'none';
+  });
+  document.getElementById('checklist-save-new').addEventListener('click', saveChecklistItem);
+  document.getElementById('checklist-new-label').addEventListener('keydown', e => {
+    if (e.key === 'Enter') saveChecklistItem();
+    if (e.key === 'Escape') document.getElementById('checklist-add-form').style.display = 'none';
+  });
+  document.getElementById('checklist-reset').addEventListener('click', () => {
+    _checkedIds.clear(); renderChecklist();
+  });
+
+  document.getElementById('pipeline-new-btn').addEventListener('click', () => pipelineOpenModal(null));
+  document.getElementById('pm-cancel').addEventListener('click', pipelineCloseModal);
+  document.getElementById('pm-save').addEventListener('click', pipelineSave);
+  document.getElementById('pipeline-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) pipelineCloseModal();
+  });
+  document.getElementById('pm-title').addEventListener('keydown', e => {
+    if (e.key === 'Enter') pipelineSave();
+    if (e.key === 'Escape') pipelineCloseModal();
+  });
+});
+</script>
+</body>
+</html>

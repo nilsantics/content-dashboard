@@ -1,0 +1,17 @@
+{
+  "name": "content-dashboard-sync",
+  "version": "1.0.0",
+  "description": "Cron job to sync Instagram and YouTube metrics to Supabase",
+  "main": "sync.js",
+  "scripts": {
+    "start": "node sync.js",
+    "sync-once": "node sync.js --once"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "node-cron": "^3.0.3",
+    "pg": "^8.13.1"
+  }
+}
