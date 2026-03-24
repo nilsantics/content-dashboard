@@ -10,9 +10,9 @@ const app = express();
 
 // Support Vercel-Supabase integration vars, manual DATABASE_URL, or build from parts
 const connectionString =
+  process.env.DATABASE_URL ||
   process.env.POSTGRES_URL ||
   process.env.POSTGRES_URL_NON_POOLING ||
-  process.env.DATABASE_URL ||
   (process.env.POSTGRES_HOST
     ? `postgresql://${process.env.POSTGRES_USER}:${encodeURIComponent(process.env.POSTGRES_PASSWORD)}@${process.env.POSTGRES_HOST}/${process.env.POSTGRES_DATABASE || 'postgres'}`
     : null);
@@ -21,6 +21,29 @@ const pool = new Pool({
   connectionString,
   ssl: { rejectUnauthorized: false },
 });
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS content_analytics (
+    id               BIGSERIAL PRIMARY KEY,
+    platform         TEXT NOT NULL,
+    post_id          TEXT NOT NULL UNIQUE,
+    title            TEXT,
+    thumbnail_url    TEXT,
+    published_at     TIMESTAMPTZ,
+    views            BIGINT DEFAULT 0,
+    likes            BIGINT DEFAULT 0,
+    comments         BIGINT DEFAULT 0,
+    shares           BIGINT,
+    saves            BIGINT,
+    reach            BIGINT,
+    engagement_rate  NUMERIC(6,2),
+    ctr              NUMERIC(6,2),
+    avg_view_duration INT,
+    watch_time_minutes BIGINT,
+    yt_impressions   BIGINT,
+    updated_at       TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('content_analytics init:', err.message));
 
 pool.query(`
   CREATE TABLE IF NOT EXISTS subscriber_snapshots (
