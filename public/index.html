@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nils Glenn's Dashboard</title>
+  <title>Content Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -448,22 +448,50 @@
     .pipeline-card:hover .pipeline-card-actions { display:flex; }
     .pipeline-act-btn { background:#0f1a2e; border:1px solid #1a2740; border-radius:4px; color:#64748b; font-size:10px; padding:2px 5px; cursor:pointer; }
     .pipeline-act-btn:hover { color:#e2e8f0; border-color:#334155; }
-    /* Modal */
-    #pipeline-modal { display:none; position:fixed; inset:0; background:#00000080; z-index:1000; align-items:center; justify-content:center; }
-    #pipeline-modal.open { display:flex; }
-    .pipeline-modal-box { background:#0d1524; border:1px solid #1a2740; border-radius:14px; padding:24px; width:380px; max-width:95vw; }
-    .pm-title { font-size:13px; font-weight:700; color:#e2e8f0; margin-bottom:18px; }
-    .pm-field { margin-bottom:12px; }
-    .pm-label { font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px; display:block; }
-    .pm-input { width:100%; background:#080d14; border:1px solid #1a2740; border-radius:7px; color:#e2e8f0; font-size:12px; padding:8px 10px; box-sizing:border-box; }
-    .pm-input:focus { outline:none; border-color:#818cf8; }
-    .pm-row { display:flex; gap:8px; }
-    .pm-row .pm-field { flex:1; }
-    .pm-actions { display:flex; gap:8px; margin-top:4px; }
-    .pm-save { flex:1; background:#818cf8; border:none; border-radius:7px; color:#fff; font-size:12px; font-weight:700; padding:9px; cursor:pointer; }
-    .pm-save:hover { background:#6366f1; }
-    .pm-cancel { background:#0f1a2e; border:1px solid #1a2740; border-radius:7px; color:#64748b; font-size:12px; padding:9px 14px; cursor:pointer; }
-    .pm-cancel:hover { color:#e2e8f0; }
+    /* Card Detail Panel (Notion-style) */
+    #card-detail-overlay { display:none; position:fixed; inset:0; background:#00000060; z-index:990; }
+    #card-detail-panel { position:fixed; right:0; top:0; bottom:0; width:620px; max-width:100vw; background:#0d1524; border-left:1px solid #1a2740; z-index:1000; display:none; flex-direction:column; box-shadow:-12px 0 48px rgba(0,0,0,.5); }
+    #card-detail-panel.open { display:flex; }
+    .cdp-header { padding:18px 24px 14px; border-bottom:1px solid #1a2740; display:flex; gap:10px; align-items:flex-start; }
+    .cdp-title-input { background:none; border:none; font-size:17px; font-weight:700; color:#e2e8f0; flex:1; outline:none; font-family:inherit; line-height:1.35; padding:0; }
+    .cdp-title-input::placeholder { color:#334155; }
+    .cdp-header-btns { display:flex; gap:6px; flex-shrink:0; padding-top:2px; }
+    .cdp-meta-bar { display:flex; gap:8px; align-items:center; padding:10px 24px; border-bottom:1px solid #1a2740; flex-wrap:wrap; }
+    .cdp-meta-sel { background:#080d14; border:1px solid #1a2740; border-radius:6px; color:#94a3b8; font-size:11px; padding:4px 7px; cursor:pointer; font-family:inherit; }
+    .cdp-meta-sel:focus { outline:none; border-color:#818cf8; }
+    .cdp-date-input { background:#080d14; border:1px solid #1a2740; border-radius:6px; color:#94a3b8; font-size:11px; padding:4px 7px; font-family:inherit; }
+    .cdp-date-input:focus { outline:none; border-color:#818cf8; }
+    .cdp-body { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
+    #cdp-notes { flex:1; min-height:480px; width:100%; background:none; border:none; color:#cbd5e1; font-size:13.5px; font-family:inherit; line-height:1.75; resize:none; outline:none; padding:20px 24px; box-sizing:border-box; }
+    #cdp-notes::placeholder { color:#1e2d45; }
+    .cdp-preview { flex:1; min-height:480px; padding:20px 24px; color:#cbd5e1; font-size:13.5px; line-height:1.75; }
+    .cdp-footer { padding:12px 24px; border-top:1px solid #1a2740; display:flex; gap:8px; justify-content:flex-end; }
+    .cdp-btn-primary { background:#818cf8; border:none; border-radius:7px; color:#fff; font-size:12px; font-weight:700; padding:8px 20px; cursor:pointer; font-family:inherit; }
+    .cdp-btn-primary:hover { background:#6366f1; }
+    .cdp-btn-secondary { background:#0f1a2e; border:1px solid #1a2740; border-radius:7px; color:#64748b; font-size:12px; padding:8px 14px; cursor:pointer; font-family:inherit; }
+    .cdp-btn-secondary:hover { color:#e2e8f0; }
+    .cdp-preview-toggle { background:#0f1a2e; border:1px solid #1a2740; border-radius:6px; color:#64748b; font-size:11px; padding:3px 10px; cursor:pointer; font-family:inherit; }
+    .cdp-preview-toggle:hover { color:#818cf8; border-color:#818cf8; }
+    /* Markdown preview */
+    .cdp-preview h1 { font-size:18px; font-weight:700; color:#e2e8f0; margin:0 0 10px; }
+    .cdp-preview h2 { font-size:15px; font-weight:700; color:#e2e8f0; margin:16px 0 6px; }
+    .cdp-preview h3 { font-size:13px; font-weight:600; color:#94a3b8; margin:12px 0 4px; }
+    .cdp-preview strong { color:#e2e8f0; font-weight:700; }
+    .cdp-preview em { color:#94a3b8; }
+    .cdp-preview code { background:#1a2740; padding:1px 5px; border-radius:4px; font-size:12px; color:#818cf8; font-family:monospace; }
+    .cdp-preview pre { background:#080d14; border:1px solid #1a2740; border-radius:7px; padding:12px 14px; margin:8px 0; overflow-x:auto; }
+    .cdp-preview pre code { background:none; padding:0; font-size:12px; }
+    .cdp-preview blockquote { border-left:3px solid #818cf8; padding-left:12px; color:#64748b; margin:8px 0; }
+    .cdp-preview ul { padding-left:18px; margin:6px 0; }
+    .cdp-preview ol { padding-left:18px; margin:6px 0; }
+    .cdp-preview li { margin:3px 0; }
+    .cdp-preview hr { border:none; border-top:1px solid #1a2740; margin:14px 0; }
+    .cdp-preview a { color:#818cf8; }
+    .cdp-preview p { margin:0 0 8px; }
+    .md-check-item { display:flex; align-items:center; gap:8px; margin:4px 0; list-style:none; }
+    .md-check-item input[type=checkbox] { width:14px; height:14px; cursor:pointer; accent-color:#818cf8; }
+    .md-check-item.checked span { text-decoration:line-through; color:#475569; }
+    .pipeline-card-note-preview { font-size:10px; color:#334155; margin-top:5px; line-height:1.4; border-top:1px solid #1a2740; padding-top:5px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
 
     /* ── Thumbnail Gallery ── */
     .thumb-grid { display:grid; gap:12px; }
@@ -606,6 +634,16 @@
     .channel-stat-lbl { font-size:10px; color:#475569; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
     .channel-del { position:absolute; top:12px; right:12px; background:none; border:none; color:#334155; cursor:pointer; font-size:16px; line-height:1; }
     .channel-del:hover { color:#f87171; }
+    .channel-videos-btn { background:none; border:1px solid #1e2d45; border-radius:8px; color:#64748b; font-size:11px; font-weight:600; padding:5px 10px; cursor:pointer; width:100%; text-align:left; transition:border-color .2s,color .2s; }
+    .channel-videos-btn:hover { border-color:#6366f1; color:#818cf8; }
+    .channel-videos-panel { border-top:1px solid #1a2740; margin-top:4px; padding-top:10px; display:flex; flex-direction:column; gap:8px; }
+    .comp-video-row { display:flex; align-items:center; gap:10px; cursor:pointer; }
+    .comp-video-row:hover .comp-video-title { color:#818cf8; }
+    .comp-video-thumb { width:72px; height:40px; object-fit:cover; border-radius:5px; flex-shrink:0; background:#1a2740; }
+    .comp-video-info { flex:1; min-width:0; }
+    .comp-video-title { font-size:12px; color:#cbd5e1; font-weight:600; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .comp-video-meta  { font-size:10px; color:#475569; margin-top:2px; }
+    .comp-video-score { font-size:11px; font-weight:800; padding:2px 7px; border-radius:6px; flex-shrink:0; }
     .add-competitor-row { display:flex; gap:8px; margin-bottom:20px; }
     .add-competitor-input { flex:1; background:#0f1a2e; border:1px solid #1e2d45; border-radius:10px; color:#e2e8f0; font-size:13px; padding:9px 14px; }
     .add-competitor-input:focus { outline:none; border-color:#6366f1; }
@@ -682,6 +720,75 @@
     body.light .lab-suggestion-pill { background:#f8fafc; border-color:#e2e8f0; color:#475569; }
     body.light .lab-suggestion-pill:hover { border-color:#6366f1; color:#0f172a; }
     /* ── Outlier tab ── */
+    /* Outlier filter bar */
+    .outlier-filter-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; padding:12px 14px; background:#07111f; border:1px solid #1e2d45; border-radius:12px; }
+    body.light .outlier-filter-bar { background:#f8fafc; border-color:#e2e8f0; }
+    .outlier-filter-group { display:flex; align-items:center; gap:6px; }
+    .outlier-filter-label { font-size:10px; color:#475569; font-weight:600; text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
+    .score-filter-btn { padding:4px 10px; border-radius:6px; border:1px solid #1e2d45; background:transparent; color:#64748b; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; }
+    .score-filter-btn.active { background:#6366f1; border-color:#6366f1; color:#fff; }
+    .score-filter-btn:hover:not(.active) { border-color:#6366f155; color:#94a3b8; }
+    body.light .score-filter-btn { border-color:#e2e8f0; color:#475569; }
+    body.light .score-filter-btn.active { background:#6366f1; color:#fff; }
+    .outlier-topic-input { background:#0f1a2e; border:1px solid #1e2d45; color:#e2e8f0; font-size:12px; padding:5px 10px; border-radius:7px; outline:none; width:100%; min-width:0; }
+    body.light .outlier-topic-input { background:#fff; border-color:#e2e8f0; color:#0f172a; }
+    .outlier-select { background:#0f1a2e; border:1px solid #1e2d45; color:#e2e8f0; font-size:12px; padding:5px 8px; border-radius:7px; cursor:pointer; }
+    body.light .outlier-select { background:#fff; border-color:#e2e8f0; color:#0f172a; }
+    .outlier-search-btn { padding:5px 14px; border-radius:7px; border:1px solid #6366f1; background:#6366f1; color:#fff; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .outlier-search-btn:hover { background:#4f46e5; }
+    .outlier-shuffle-btn { padding:5px 10px; border-radius:7px; border:1px solid #1e2d45; background:transparent; color:#64748b; font-size:14px; cursor:pointer; transition:all .15s; }
+    .outlier-shuffle-btn:hover { border-color:#6366f1; color:#818cf8; }
+    .outlier-mode-btn { padding:5px 12px; border-radius:7px; border:1px solid #1e2d45; background:transparent; color:#64748b; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap; }
+    .outlier-mode-btn.active { background:#6366f122; border-color:#6366f1; color:#818cf8; }
+    .outlier-mode-btn:hover:not(.active) { border-color:#334155; color:#94a3b8; }
+    body.light .outlier-mode-btn { border-color:#e2e8f0; color:#475569; }
+    body.light .outlier-mode-btn.active { background:#6366f115; border-color:#6366f1; color:#6366f1; }
+    /* Outlier grid */
+    .yt-outlier-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+    @media (max-width:1200px) { .yt-outlier-grid { grid-template-columns:repeat(4,1fr); } }
+    @media (max-width:900px)  { .yt-outlier-grid { grid-template-columns:repeat(3,1fr); } }
+    @media (max-width:600px)  { .yt-outlier-grid { grid-template-columns:repeat(2,1fr); } }
+    .yt-grid-card { background:#07111f; border:1px solid #1e2d45; border-radius:10px; overflow:hidden; cursor:pointer; transition:border-color .18s,transform .18s; text-decoration:none; display:block; }
+    .yt-grid-card:hover { border-color:#6366f155; transform:translateY(-2px); }
+    body.light .yt-grid-card { background:#fff; border-color:#e2e8f0; }
+    .yt-grid-thumb { position:relative; aspect-ratio:16/9; overflow:hidden; background:#1a2740; }
+    .yt-grid-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+    .yt-duration-badge { position:absolute; bottom:5px; right:5px; background:rgba(0,0,0,.82); color:#fff; font-size:10px; font-weight:600; padding:2px 5px; border-radius:4px; letter-spacing:.02em; }
+    .yt-score-badge { position:absolute; top:6px; left:6px; font-size:11px; font-weight:800; padding:2px 8px; border-radius:5px; line-height:1.4; }
+    .yt-score-10x { background:#ef4444; color:#fff; }
+    .yt-score-5x  { background:#f97316; color:#fff; }
+    .yt-score-2x  { background:#eab308; color:#000; }
+    .yt-score-1x  { background:#22c55e; color:#fff; }
+    .yt-grid-info { padding:11px 12px 13px; }
+    .yt-grid-title-row { display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; }
+    .yt-grid-title { font-size:13px; font-weight:600; color:#f1f5f9; line-height:1.45; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:38px; }
+    body.light .yt-grid-title { color:#0f172a; }
+    .yt-grid-chan { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
+    .yt-grid-avatar { width:22px; height:22px; border-radius:50%; object-fit:cover; flex-shrink:0; background:#1e3a5f; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#818cf8; }
+    .yt-grid-chan-name { font-size:11px; color:#64748b; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px; }
+    .yt-grid-subs { font-size:11px; color:#475569; white-space:nowrap; }
+    .yt-grid-stats { font-size:11px; color:#475569; margin-bottom:3px; }
+    .yt-grid-avg { font-size:11px; color:#475569; }
+    .outlier-loading { grid-column:1/-1; text-align:center; padding:60px 20px; color:#475569; font-size:13px; }
+    /* Tooltips */
+    .tooltip-wrap { position:relative; cursor:help; }
+    .tooltip-wrap::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:#1e2d45; color:#e2e8f0; font-size:11px; padding:6px 10px; border-radius:7px; white-space:normal; width:200px; z-index:200; pointer-events:none; opacity:0; transition:opacity .15s; border:1px solid #2d4060; line-height:1.4; }
+    .tooltip-wrap:hover::after { opacity:1; }
+    /* Score badge — inline next to title */
+    .yt-score-pill { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; font-size:12px; font-weight:800; padding:4px 9px; border-radius:6px; line-height:1; cursor:help; white-space:nowrap; margin-top:2px; }
+    .yt-sp-fire { background:#ef4444; color:#fff; }
+    .yt-sp-hot  { background:#f97316; color:#fff; }
+    .yt-sp-good { background:#eab308; color:#000; }
+    .yt-sp-ok   { background:#22c55e; color:#fff; }
+    .yt-sp-avg  { background:#64748b; color:#fff; }
+    /* Legacy list cards (My Channel mode) */
+    .yt-outlier-card { display:grid; grid-template-columns:180px 1fr auto; gap:16px; align-items:center; background:#07111f; border:1px solid #1e2d45; border-radius:12px; padding:12px 16px; transition:border-color .15s; }
+    .yt-outlier-card:hover { border-color:#6366f155; }
+    body.light .yt-outlier-card { background:#f8fafc; border-color:#e2e8f0; }
+    .yt-channel-row { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+    .yt-channel-avatar { width:24px; height:24px; border-radius:50%; object-fit:cover; background:#1a2740; flex-shrink:0; }
+    .yt-channel-name { font-size:11px; color:#64748b; font-weight:600; }
+    .yt-channel-subs { font-size:10px; color:#475569; }
     .outlier-hero { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
     .outlier-stat { background:#07111f; border:1px solid #1e2d45; border-radius:12px; padding:16px; text-align:center; }
     body.light .outlier-stat { background:#f8fafc; border-color:#e2e8f0; }
@@ -741,12 +848,12 @@
     body.light .tab-btn { color:#64748b; }
     body.light .tab-btn.active { color:#6366f1; border-bottom-color:#6366f1; }
 
-    /* ── Login Modal ── */
-    #login-modal, #upgrade-modal {
+    /* ── Modals ── */
+    #upgrade-modal {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7);
       z-index: 2000; align-items: center; justify-content: center;
     }
-    #login-modal.open, #upgrade-modal.open { display: flex; }
+    #upgrade-modal.open { display: flex; }
     .modal-card {
       background: #0d1524; border: 1px solid #1a2740; border-radius: 16px;
       padding: 32px; width: 380px; max-width: 95vw; position: relative;
@@ -776,6 +883,21 @@
     }
     .modal-submit:hover { opacity: .9; }
     .modal-error { font-size: 12px; color: #f87171; margin-top: 10px; display: none; }
+    .google-signin-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 11px; border-radius: 9px; border: 1px solid #2d3f5c;
+      background: #0d1b2e; color: #e2e8f0; font-size: 13px; font-weight: 600;
+      cursor: pointer; text-decoration: none; font-family: inherit;
+      transition: border-color .15s, background .15s; margin-bottom: 4px;
+    }
+    .google-signin-btn:hover { border-color: #6366f1; background: #111f35; }
+    body.light .google-signin-btn { background: #fff; border-color: #e2e8f0; color: #0f172a; }
+    body.light .google-signin-btn:hover { border-color: #6366f1; }
+    .modal-divider { display: flex; align-items: center; gap: 10px; margin: 12px 0; color: #475569; font-size: 11px; }
+    .modal-divider::before, .modal-divider::after { content: ''; flex: 1; height: 1px; background: #1e2d45; }
+    body.light .modal-divider::before, body.light .modal-divider::after { background: #e2e8f0; }
+    /* Sidebar user avatar */
+    .sidebar-user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 
     /* ── Upgrade Modal ── */
     .upgrade-card-wrap { display: flex; gap: 14px; margin: 20px 0; flex-wrap: wrap; }
@@ -801,9 +923,13 @@
     }
     .upgrade-btn:hover { opacity: .9; }
     .upgrade-modal-wide { width: 560px; }
+    /* ── Toast ── */
+    #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#1e2d45; color:#e2e8f0; font-size:13px; font-weight:600; padding:10px 20px; border-radius:10px; border:1px solid #2d3f55; box-shadow:0 4px 20px rgba(0,0,0,.4); z-index:9999; transition:transform .3s cubic-bezier(.34,1.56,.64,1), opacity .3s; opacity:0; pointer-events:none; white-space:nowrap; }
+    #toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
   </style>
 </head>
 <body>
+<div id="toast"></div>
 
 <!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
 <aside class="sidebar">
@@ -820,14 +946,6 @@
     </div>
   </div>
 
-  <!-- Login -->
-  <div class="sidebar-section">
-    <button class="sidebar-login-btn" id="login-btn" onclick="openLoginModal()">
-      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      Sign In
-    </button>
-    <div class="sidebar-user-info" id="sidebar-user-info" style="display:none;"></div>
-  </div>
 
   <div class="sidebar-divider"></div>
 
@@ -958,6 +1076,11 @@
     <!-- KPI Cards -->
     <div id="kpi-grid"></div>
 
+    <!-- Latest Video Widget -->
+    <div id="latest-video-wrap" style="display:none;margin-bottom:4px;">
+      <div class="card" id="latest-video-card"></div>
+    </div>
+
     <!-- Views & Reach + Engagement Breakdown -->
     <div class="charts-grid">
       <div class="card">
@@ -982,6 +1105,7 @@
           <option value="likes">Sort: Likes</option>
           <option value="shares">Sort: Shares</option>
           <option value="engagement_rate">Sort: Engagement Rate</option>
+          <option value="published_at">Sort: Date</option>
         </select>
       </div>
       <div id="posts-container"></div>
@@ -1384,70 +1508,68 @@
 
   <!-- ══ Outliers Tab ══ -->
   <div class="tab-panel" id="tab-outliers">
-    <!-- Mode toggle -->
-    <div style="display:flex;gap:10px;margin-bottom:16px;">
-      <button class="outlier-mode-btn active" id="mode-btn-mine" onclick="setOutlierMode('mine')">📊 My Channel</button>
-      <button class="outlier-mode-btn" id="mode-btn-yt" onclick="setOutlierMode('youtube')">🌍 YouTube Search</button>
+
+    <!-- Filter bar -->
+    <div class="outlier-filter-bar">
+      <div class="outlier-filter-group" style="flex:1;min-width:160px;">
+        <span class="outlier-filter-label tooltip-wrap" data-tip="Search for a specific topic or niche. Leave empty to discover variety across YouTube.">Topic ⓘ</span>
+        <input id="yt-outlier-q" class="outlier-topic-input" placeholder="Any niche… or leave empty for variety" onkeydown="if(event.key==='Enter')searchYTOutliers()" />
+      </div>
+      <div class="outlier-filter-group">
+        <span class="outlier-filter-label tooltip-wrap" data-tip="Filter by when the video was published. Triggers a fresh fetch from YouTube.">Published ⓘ</span>
+        <button class="score-filter-btn active" data-date="" onclick="setDateFilter('',this)">All</button>
+        <button class="score-filter-btn" data-date="1m"  onclick="setDateFilter('1m',this)">1mo</button>
+        <button class="score-filter-btn" data-date="3m"  onclick="setDateFilter('3m',this)">3mo</button>
+        <button class="score-filter-btn" data-date="6m"  onclick="setDateFilter('6m',this)">6mo</button>
+        <button class="score-filter-btn" data-date="1y"  onclick="setDateFilter('1y',this)">1yr</button>
+        <button class="score-filter-btn" data-date="2y"  onclick="setDateFilter('2y',this)">2yr</button>
+      </div>
+      <div class="outlier-filter-group">
+        <span class="outlier-filter-label tooltip-wrap" data-tip="Filter by the channel's subscriber count — great for finding small channels that punched way above their weight.">Channel ⓘ</span>
+        <button class="score-filter-btn active" data-subs="" onclick="setSubsFilter('',this)">Any</button>
+        <button class="score-filter-btn" data-subs="small" onclick="setSubsFilter('small',this)">&lt;100K</button>
+        <button class="score-filter-btn" data-subs="mid"   onclick="setSubsFilter('mid',this)">100K–1M</button>
+        <button class="score-filter-btn" data-subs="large" onclick="setSubsFilter('large',this)">&gt;1M</button>
+      </div>
+      <button id="yt-outlier-btn" class="outlier-search-btn" onclick="searchYTOutliers()">🔍 Search</button>
+      <button class="outlier-shuffle-btn" onclick="searchYTOutliers(true,false,true)" title="Load a brand new random batch of outliers">🔀 Shuffle</button>
+      <button class="outlier-mode-btn" id="mode-btn-mine" onclick="setOutlierMode('mine')">📊 Mine</button>
     </div>
 
-    <!-- My Channel panel -->
-    <div id="outlier-panel-mine">
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
-          <div>
-            <span class="card-title">Your Outlier Videos</span>
-            <p style="font-size:11px;color:#475569;margin-top:3px;">Compared against your channel median — not mean, so one viral hit doesn't skew the baseline</p>
-          </div>
-          <div class="btn-group">
-            <button class="btn-filter active" data-outlier-sort="ratio" onclick="setOutlierSort('ratio',this)">By Multiplier</button>
-            <button class="btn-filter" data-outlier-sort="views" onclick="setOutlierSort('views',this)">By Raw Views</button>
-          </div>
+    <!-- Status / cache note -->
+    <div id="yt-outlier-status" style="font-size:11px;color:#475569;margin-bottom:12px;min-height:16px;"></div>
+
+    <!-- YouTube grid -->
+    <div class="yt-outlier-grid" id="yt-outlier-grid">
+      <div class="outlier-loading">Loading outliers across YouTube…</div>
+    </div>
+    <!-- Infinite scroll sentinel -->
+    <div id="yt-scroll-sentinel" style="height:1px;"></div>
+
+    <!-- My Channel panel (secondary) -->
+    <div id="outlier-panel-mine" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:16px;font-weight:700;color:#f1f5f9;">Your Outlier Videos</div>
+          <div style="font-size:11px;color:#475569;margin-top:2px;">Compared against your channel median</div>
         </div>
-        <div class="outlier-hero">
-          <div class="outlier-stat"><div class="outlier-stat-val" id="out-total">—</div><div class="outlier-stat-lbl">Videos analyzed</div></div>
-          <div class="outlier-stat"><div class="outlier-stat-val" id="out-avg">—</div><div class="outlier-stat-lbl">Median views/video</div></div>
-          <div class="outlier-stat"><div class="outlier-stat-val" id="out-top-mult" style="color:#f87171;">—</div><div class="outlier-stat-lbl">Best multiplier</div></div>
-          <div class="outlier-stat"><div class="outlier-stat-val" id="out-count-10x" style="color:#fb923c;">—</div><div class="outlier-stat-lbl">Videos 5x+ median</div></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-filter active" data-outlier-sort="ratio" onclick="setOutlierSort('ratio',this)">By Multiplier</button>
+          <button class="btn-filter" data-outlier-sort="views" onclick="setOutlierSort('views',this)">By Views</button>
+          <button class="outlier-mode-btn active" onclick="setOutlierMode('youtube')" style="margin-left:8px;">← Back to YouTube</button>
         </div>
-        <div class="outlier-grid" id="outlier-grid">
-          <div style="color:#475569;text-align:center;padding:40px;font-size:13px;">Loading…</div>
-        </div>
+      </div>
+      <div class="outlier-hero">
+        <div class="outlier-stat"><div class="outlier-stat-val" id="out-total">—</div><div class="outlier-stat-lbl">Videos analyzed</div></div>
+        <div class="outlier-stat"><div class="outlier-stat-val" id="out-avg">—</div><div class="outlier-stat-lbl">Median views</div></div>
+        <div class="outlier-stat"><div class="outlier-stat-val" id="out-top-mult" style="color:#f87171;">—</div><div class="outlier-stat-lbl">Best multiplier</div></div>
+        <div class="outlier-stat"><div class="outlier-stat-val" id="out-count-10x" style="color:#fb923c;">—</div><div class="outlier-stat-lbl">5x+ videos</div></div>
+      </div>
+      <div class="outlier-grid" id="outlier-grid">
+        <div style="color:#475569;text-align:center;padding:40px;font-size:13px;">Loading…</div>
       </div>
     </div>
 
-    <!-- YouTube Search panel -->
-    <div id="outlier-panel-yt" style="display:none;">
-      <div class="card" style="margin-bottom:16px;">
-        <div style="margin-bottom:16px;">
-          <span class="card-title">YouTube Outlier Finder</span>
-          <p style="font-size:11px;color:#475569;margin-top:3px;">Find videos that massively outperformed their own channel's average — across all of YouTube</p>
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-          <div style="flex:1;min-width:200px;">
-            <div style="font-size:11px;color:#64748b;margin-bottom:6px;">Topic / niche</div>
-            <input id="yt-outlier-q" class="lab-channel-name" style="width:100%;font-size:13px;padding:8px 12px;" placeholder="e.g. ancient civilizations, biblical history…" />
-          </div>
-          <div>
-            <div style="font-size:11px;color:#64748b;margin-bottom:6px;">Sort by</div>
-            <select id="yt-outlier-order" style="background:#0f1a2e;border:1px solid #1e2d45;color:#e2e8f0;font-size:12px;padding:8px 10px;border-radius:8px;cursor:pointer;">
-              <option value="viewCount">Most Viewed</option>
-              <option value="relevance">Most Relevant</option>
-              <option value="date">Most Recent</option>
-              <option value="rating">Top Rated</option>
-            </select>
-          </div>
-          <button id="yt-outlier-btn" class="sync-btn" style="padding:8px 20px;font-size:13px;font-weight:700;height:auto;" onclick="searchYTOutliers()">🔍 Find Outliers</button>
-        </div>
-        <div id="yt-outlier-cache-note" style="font-size:10px;color:#334155;margin-top:8px;display:none;">⚡ Cached result · <a href="#" onclick="searchYTOutliers(true);return false;" style="color:#6366f1;">refresh</a></div>
-      </div>
-      <div class="outlier-hero" id="yt-outlier-hero" style="display:none;">
-        <div class="outlier-stat"><div class="outlier-stat-val" id="yt-out-count">—</div><div class="outlier-stat-lbl">Videos found</div></div>
-        <div class="outlier-stat"><div class="outlier-stat-val" id="yt-out-top-mult" style="color:#f87171;">—</div><div class="outlier-stat-lbl">Top multiplier</div></div>
-        <div class="outlier-stat"><div class="outlier-stat-val" id="yt-out-5x">—</div><div class="outlier-stat-lbl">Videos 5x+ channel avg</div></div>
-        <div class="outlier-stat"><div class="outlier-stat-val" id="yt-out-channels">—</div><div class="outlier-stat-lbl">Unique channels</div></div>
-      </div>
-      <div class="outlier-grid" id="yt-outlier-grid"></div>
-    </div>
   </div><!-- /tab-outliers -->
 
   <!-- Zoom overlay for thumb lab -->
@@ -1459,45 +1581,40 @@
   <div id="thumb-modal" onclick="if(event.target===this)this.classList.remove('open')"></div>
 
   <!-- Pipeline Modal (global, outside panels) -->
-  <div id="pipeline-modal" style="z-index:1000;">
-    <div class="pipeline-modal-box">
-      <div class="pm-title" id="pm-title-text">New Content Idea</div>
-      <div class="pm-field">
-        <label class="pm-label">Title / Idea</label>
-        <input class="pm-input" id="pm-title" type="text" placeholder="e.g. The Real Story of King Hezekiah" />
+  <!-- Card detail overlay -->
+  <div id="card-detail-overlay"></div>
+
+  <!-- Card detail panel -->
+  <div id="card-detail-panel">
+    <div class="cdp-header">
+      <input class="cdp-title-input" id="cdp-title" type="text" placeholder="Untitled idea…" />
+      <div class="cdp-header-btns">
+        <button class="cdp-preview-toggle" id="cdp-preview-btn" onclick="toggleDetailPreview()">Preview</button>
+        <button class="cdp-btn-secondary" style="padding:3px 9px;font-size:14px;" onclick="closeCardDetail()">✕</button>
       </div>
-      <div class="pm-row">
-        <div class="pm-field">
-          <label class="pm-label">Stage</label>
-          <select class="pm-input" id="pm-stage">
-            <option value="idea">Idea</option>
-            <option value="scripting">Scripting</option>
-            <option value="filming">Filming</option>
-            <option value="editing">Editing</option>
-            <option value="published">Published</option>
-          </select>
-        </div>
-        <div class="pm-field">
-          <label class="pm-label">Platform</label>
-          <select class="pm-input" id="pm-platform">
-            <option value="">Both</option>
-            <option value="youtube">YouTube</option>
-            <option value="instagram">Instagram</option>
-          </select>
-        </div>
-      </div>
-      <div class="pm-field">
-        <label class="pm-label">Target Date</label>
-        <input class="pm-input" id="pm-date" type="date" />
-      </div>
-      <div class="pm-field">
-        <label class="pm-label">Notes</label>
-        <textarea class="pm-input" id="pm-notes" rows="3" placeholder="Research links, angle, hook idea…" style="resize:vertical;font-family:inherit;"></textarea>
-      </div>
-      <div class="pm-actions">
-        <button class="pm-cancel" id="pm-cancel">Cancel</button>
-        <button class="pm-save" id="pm-save">Save</button>
-      </div>
+    </div>
+    <div class="cdp-meta-bar">
+      <select class="cdp-meta-sel" id="cdp-stage">
+        <option value="idea">💡 Idea</option>
+        <option value="scripting">✍️ Scripting</option>
+        <option value="filming">🎬 Filming</option>
+        <option value="editing">✂️ Editing</option>
+        <option value="published">✅ Published</option>
+      </select>
+      <select class="cdp-meta-sel" id="cdp-platform">
+        <option value="">Both platforms</option>
+        <option value="youtube">YouTube</option>
+        <option value="instagram">Instagram</option>
+      </select>
+      <input class="cdp-date-input" id="cdp-date" type="date" title="Target date" />
+    </div>
+    <div class="cdp-body">
+      <textarea id="cdp-notes" placeholder="Write your notes here — supports markdown&#10;&#10;## Headings, **bold**, *italic*&#10;- bullet lists&#10;- [ ] to-do items&#10;- [x] done items"></textarea>
+      <div id="cdp-preview" class="cdp-preview" style="display:none;"></div>
+    </div>
+    <div class="cdp-footer">
+      <button class="cdp-btn-secondary" onclick="closeCardDetail()">Cancel</button>
+      <button class="cdp-btn-primary" onclick="saveCardDetail()">Save</button>
     </div>
   </div>
 
@@ -1505,23 +1622,6 @@
 
 </div><!-- /.main-wrap -->
 
-<!-- ── Login Modal ──────────────────────────────────────────────────────── -->
-<div id="login-modal" onclick="if(event.target===this)closeLoginModal()">
-  <div class="modal-card">
-    <button class="modal-close" onclick="closeLoginModal()">×</button>
-    <div class="modal-title">Sign In</div>
-    <div class="modal-field">
-      <label class="modal-label" for="login-email">Email</label>
-      <input class="modal-input" id="login-email" type="email" placeholder="you@example.com" autocomplete="email" />
-    </div>
-    <div class="modal-field">
-      <label class="modal-label" for="login-password">Password</label>
-      <input class="modal-input" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password" />
-    </div>
-    <button class="modal-submit" id="login-submit-btn" onclick="submitLogin()">Sign In</button>
-    <div class="modal-error" id="login-error"></div>
-  </div>
-</div>
 
 <!-- ── Upgrade Modal ─────────────────────────────────────────────────────── -->
 <div id="upgrade-modal" onclick="if(event.target===this)closeUpgradeModal()">
@@ -1885,6 +1985,55 @@ const IG_COLOR = '#f472b6';
 
 function platformBreakdown(key, byPlatform, follYT, follIG) {
   return '';
+}
+
+// ── Latest Video Widget ────────────────────────────────────────────────────
+function renderLatestVideo(v) {
+  const wrap = document.getElementById('latest-video-wrap');
+  const card = document.getElementById('latest-video-card');
+  if (!wrap || !card) return;
+  if (!v || state.platform === 'instagram') { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const diffMs   = Date.now() - new Date(v.published_at);
+  const diffDays = Math.floor(diffMs / 86400000);
+  const diffHrs  = Math.floor(diffMs / 3600000);
+  const age = diffDays === 0 ? (diffHrs < 1 ? 'just now' : `${diffHrs}h ago`)
+            : diffDays === 1 ? '1 day ago'
+            : diffDays < 30  ? `${diffDays} days ago`
+            : `${Math.floor(diffDays / 30)} months ago`;
+  const sc = v.score || 0;
+  const scoreColor = sc >= 80 ? '#4ade80' : sc >= 50 ? '#fbbf24' : sc >= 30 ? '#94a3b8' : '#f87171';
+  const avd  = v.avg_view_duration  ? `<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtDuration(v.avg_view_duration)}</div><div style="font-size:10px;color:#475569;">Avg View</div></div>` : '';
+  const wt   = v.watch_time_minutes ? `<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtWatchTime(v.watch_time_minutes)}</div><div style="font-size:10px;color:#475569;">Watch Time</div></div>` : '';
+  const ctr  = v.ctr != null        ? `<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtCtr(v.ctr)}</div><div style="font-size:10px;color:#475569;">CTR</div></div>` : '';
+  const ytLink = `https://youtube.com/watch?v=${v.post_id}`;
+  card.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+      <span class="card-title">Latest Upload</span>
+      <span style="font-size:11px;background:#1a2740;color:#64748b;padding:2px 8px;border-radius:20px;font-weight:600;">${age}</span>
+    </div>
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+      ${v.thumbnail_url ? `<a href="${ytLink}" target="_blank" style="flex-shrink:0;display:block;">
+        <img src="${v.thumbnail_url}" style="width:160px;height:90px;object-fit:cover;border-radius:8px;display:block;border:1px solid #1e2d45;" onerror="this.style.display='none'">
+      </a>` : ''}
+      <div style="flex:1;min-width:0;">
+        <a href="${ytLink}" target="_blank" style="font-size:14px;font-weight:600;color:#f1f5f9;text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px;line-height:1.4;">${escHtml(v.title || 'Untitled')}</a>
+        <div style="font-size:12px;color:#475569;margin-bottom:12px;">${fmtDateLong(v.published_at)}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <span style="font-size:26px;font-weight:800;color:${scoreColor};line-height:1;">${sc}</span>
+            <span style="font-size:10px;color:#475569;font-weight:600;letter-spacing:.04em;">/ 100</span>
+          </div>
+          <div style="width:1px;height:36px;background:#1e2d45;flex-shrink:0;"></div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtNum(v.views)}</div><div style="font-size:10px;color:#475569;">Views</div></div>
+            <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtNum(v.likes)}</div><div style="font-size:10px;color:#475569;">Likes</div></div>
+            <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtNum(v.comments)}</div><div style="font-size:10px;color:#475569;">Comments</div></div>
+            ${avd}${wt}${ctr}
+          </div>
+        </div>
+      </div>
+    </div>`;
 }
 
 // ── Render KPIs ───────────────────────────────────────────────────────────
@@ -2653,7 +2802,36 @@ async function loadCompetitors() {
     _myChannelStats = myStats && !myStats.error ? myStats : null;
     renderCompeteCards();
     renderCompareChart();
+    // Auto-load 3 recent videos for each competitor
+    _competitors.filter(c => c.channel_id).forEach(c => autoLoadCompVideos(c.channel_id));
   } catch(e) { console.warn('competitors:', e.message); }
+}
+
+async function autoLoadCompVideos(channelId) {
+  const panel = document.getElementById(`cvids-${channelId}`);
+  if (!panel || panel.dataset.loaded) return;
+  panel.dataset.loaded = '1';
+  panel.style.display = '';
+  const btn = panel.previousElementSibling;
+  if (btn && btn.classList.contains('channel-videos-btn')) btn.textContent = '▼ Recent Videos';
+  panel.innerHTML = '<div style="color:#475569;font-size:12px;padding:4px 0">Loading…</div>';
+  try {
+    const vids = await fetch(`/api/competitors/${channelId}/videos`).then(r => r.json());
+    if (!Array.isArray(vids) || !vids.length) { panel.innerHTML = '<div style="color:#475569;font-size:12px">No videos found.</div>'; return; }
+    const scoreColor = s => s >= 80 ? '#4ade80' : s >= 50 ? '#fbbf24' : '#64748b';
+    const ago = d => { const days = Math.floor((Date.now() - new Date(d)) / 86400000); return days < 1 ? 'today' : days === 1 ? '1d ago' : days < 30 ? `${days}d ago` : `${Math.floor(days/30)}mo ago`; };
+    panel.innerHTML = vids.slice(0, 3).map(v => `
+      <a class="comp-video-row" href="https://youtube.com/watch?v=${v.id}" target="_blank" style="text-decoration:none">
+        <img class="comp-video-thumb" src="${v.thumbnail}" alt="" loading="lazy">
+        <div class="comp-video-info">
+          <div class="comp-video-title">${v.title.replace(/</g,'&lt;')}</div>
+          <div class="comp-video-meta">${fmtNum(v.views)} views · ${ago(v.published_at)}</div>
+        </div>
+        <div class="comp-video-score" style="background:${scoreColor(v.score)}22;color:${scoreColor(v.score)}">${v.score}</div>
+      </a>`).join('');
+  } catch(e) {
+    panel.innerHTML = `<div style="color:#f87171;font-size:12px">${e.message}</div>`;
+  }
 }
 
 async function addCompetitor() {
@@ -2675,6 +2853,7 @@ async function addCompetitor() {
     document.getElementById('competitor-input').value = '';
     renderCompeteCards();
     renderCompareChart();
+    autoLoadCompVideos(result.channel_id);
   } catch(e) {
     errEl.textContent = e.message;
     errEl.style.display = 'block';
@@ -2708,10 +2887,11 @@ function renderCompeteCards() {
     const avatar = c.avatar_url
       ? `<img class="channel-avatar" src="${c.avatar_url}" alt="" onerror="this.style.display='none'">`
       : `<div class="channel-avatar" style="background:#1a2740;display:flex;align-items:center;justify-content:center;font-size:18px;">📺</div>`;
-    const delBtn = c.is_you ? '' : `<button class="channel-del" onclick="removeCompetitor(${c.id})" title="Remove">×</button>`;
+    const delBtn   = c.is_you ? '' : `<button class="channel-del" onclick="removeCompetitor(${c.id})" title="Remove">×</button>`;
     const youBadge = c.is_you ? '<span class="channel-you-badge">YOU</span>' : '';
     const avgV = c.avg_recent_views ? `<div class="channel-stat"><div class="channel-stat-val">${fmtNum(c.avg_recent_views)}</div><div class="channel-stat-lbl">Avg Views/Video</div></div>` : '';
-    const ppm  = c.posts_per_month  ? `<div class="channel-stat"><div class="channel-stat-val">${c.posts_per_month}</div><div class="channel-stat-lbl">Posts/Month</div></div>` : '';
+    const ppm  = c.posts_per_month  ? `<div class="channel-stat"><div class="channel-stat-val">${c.posts_per_month}x/mo</div><div class="channel-stat-lbl">Upload Freq</div></div>` : '';
+    const vidBtn = c.is_you ? '' : `<button class="channel-videos-btn" onclick="toggleCompVideos('${c.channel_id}', this)">▶ Recent Videos</button><div class="channel-videos-panel" id="cvids-${c.channel_id}" style="display:none"></div>`;
     return `
       <div class="channel-card${c.is_you ? ' is-you' : ''}">
         ${delBtn}
@@ -2737,8 +2917,38 @@ function renderCompeteCards() {
           </div>
           ${avgV}${ppm}
         </div>
+        ${vidBtn}
       </div>`;
   }).join('');
+}
+
+const _compVideoCache = {};
+async function toggleCompVideos(channelId, btn) {
+  const panel = document.getElementById(`cvids-${channelId}`);
+  if (!panel) return;
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : '';
+  btn.textContent = open ? '▶ Recent Videos' : '▼ Recent Videos';
+  if (open || panel.dataset.loaded) return;
+  panel.dataset.loaded = '1';
+  panel.innerHTML = '<div style="color:#475569;font-size:12px;padding:4px 0">Loading…</div>';
+  try {
+    const vids = await fetch(`/api/competitors/${channelId}/videos`).then(r => r.json());
+    if (!vids.length) { panel.innerHTML = '<div style="color:#475569;font-size:12px">No videos found.</div>'; return; }
+    const scoreColor = s => s >= 80 ? '#4ade80' : s >= 50 ? '#fbbf24' : '#64748b';
+    const ago = d => { const days = Math.floor((Date.now() - new Date(d)) / 86400000); return days < 1 ? 'today' : days === 1 ? '1d ago' : days < 30 ? `${days}d ago` : `${Math.floor(days/30)}mo ago`; };
+    panel.innerHTML = vids.map(v => `
+      <a class="comp-video-row" href="https://youtube.com/watch?v=${v.id}" target="_blank" style="text-decoration:none">
+        <img class="comp-video-thumb" src="${v.thumbnail}" alt="" loading="lazy">
+        <div class="comp-video-info">
+          <div class="comp-video-title">${v.title.replace(/</g,'&lt;')}</div>
+          <div class="comp-video-meta">${fmtNum(v.views)} views · ${ago(v.published_at)}</div>
+        </div>
+        <div class="comp-video-score" style="background:${scoreColor(v.score)}22;color:${scoreColor(v.score)}">${v.score}</div>
+      </a>`).join('');
+  } catch(e) {
+    panel.innerHTML = `<div style="color:#f87171;font-size:12px">${e.message}</div>`;
+  }
 }
 
 function renderCompareChart() {
@@ -2746,28 +2956,30 @@ function renderCompareChart() {
   const wrap    = document.getElementById('compete-compare');
   const myStats = _myChannelStats;
   const all = [
-    ...(myStats ? [{ name: 'You', is_you: true, subscribers: myStats.subscribers, total_views: myStats.total_views, avg_recent_views: myStats.avg_recent_views }] : []),
-    ..._competitors.map(c => ({ name: c.name || c.channel_id, subscribers: c.subscribers || 0, total_views: c.total_views || 0, avg_recent_views: c.avg_recent_views || 0 })),
+    ...(myStats ? [{ name: 'You', is_you: true, subscribers: myStats.subscribers, total_views: myStats.total_views, avg_recent_views: myStats.avg_recent_views, posts_per_month: myStats.posts_per_month }] : []),
+    ..._competitors.map(c => ({ name: c.name || c.channel_id, subscribers: c.subscribers || 0, total_views: c.total_views || 0, avg_recent_views: c.avg_recent_views || 0, posts_per_month: c.posts_per_month || 0 })),
   ];
   if (all.length < 2) { section.style.display = 'none'; return; }
   section.style.display = '';
 
   const metrics = [
-    { key: 'subscribers',       label: 'Subscribers',         color: (i,you) => you ? '#818cf8' : '#334155' },
-    { key: 'total_views',       label: 'Total Channel Views',  color: (i,you) => you ? '#fbbf24' : '#334155' },
-    { key: 'avg_recent_views',  label: 'Avg Views (Recent 20 Videos)', color: (i,you) => you ? '#4ade80' : '#334155' },
-  ];
+    { key: 'subscribers',      label: 'Subscribers',            youColor: '#818cf8' },
+    { key: 'avg_recent_views', label: 'Avg Views / Video',       youColor: '#4ade80' },
+    { key: 'posts_per_month',  label: 'Videos per Month',        youColor: '#fbbf24' },
+    { key: 'total_views',      label: 'Total Channel Views',     youColor: '#f472b6' },
+  ].filter(m => all.some(c => c[m.key] > 0));
 
   wrap.innerHTML = metrics.map(m => {
     const vals  = all.map(c => Number(c[m.key] || 0));
     const maxV  = Math.max(...vals, 1);
     const bars  = all.map((c, i) => {
       const pct   = Math.round((vals[i] / maxV) * 100);
-      const color = c.is_you ? (m.color(i, true)) : '#2d3f5c';
+      const color = c.is_you ? m.youColor : '#2d3f5c';
+      const label = m.key === 'posts_per_month' ? (vals[i] ? vals[i].toFixed(1) + '/mo' : '—') : fmtNum(vals[i]);
       return `<div class="compare-bar-row">
         <div class="compare-bar-name" title="${c.name}">${c.is_you ? '⭐ ' : ''}${c.name}</div>
         <div class="compare-bar-bg"><div class="compare-bar-fill" style="width:${pct}%;background:${color};"></div></div>
-        <div class="compare-bar-val">${fmtNum(vals[i])}</div>
+        <div class="compare-bar-val">${label}</div>
       </div>`;
     }).join('');
     return `<div class="compare-row"><div class="compare-label">${m.label}</div><div class="compare-bars">${bars}</div></div>`;
@@ -3104,19 +3316,65 @@ function toggleLightMode() {
 })();
 
 // ── Outliers ──────────────────────────────────────────────────────────────
-let _outliersData = [];
-let _outlierSort  = 'ratio';
+let _outliersData  = [];
+let _outlierSort   = 'ratio';
 let _outliersLoaded = false;
+let _ytOutliersData = [];
+let _ytDateFilter   = '';
+let _ytSubsFilter   = '';
+let _ytPageShown    = 0;
+let _ytShuffleSlot  = 0;   // increments each shuffle so server picks a different topic pair
+const YT_PAGE_SIZE  = 20;
 
-async function loadOutliers() {
-  const grid = document.getElementById('outlier-grid');
-  grid.innerHTML = '<div style="color:#475569;text-align:center;padding:40px;font-size:13px;">Loading…</div>';
-  try {
-    const platform = state.platform || 'youtube';
-    _outliersData = await fetch(`/api/outliers?platform=${platform}`).then(r => r.json());
-    renderOutliers();
-  } catch(e) {
-    grid.innerHTML = `<div style="color:#f87171;text-align:center;padding:40px;">${e.message}</div>`;
+function setDateFilter(val, btn) {
+  _ytDateFilter = val;
+  document.querySelectorAll('[data-date]').forEach(b => b.classList.toggle('active', b === btn));
+  // Date filter needs a fresh server fetch (publishedAfter param)
+  searchYTOutliers(true);
+}
+function setSubsFilter(val, btn) {
+  _ytSubsFilter = val;
+  document.querySelectorAll('[data-subs]').forEach(b => b.classList.toggle('active', b === btn));
+  _ytPageShown = 0;
+  renderYTGrid(false);
+}
+
+function _getFilteredRows() {
+  let rows = [..._ytOutliersData];
+  if (_ytSubsFilter === 'small') rows = rows.filter(r => Number(r.subscribers) < 100000);
+  if (_ytSubsFilter === 'mid')   rows = rows.filter(r => Number(r.subscribers) >= 100000 && Number(r.subscribers) < 1000000);
+  if (_ytSubsFilter === 'large') rows = rows.filter(r => Number(r.subscribers) >= 1000000);
+  return rows;
+}
+
+// Infinite scroll observer
+let _ytScrollObserver = null;
+function _initScrollObserver() {
+  if (_ytScrollObserver) _ytScrollObserver.disconnect();
+  const sentinel = document.getElementById('yt-scroll-sentinel');
+  if (!sentinel) return;
+  _ytScrollObserver = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) _appendYTGrid();
+  }, { rootMargin: '200px' });
+  _ytScrollObserver.observe(sentinel);
+}
+
+function setOutlierMode(mode) {
+  const mine = document.getElementById('outlier-panel-mine');
+  const grid = document.getElementById('yt-outlier-grid');
+  const bar  = document.querySelector('.outlier-filter-bar');
+  const status = document.getElementById('yt-outlier-status');
+  if (mode === 'mine') {
+    mine.style.display = '';
+    grid.style.display = 'none';
+    if (bar) bar.style.display = 'none';
+    if (status) status.style.display = 'none';
+    loadOutliers();
+  } else {
+    mine.style.display = 'none';
+    grid.style.display = '';
+    if (bar) bar.style.display = '';
+    if (status) status.style.display = '';
   }
 }
 
@@ -3126,66 +3384,171 @@ function setOutlierSort(sort, btn) {
   renderOutliers();
 }
 
+async function loadOutliers() {
+  const grid = document.getElementById('outlier-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="color:#475569;text-align:center;padding:40px;font-size:13px;">Loading…</div>';
+  try {
+    _outliersData = await fetch(`/api/outliers?platform=${state.platform||'youtube'}`).then(r => r.json());
+    renderOutliers();
+  } catch(e) {
+    grid.innerHTML = `<div style="color:#f87171;text-align:center;padding:40px;">${e.message}</div>`;
+  }
+}
+
 function renderOutliers() {
+  const grid = document.getElementById('outlier-grid');
   if (!_outliersData.length) {
-    document.getElementById('outlier-grid').innerHTML = '<div style="color:#475569;text-align:center;padding:40px;font-size:13px;">No video data found. Sync your channel first.</div>';
+    grid.innerHTML = '<div style="color:#475569;text-align:center;padding:40px;font-size:13px;">No video data found. Sync your channel first.</div>';
     return;
   }
-
   const rows = [..._outliersData];
   if (_outlierSort === 'views') rows.sort((a,b) => Number(b.views) - Number(a.views));
   else rows.sort((a,b) => Number(b.view_ratio) - Number(a.view_ratio));
-
-  const avgViews = Number(rows[0]?.avg_views || 0);
-  const total    = Number(rows[0]?.total_videos || rows.length);
-  const topMult  = Number(rows[0]?.view_ratio || 0);
-  const count5x  = rows.filter(r => Number(r.view_ratio) >= 5).length;
-
-  document.getElementById('out-total').textContent  = total.toLocaleString();
-  document.getElementById('out-avg').textContent    = fmtNum(Math.round(avgViews));
-  document.getElementById('out-top-mult').textContent = topMult.toFixed(1) + 'x';
-  document.getElementById('out-count-10x').textContent = count5x;
-
-  function multClass(r) {
-    if (r >= 10) return 'mult-10x';
-    if (r >= 5)  return 'mult-5x';
-    if (r >= 2)  return 'mult-2x';
-    return 'mult-avg';
-  }
-  function multLabel(r) {
-    if (r >= 10) return '🔥 OUTLIER';
-    if (r >= 5)  return '🚀 GREAT';
-    if (r >= 2)  return '✅ ABOVE AVG';
-    return '📊 AVG';
-  }
-
-  document.getElementById('outlier-grid').innerHTML = rows.slice(0, 30).map(r => {
-    const ratio  = Number(r.view_ratio || 0);
-    const views  = Number(r.views || 0);
-    const er     = Number(r.engagement_rate || 0).toFixed(1);
-    const thumb  = r.thumbnail_url
-      ? `<img src="${r.thumbnail_url}" alt="" onerror="this.parentElement.innerHTML='<div style=height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;>▶</div>'">`
-      : `<div style="height:100%;display:flex;align-items:center;justify-content:center;color:#334155;font-size:20px;">▶</div>`;
+  const medianViews = Number(rows[0]?.median_views || rows[0]?.avg_views || 0);
+  document.getElementById('out-total').textContent = Number(rows[0]?.total_videos || rows.length).toLocaleString();
+  document.getElementById('out-avg').textContent   = fmtNum(Math.round(medianViews));
+  document.getElementById('out-top-mult').textContent = Number(rows[0]?.view_ratio||0).toFixed(1)+'x';
+  document.getElementById('out-count-10x').textContent = rows.filter(r => Number(r.view_ratio)>=5).length;
+  function mClass(r){ return r>=10?'mult-10x':r>=5?'mult-5x':r>=2?'mult-2x':'mult-avg'; }
+  grid.innerHTML = rows.slice(0,30).map(r => {
+    const ratio = Number(r.view_ratio||0), views = Number(r.views||0);
+    const thumb = r.thumbnail_url ? `<img src="${r.thumbnail_url}" alt="" onerror="this.parentElement.innerHTML='<div style=height:100%;display:flex;align-items:center;justify-content:center;font-size:20px>▶</div>'">` : '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:20px;">▶</div>';
     const pubDate = r.published_at ? new Date(r.published_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-    return `
-      <div class="outlier-card">
-        <div class="outlier-thumb">${thumb}</div>
-        <div>
-          <div class="outlier-title">${r.title || '—'}</div>
-          <div class="outlier-meta">
-            <span>👁 ${fmtNum(views)} views</span>
-            ${er > 0 ? `<span>❤️ ${er}% ER</span>` : ''}
-            ${r.ctr ? `<span>🖱 ${Number(r.ctr).toFixed(1)}% CTR</span>` : ''}
-            ${r.watch_time_minutes ? `<span>⏱ ${fmtNum(Math.round(r.watch_time_minutes))} min watched</span>` : ''}
-            ${pubDate ? `<span>📅 ${pubDate}</span>` : ''}
-          </div>
-        </div>
-        <div class="outlier-badge">
-          <div class="outlier-mult ${multClass(ratio)}">${ratio.toFixed(1)}x</div>
-          <div class="outlier-mult-lbl">${multLabel(ratio)}</div>
-        </div>
-      </div>`;
+    return `<div class="outlier-card"><div class="outlier-thumb">${thumb}</div><div><div class="outlier-title">${r.title||'—'}</div><div class="outlier-meta"><span>👁 ${fmtNum(views)}</span>${pubDate?`<span>📅 ${pubDate}</span>`:''}</div></div><div class="outlier-badge"><div class="outlier-mult ${mClass(ratio)}">${ratio.toFixed(1)}x</div></div></div>`;
   }).join('');
+}
+
+function setScoreFilter(min, btn) {
+  _ytScoreFilter = min;
+  document.querySelectorAll('.score-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+  renderYTGrid();
+}
+
+function _ytCardHTML(r) {
+  function fmtSubs(n) { return n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(0)+'K':String(n); }
+  const views   = Number(r.views||0);
+  const subs    = Number(r.subscribers||0);
+  const avgViews = Number(r.channel_avg_views||0);
+  const ratio   = Number(r.view_ratio||0);
+  const url     = `https://www.youtube.com/watch?v=${r.video_id}`;
+  const init    = (r.channel_name||'?')[0].toUpperCase();
+  const avatar  = r.channel_avatar
+    ? `<img class="yt-grid-avatar" src="${r.channel_avatar}" alt="" onerror="this.outerHTML='<div class=yt-grid-avatar>${init}</div>'">`
+    : `<div class="yt-grid-avatar">${init}</div>`;
+  // Score badge — color coded, now inline next to title
+  const spClass = ratio >= 10 ? 'yt-sp-fire' : ratio >= 5 ? 'yt-sp-hot' : ratio >= 2 ? 'yt-sp-good' : ratio >= 1 ? 'yt-sp-ok' : 'yt-sp-avg';
+  const spTip   = `This video got ${ratio.toFixed(1)}× the channel's average views — an outlier score. Higher = more unexpected.`;
+  const scoreBadge = `<span class="yt-score-pill ${spClass} tooltip-wrap" data-tip="${spTip}">${ratio.toFixed(1)}×</span>`;
+  const avgLine = avgViews > 0 ? `<div class="yt-grid-avg">Channel avg: ${fmtNum(avgViews)} views</div>` : '';
+  return `
+    <a class="yt-grid-card" href="${url}" target="_blank" rel="noopener">
+      <div class="yt-grid-thumb">
+        ${r.thumbnail_url ? `<img src="${r.thumbnail_url}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+        ${r.duration_fmt ? `<span class="yt-duration-badge">${r.duration_fmt}</span>` : ''}
+      </div>
+      <div class="yt-grid-info">
+        <div class="yt-grid-title-row">
+          ${scoreBadge}
+          <div class="yt-grid-title">${r.title||'—'}</div>
+        </div>
+        <div class="yt-grid-chan">
+          ${avatar}
+          <span class="yt-grid-chan-name">${r.channel_name||'—'}</span>
+          <span class="yt-grid-subs">· ${fmtSubs(subs)}</span>
+        </div>
+        <div class="yt-grid-stats">${fmtNum(views)} views · ${r.time_ago||''}</div>
+        ${avgLine}
+      </div>
+    </a>`;
+}
+
+function renderYTGrid(reset = true) {
+  const grid = document.getElementById('yt-outlier-grid');
+  if (reset) _ytPageShown = 0;
+  const rows = _getFilteredRows();
+  if (!rows.length) {
+    grid.innerHTML = `<div class="outlier-loading">No videos match — try adjusting filters or hit 🔀 Shuffle.</div>`;
+    return;
+  }
+  grid.innerHTML = rows.slice(0, YT_PAGE_SIZE).join ? '' : '';
+  grid.innerHTML = rows.slice(0, YT_PAGE_SIZE).map(_ytCardHTML).join('');
+  _ytPageShown = Math.min(YT_PAGE_SIZE, rows.length);
+  _initScrollObserver();
+}
+
+function _appendYTGrid() {
+  const rows  = _getFilteredRows();
+  const start = _ytPageShown;
+  const chunk = rows.slice(start, start + YT_PAGE_SIZE);
+  const grid  = document.getElementById('yt-outlier-grid');
+  if (!chunk.length) {
+    // Buffer exhausted — show a prompt instead of auto-fetching (saves API quota)
+    const existing = grid.querySelector('.yt-load-more-msg');
+    if (!existing) {
+      grid.insertAdjacentHTML('beforeend',
+        `<div class="yt-load-more-msg" style="grid-column:1/-1;text-align:center;padding:30px 20px;color:#64748b;font-size:13px;">
+          You've seen all ${rows.length} results. Hit <strong>🔀 Shuffle</strong> to discover more.
+        </div>`
+      );
+    }
+    return;
+  }
+  grid.insertAdjacentHTML('beforeend', chunk.map(_ytCardHTML).join(''));
+  _ytPageShown += chunk.length;
+}
+
+async function searchYTOutliers(forceRefresh, appendMode, isShuffling) {
+  const q      = (document.getElementById('yt-outlier-q')?.value || '').trim();
+  const btn    = document.getElementById('yt-outlier-btn');
+  const grid   = document.getElementById('yt-outlier-grid');
+  const status = document.getElementById('yt-outlier-status');
+
+  // Shuffle increments the slot so the server picks a fresh topic pair
+  if (isShuffling) _ytShuffleSlot++;
+
+  // Compute publishedAfter ISO string from the active date filter
+  const dateMap = { '1m': 30, '3m': 90, '6m': 180, '1y': 365, '2y': 730 };
+  const days = dateMap[_ytDateFilter];
+  const publishedAfter = days ? new Date(Date.now() - days * 24 * 3600 * 1000).toISOString() : '';
+
+  if (!appendMode) {
+    if (btn) { btn.textContent = '⏳…'; btn.disabled = true; }
+    grid.innerHTML = '<div class="outlier-loading">Discovering outliers across YouTube… (takes a few seconds)</div>';
+    if (status) status.textContent = '';
+  }
+
+  try {
+    const params = new URLSearchParams({ order: 'relevance', slot: String(_ytShuffleSlot) });
+    if (q) params.set('q', q);
+    if (forceRefresh) params.set('refresh', '1');
+    if (publishedAfter) params.set('publishedAfter', publishedAfter);
+    const resp = await fetch(`/api/outliers/youtube?${params}`);
+    const data = await resp.json();
+
+    if (data.error === 'quota_exceeded') {
+      if (!appendMode) grid.innerHTML = `
+        <div class="outlier-loading" style="color:#fbbf24;">
+          ⚠️ YouTube API daily quota reached.<br>
+          <span style="font-size:12px;color:#64748b;">Resets at midnight Pacific time. Try again tomorrow — cached results from earlier today may still load via Shuffle.</span>
+        </div>`;
+      return;
+    }
+    if (data.error) throw new Error(data.error);
+
+    const incoming = data.results || [];
+    _ytOutliersData = incoming;
+
+    if (status) {
+      const channels = new Set(_ytOutliersData.map(r => r.channel_id)).size;
+      status.textContent = `${_ytOutliersData.length} videos · ${channels} channels${data.cached ? ' · ⚡ cached' : ''}`;
+    }
+    renderYTGrid(true);
+  } catch(e) {
+    if (!appendMode) grid.innerHTML = `<div class="outlier-loading" style="color:#f87171;">${e.message}</div>`;
+  } finally {
+    if (btn) { btn.textContent = '🔍 Search'; btn.disabled = false; }
+  }
 }
 
 // ── Lab: AI title suggestions ──────────────────────────────────────────────
@@ -3246,13 +3609,14 @@ async function refresh() {
   document.getElementById('yt-callout').style.display = 'none';
 
   try {
-    const [dash, fol, alltime, insights, subHistory, kwGap] = await Promise.all([
+    const [dash, fol, alltime, insights, subHistory, kwGap, latestVid] = await Promise.all([
       fetch(`/api/dashboard?platform=${state.platform}&range=${state.range}&sort=${state.sort}`).then(r=>r.json()),
       fetch(`/api/followers?platform=${state.platform}`).then(r=>r.json()),
       fetch(`/api/alltime?platform=${state.platform}`).then(r=>r.json()).catch(()=>({})),
       fetch(`/api/insights?platform=${state.platform}`).then(r=>r.json()).catch(()=>({})),
       fetch(`/api/subscribers/history`).then(r=>r.json()).catch(()=>[]),
       fetch(`/api/keyword-gap`).then(r=>r.json()).catch(()=>({})),
+      fetch(`/api/latest-video`).then(r=>r.json()).catch(()=>null),
     ]);
     if (dash.error) throw new Error(dash.error);
 
@@ -3268,6 +3632,7 @@ async function refresh() {
     renderRevenue(alltime, dash.kpis);
     renderMilestones(alltime, dash.kpis, fol.youtube, fol.instagram);
     renderKPIs(dash.kpis, dash.daily, fol.value, byPlatform, fol.youtube, fol.instagram);
+    renderLatestVideo(latestVid);
     renderVRChart(dash.daily, dailyByPlatform);
     renderEngChart(dash.daily);
     renderTrajectory(insights.trajectory || []);
@@ -3434,7 +3799,6 @@ const STAGES = [
 ];
 
 let pipelineCards = [];
-let pipelineEditId = null;
 let dragCardId = null;
 
 async function loadPipeline() {
@@ -3457,39 +3821,50 @@ function renderPipeline() {
           <span class="pipeline-count">${cards.length}</span>
         </div>
         ${cards.map(c => pipelineCardHTML(c)).join('')}
-        <button class="pipeline-add-btn" onclick="pipelineOpenModal(null,'${stage.key}')">+ Add</button>
+        <button class="pipeline-add-btn" onclick="openCardDetail(null,'${stage.key}')">+ Add</button>
       </div>`;
   }).join('');
 }
 
 function pipelineCardHTML(c) {
   const badgeClass = c.platform === 'youtube' ? 'badge-youtube' : c.platform === 'instagram' ? 'badge-instagram' : 'badge-both';
-  const badgeLabel = c.platform === 'youtube' ? 'YouTube' : c.platform === 'instagram' ? 'Instagram' : 'Both';
+  const badgeLabel = c.platform === 'youtube' ? 'YT' : c.platform === 'instagram' ? 'IG' : 'Both';
   const dateStr = c.target_date
     ? `<span class="pipeline-date">🎯 ${c.target_date}</span>`
     : '';
-  const notesStr = c.notes
-    ? `<div class="pipeline-notes">${escHtml(c.notes)}</div>`
+  const notePreview = c.notes
+    ? `<div class="pipeline-card-note-preview">${escHtml(c.notes.replace(/#+\s|[*_`]/g,'').slice(0,120))}</div>`
     : '';
   return `
     <div class="pipeline-card" draggable="true" data-id="${c.id}"
          ondragstart="pipelineDragStart(event,${c.id})"
-         ondragend="pipelineDragEnd(event)">
+         ondragend="pipelineDragEnd(event)"
+         onclick="openCardDetail(${c.id})">
       <div class="pipeline-card-actions">
-        <button class="pipeline-act-btn" onclick="pipelineOpenModal(${c.id})">✎</button>
-        <button class="pipeline-act-btn" onclick="pipelineDelete(${c.id})" style="color:#f87171">✕</button>
+        <button class="pipeline-act-btn" onclick="event.stopPropagation();pipelineDelete(${c.id})" style="color:#f87171">✕</button>
       </div>
       <div class="pipeline-card-title">${escHtml(c.title)}</div>
       <div class="pipeline-card-meta">
         <span class="pipeline-badge ${badgeClass}">${badgeLabel}</span>
         ${dateStr}
       </div>
-      ${notesStr}
+      ${notePreview}
     </div>`;
 }
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function stripHtml(s) {
+  if (!s) return '';
+  return s
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/<[^>]*>/g, ' ')  // strip again — entity decode can reveal new tags
+    .replace(/\s+/g, ' ').trim();
 }
 
 function pipelineDragStart(e, id) {
@@ -3527,36 +3902,118 @@ async function pipelineDrop(e) {
   });
 }
 
-function pipelineOpenModal(id, defaultStage) {
-  pipelineEditId = id || null;
-  const card = id ? pipelineCards.find(c => c.id == id) : null;
-  document.getElementById('pm-title-text').textContent = card ? 'Edit Card' : 'New Content Idea';
-  document.getElementById('pm-title').value    = card?.title       || '';
-  document.getElementById('pm-stage').value    = card?.stage       || defaultStage || 'idea';
-  document.getElementById('pm-platform').value = card?.platform    || '';
-  document.getElementById('pm-date').value     = card?.target_date || '';
-  document.getElementById('pm-notes').value    = card?.notes       || '';
-  document.getElementById('pipeline-modal').classList.add('open');
-  document.getElementById('pm-title').focus();
-}
+let _detailCardId = null;
 
-function pipelineCloseModal() {
-  document.getElementById('pipeline-modal').classList.remove('open');
-  pipelineEditId = null;
-}
+function renderMarkdown(text) {
+  if (!text) return '';
+  const lines = text.split('\n');
+  let html = '';
+  let inUl = false, inOl = false;
 
-async function pipelineSave() {
-  const payload = {
-    title:       document.getElementById('pm-title').value.trim(),
-    stage:       document.getElementById('pm-stage').value,
-    platform:    document.getElementById('pm-platform').value || null,
-    target_date: document.getElementById('pm-date').value || null,
-    notes:       document.getElementById('pm-notes').value.trim() || null,
+  const closeList = () => {
+    if (inUl) { html += '</ul>'; inUl = false; }
+    if (inOl) { html += '</ol>'; inOl = false; }
   };
-  if (!payload.title) { document.getElementById('pm-title').focus(); return; }
-  pipelineCloseModal();
-  if (pipelineEditId) {
-    await fetch(`/api/pipeline/${pipelineEditId}`, {
+
+  const inlineFormat = s => s
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+  for (const raw of lines) {
+    const line = raw;
+    if (/^### (.+)/.test(line))      { closeList(); html += `<h3>${inlineFormat(line.slice(4))}</h3>`; continue; }
+    if (/^## (.+)/.test(line))       { closeList(); html += `<h2>${inlineFormat(line.slice(3))}</h2>`; continue; }
+    if (/^# (.+)/.test(line))        { closeList(); html += `<h1>${inlineFormat(line.slice(2))}</h1>`; continue; }
+    if (/^---+$/.test(line.trim()))  { closeList(); html += '<hr>'; continue; }
+    if (/^> (.+)/.test(line))        { closeList(); html += `<blockquote>${inlineFormat(line.slice(2))}</blockquote>`; continue; }
+
+    // Checklist
+    if (/^- \[x\] (.+)/i.test(line)) {
+      closeList();
+      html += `<ul style="list-style:none;padding-left:0;"><li class="md-check-item checked"><input type="checkbox" checked onclick="return false"><span>${inlineFormat(line.replace(/^- \[x\] /i,''))}</span></li></ul>`;
+      continue;
+    }
+    if (/^- \[ \] (.+)/.test(line)) {
+      closeList();
+      html += `<ul style="list-style:none;padding-left:0;"><li class="md-check-item"><input type="checkbox" onclick="return false"><span>${inlineFormat(line.replace(/^- \[ \] /,''))}</span></li></ul>`;
+      continue;
+    }
+
+    // Bullet
+    if (/^[-*] (.+)/.test(line)) {
+      if (!inUl) { closeList(); html += '<ul>'; inUl = true; }
+      html += `<li>${inlineFormat(line.replace(/^[-*] /,''))}</li>`;
+      continue;
+    }
+    // Numbered list
+    if (/^\d+\. (.+)/.test(line)) {
+      if (!inOl) { closeList(); html += '<ol>'; inOl = true; }
+      html += `<li>${inlineFormat(line.replace(/^\d+\. /,''))}</li>`;
+      continue;
+    }
+
+    closeList();
+    if (line.trim() === '') { html += '<p></p>'; }
+    else { html += `<p>${inlineFormat(line)}</p>`; }
+  }
+  closeList();
+  return html;
+}
+
+function openCardDetail(id, defaultStage) {
+  const card = id ? pipelineCards.find(c => c.id == id) : null;
+  _detailCardId = id || null;
+  document.getElementById('cdp-title').value    = card?.title       || '';
+  document.getElementById('cdp-stage').value    = card?.stage       || defaultStage || 'idea';
+  document.getElementById('cdp-platform').value = card?.platform    || '';
+  document.getElementById('cdp-date').value     = card?.target_date || '';
+  document.getElementById('cdp-notes').value    = card?.notes       || '';
+  // Reset to edit mode
+  document.getElementById('cdp-notes').style.display   = '';
+  document.getElementById('cdp-preview').style.display = 'none';
+  document.getElementById('cdp-preview-btn').textContent = 'Preview';
+  document.getElementById('card-detail-panel').classList.add('open');
+  document.getElementById('card-detail-overlay').style.display = 'block';
+  setTimeout(() => document.getElementById('cdp-title').focus(), 50);
+}
+
+function closeCardDetail() {
+  document.getElementById('card-detail-panel').classList.remove('open');
+  document.getElementById('card-detail-overlay').style.display = 'none';
+  _detailCardId = null;
+}
+
+function toggleDetailPreview() {
+  const btn     = document.getElementById('cdp-preview-btn');
+  const notes   = document.getElementById('cdp-notes');
+  const preview = document.getElementById('cdp-preview');
+  if (notes.style.display === 'none') {
+    notes.style.display   = '';
+    preview.style.display = 'none';
+    btn.textContent = 'Preview';
+  } else {
+    preview.innerHTML     = renderMarkdown(notes.value);
+    notes.style.display   = 'none';
+    preview.style.display = '';
+    btn.textContent = 'Edit';
+  }
+}
+
+async function saveCardDetail() {
+  const payload = {
+    title:       document.getElementById('cdp-title').value.trim(),
+    stage:       document.getElementById('cdp-stage').value,
+    platform:    document.getElementById('cdp-platform').value || null,
+    target_date: document.getElementById('cdp-date').value || null,
+    notes:       document.getElementById('cdp-notes').value.trim() || null,
+  };
+  if (!payload.title) { document.getElementById('cdp-title').focus(); return; }
+  closeCardDetail();
+  if (_detailCardId) {
+    await fetch(`/api/pipeline/${_detailCardId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -3780,7 +4237,7 @@ function renderComments() {
       <img class="comment-avatar" src="${c.authorPic}" onerror="this.style.visibility='hidden'" loading="lazy">
       <div class="comment-body">
         <div class="comment-author">${escHtml(c.author)} ${sentimentTag(c._sent)}</div>
-        <div class="comment-text">${highlightSearch(escHtml(c.text), query)}</div>
+        <div class="comment-text">${highlightSearch(escHtml(stripHtml(c.text)), query)}</div>
         <div class="comment-meta">
           <span>${timeAgo(c.publishedAt)}</span>
           ${c.likes ? `<span class="cm-likes">♥ ${c.likes.toLocaleString()}</span>` : ''}
@@ -4029,13 +4486,13 @@ function ideaAddToPipeline(i) {
   // Pre-fill the pipeline modal and switch to pipeline tab
   switchTab('pipeline');
   setTimeout(() => {
-    pipelineOpenModal(null, 'idea');
-    document.getElementById('pm-title').value = idea.title;
-    document.getElementById('pm-platform').value = 'youtube';
+    openCardDetail(null, 'idea');
+    document.getElementById('cdp-title').value = idea.title;
+    document.getElementById('cdp-platform').value = 'youtube';
     if (idea.hook || idea.angle) {
-      document.getElementById('pm-notes').value = [
-        idea.hook && 'Hook: ' + idea.hook,
-        idea.angle && 'Angle: ' + idea.angle,
+      document.getElementById('cdp-notes').value = [
+        idea.hook && '**Hook:** ' + idea.hook,
+        idea.angle && '**Angle:** ' + idea.angle,
       ].filter(Boolean).join('\n\n');
     }
   }, 50);
@@ -4051,75 +4508,17 @@ function ideaCopy(i) {
   if (btn) { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy title', 1200); }
 }
 
-// ── Login Modal ───────────────────────────────────────────────────────────
-let _authToken = null, _authUser = null;
 
-function openLoginModal() {
-  document.getElementById('login-modal').classList.add('open');
-  setTimeout(() => document.getElementById('login-email').focus(), 50);
-}
-function closeLoginModal() {
-  document.getElementById('login-modal').classList.remove('open');
-}
-
-async function submitLogin() {
-  const email    = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const errEl    = document.getElementById('login-error');
-  const btn      = document.getElementById('login-submit-btn');
-  errEl.style.display = 'none';
-  if (!email || !password) { errEl.textContent = 'Email and password are required.'; errEl.style.display = 'block'; return; }
-  btn.disabled = true; btn.textContent = 'Signing in…';
-  try {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    }).then(r => r.json());
-    if (!res.ok) throw new Error(res.error || 'Login failed');
-    _authToken = res.token;
-    _authUser  = res.user;
-    try { localStorage.setItem('auth_token', _authToken); } catch(e) {}
-    updateAuthUI();
-    closeLoginModal();
-  } catch(e) {
-    errEl.textContent = e.message;
-    errEl.style.display = 'block';
-  } finally {
-    btn.disabled = false; btn.textContent = 'Sign In';
-  }
+let _toastTimer = null;
+function showToast(msg, duration = 3500) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), duration);
 }
 
-function updateAuthUI() {
-  const loginBtn  = document.getElementById('login-btn');
-  const userInfo  = document.getElementById('sidebar-user-info');
-  if (_authUser) {
-    if (loginBtn) loginBtn.style.display = 'none';
-    if (userInfo) {
-      userInfo.style.display = 'block';
-      userInfo.innerHTML = `<span style="color:#4ade80;font-size:10px;">✓ Signed in</span><br>${_authUser.email}<br>
-        <button onclick="logoutAuth()" style="background:none;border:none;color:#f87171;font-size:10px;cursor:pointer;padding:2px 0;font-family:inherit;">Sign out</button>`;
-    }
-  } else {
-    if (loginBtn) loginBtn.style.display = '';
-    if (userInfo) userInfo.style.display = 'none';
-  }
-}
-
-function logoutAuth() {
-  _authToken = null; _authUser = null;
-  try { localStorage.removeItem('auth_token'); } catch(e) {}
-  updateAuthUI();
-}
-
-async function restoreAuth() {
-  try {
-    const token = localStorage.getItem('auth_token');
-    if (!token) return;
-    const res = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } }).then(r => r.json());
-    if (res.user) { _authToken = token; _authUser = res.user; updateAuthUI(); }
-  } catch(e) {}
-}
 
 // ── Upgrade Modal ─────────────────────────────────────────────────────────
 function openUpgradeModal() {
@@ -4158,13 +4557,12 @@ function switchTab(tab) {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   setupControls();
   switchPlatform(state.platform);
   refresh();
   loadPipeline();
   loadGoals();
-  restoreAuth();
 
   // Handle post-upgrade redirect
   if (new URLSearchParams(window.location.search).get('upgraded') === '1') {
@@ -4179,10 +4577,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('date-from').addEventListener('change', applyCustomDates);
   document.getElementById('date-to').addEventListener('change', applyCustomDates);
 
-  // Login modal keyboard
-  document.getElementById('login-password').addEventListener('keydown', e => { if (e.key === 'Enter') submitLogin(); });
-  document.getElementById('login-email').addEventListener('keydown', e => { if (e.key === 'Enter') submitLogin(); });
-
   // Tab switching
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -4190,7 +4584,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btn.dataset.tab === 'comments'   && !_commentsLoaded)   loadComments();
       if (btn.dataset.tab === 'thumbnails' && !_thumbLoaded)      loadThumbnails();
       if (btn.dataset.tab === 'compete'    && !_competitorsLoaded)  { loadCompetitors(); _competitorsLoaded = true; }
-      if (btn.dataset.tab === 'outliers'   && !_outliersLoaded)    { loadOutliers(); _outliersLoaded = true; }
+      if (btn.dataset.tab === 'outliers' && !_outliersLoaded) {
+        _outliersLoaded = true;
+        searchYTOutliers(); // auto-load diverse outliers (no topic = random variety)
+      }
     });
   });
 
@@ -4220,8 +4617,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') {
       document.getElementById('thumb-modal')?.classList.remove('open');
       document.getElementById('lab-zoom-overlay')?.classList.remove('open');
-      pipelineCloseModal();
-      closeLoginModal();
+      closeCardDetail();
       closeUpgradeModal();
     }
   });
@@ -4265,17 +4661,14 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLabGrid();
   });
 
-  document.getElementById('pipeline-new-btn').addEventListener('click', () => pipelineOpenModal(null));
-  document.getElementById('pm-cancel').addEventListener('click', pipelineCloseModal);
-  document.getElementById('pm-save').addEventListener('click', pipelineSave);
-  document.getElementById('pipeline-modal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) pipelineCloseModal();
-  });
-  document.getElementById('pm-title').addEventListener('keydown', e => {
-    if (e.key === 'Enter') pipelineSave();
-    if (e.key === 'Escape') pipelineCloseModal();
+  document.getElementById('pipeline-new-btn').addEventListener('click', () => openCardDetail(null));
+  document.getElementById('cdp-title').addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeCardDetail();
   });
 });
 </script>
+<footer style="text-align:center;padding:24px;font-size:11px;color:#475569;border-top:1px solid #1e2d45;margin-top:40px;">
+  Content Dashboard &nbsp;·&nbsp; <a href="/privacy" style="color:#64748b;text-decoration:none;" target="_blank">Privacy Policy</a>
+</footer>
 </body>
 </html>

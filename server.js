@@ -3,9 +3,22 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 const express = require('express');
-const { Pool } = require('pg');
+const { Client: PgClient } = require('pg');
+
+// Serverless-safe DB helper: one fresh connection per query, always closed after.
+// Avoids "Max client connections reached" from pooled connections that linger.
+const pool = {
+  query: async (text, params) => {
+    const client = new PgClient({ connectionString, ssl: { rejectUnauthorized: false } });
+    await client.connect();
+    try {
+      return await client.query(text, params);
+    } finally {
+      await client.end().catch(() => {});
+    }
+  }
+};
 const path = require('path');
-const bcrypt = require('bcryptjs');
 const stripe = process.env.STRIPE_SECRET_KEY ? require('stripe')(process.env.STRIPE_SECRET_KEY) : null;
 
 const app = express();
@@ -19,10 +32,6 @@ const connectionString =
     ? `postgresql://${process.env.POSTGRES_USER}:${encodeURIComponent(process.env.POSTGRES_PASSWORD)}@${process.env.POSTGRES_HOST}/${process.env.POSTGRES_DATABASE || 'postgres'}`
     : null);
 
-const pool = new Pool({
-  connectionString,
-  ssl: { rejectUnauthorized: false },
-});
 
 pool.query(`
   CREATE TABLE IF NOT EXISTS content_analytics (
@@ -92,17 +101,36 @@ pool.query(`
   )
 `).catch(err => console.warn('daily_analytics init:', err.message));
 
+// Add cached stats columns to competitors
 pool.query(`
-  CREATE TABLE IF NOT EXISTS users (
-    id           SERIAL PRIMARY KEY,
-    email        TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    plan         TEXT DEFAULT 'free',
-    created_at   TIMESTAMPTZ DEFAULT NOW()
-  )
-`).catch(err => console.warn('users init:', err.message));
+  ALTER TABLE competitors
+    ADD COLUMN IF NOT EXISTS avg_recent_views BIGINT,
+    ADD COLUMN IF NOT EXISTS posts_per_month  NUMERIC(5,1),
+    ADD COLUMN IF NOT EXISTS stats_updated_at TIMESTAMPTZ
+`).catch(() => {});
 
-app.use(express.static(path.join(__dirname, 'public')));
+// Add channel_id to content_analytics
+pool.query(`ALTER TABLE content_analytics ADD COLUMN IF NOT EXISTS channel_id TEXT`)
+  .then(() => {
+    // Backfill existing rows that belong to the owner's channel
+    const ownerChannel = (process.env.YOUTUBE_CHANNEL_ID || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    if (ownerChannel) {
+      pool.query(`UPDATE content_analytics SET channel_id = $1 WHERE channel_id IS NULL AND platform = 'youtube'`, [ownerChannel])
+        .catch(() => {});
+    }
+  })
+  .catch(() => {});
+
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
+
+// Trim newlines that sneak in from `echo "..." | vercel env add`
+const GOOGLE_CLIENT_ID     = (process.env.GOOGLE_CLIENT_ID     || '').trim();
+const GOOGLE_CLIENT_SECRET = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
+
+function getChannelCond() {
+  const id = (process.env.YOUTUBE_CHANNEL_ID || '').replace(/[^a-zA-Z0-9_-]/g, '');
+  return id ? `AND (channel_id = '${id}' OR channel_id IS NULL)` : '';
+}
 
 function pct(curr, prev) {
   const c = Number(curr), p = Number(prev);
@@ -115,8 +143,10 @@ app.get('/api/dashboard', async (req, res) => {
   try {
     const range    = Math.min(Math.max(parseInt(req.query.range) || 30, 1), 365);
     const platform = req.query.platform || 'all';
-    const sort     = ['views', 'likes', 'shares', 'engagement_rate'].includes(req.query.sort)
+    const sort     = ['views', 'likes', 'shares', 'engagement_rate', 'published_at'].includes(req.query.sort)
       ? req.query.sort : 'views';
+
+    const chCond = getChannelCond();
 
     const hasPf = platform === 'instagram' || platform === 'youtube';
     const pf    = hasPf ? 'AND platform = $2' : '';
@@ -138,7 +168,7 @@ app.get('/api/dashboard', async (req, res) => {
           ROUND(AVG(avg_view_duration)::numeric, 0)            AS avd,
           ROUND(SUM(watch_time_minutes)::numeric, 0)           AS watch_time
         FROM content_analytics
-        WHERE published_at >= NOW() - INTERVAL '1 day' * $1::int ${pf}
+        WHERE published_at >= NOW() - INTERVAL '1 day' * $1::int ${pf} ${chCond}
       `, a1),
 
       pool.query(`
@@ -155,7 +185,7 @@ app.get('/api/dashboard', async (req, res) => {
           ROUND(SUM(watch_time_minutes)::numeric, 0)           AS watch_time
         FROM content_analytics
         WHERE published_at >= NOW() - INTERVAL '1 day' * ($1::int + $2::int)
-          AND published_at <  NOW() - INTERVAL '1 day' * $1::int ${pf2}
+          AND published_at <  NOW() - INTERVAL '1 day' * $1::int ${pf2} ${chCond}
       `, a2),
 
       // Use real daily view data for YouTube; published-date grouping for Instagram
@@ -182,17 +212,17 @@ app.get('/api/dashboard', async (req, res) => {
               COALESCE(SUM(COALESCE(saves,  0)), 0)                AS saves,
               COALESCE(ROUND(AVG(engagement_rate)::numeric, 2), 0) AS er
             FROM content_analytics
-            WHERE published_at >= NOW() - INTERVAL '1 day' * $1::int ${pf}
+            WHERE published_at >= NOW() - INTERVAL '1 day' * $1::int ${pf} ${chCond}
             GROUP BY DATE_TRUNC('day', published_at) ORDER BY date
           `, a1)),
 
       pool.query(`
-        WITH all_ranked AS (
-          SELECT post_id,
-            PERCENT_RANK() OVER (ORDER BY COALESCE(views, 0))           AS vp,
-            PERCENT_RANK() OVER (ORDER BY COALESCE(engagement_rate, 0)) AS ep
+        WITH avgs AS (
+          SELECT
+            AVG(NULLIF(COALESCE(views, 0), 0))           AS avg_views,
+            AVG(NULLIF(COALESCE(engagement_rate, 0), 0)) AS avg_er
           FROM content_analytics
-          WHERE 1=1 ${pf}
+          WHERE 1=1 ${pf} ${chCond}
         )
         SELECT
           ca.post_id, ca.platform, ca.title, ca.thumbnail_url, ca.published_at,
@@ -202,11 +232,13 @@ app.get('/api/dashboard', async (req, res) => {
           ca.shares, ca.saves,
           COALESCE(ca.engagement_rate, 0) AS engagement_rate,
           ca.ctr, ca.avg_view_duration, ca.watch_time_minutes,
-          LEAST(100, GREATEST(0, ROUND((ar.vp * 70 + ar.ep * 30) * 100)::int)) AS score
-        FROM content_analytics ca
-        JOIN all_ranked ar ON ca.post_id = ar.post_id
-        WHERE ca.published_at >= NOW() - INTERVAL '1 day' * $1::int ${pf}
-        ORDER BY COALESCE(ca.${sort}, 0) DESC NULLS LAST
+          LEAST(100, GREATEST(1, ROUND(
+            (COALESCE(ca.views, 0)::numeric / NULLIF(avgs.avg_views, 0) * 35
+            + COALESCE(ca.engagement_rate, 0)::numeric / NULLIF(avgs.avg_er, 0) * 15)
+          )::int)) AS score
+        FROM content_analytics ca, avgs
+        WHERE ca.published_at >= NOW() - INTERVAL '1 day' * $1::int ${pf} ${chCond}
+        ORDER BY ${sort === 'published_at' ? 'ca.published_at' : `COALESCE(ca.${sort}, 0)`} DESC NULLS LAST
         LIMIT 25
       `, a1),
     ]);
@@ -227,7 +259,7 @@ app.get('/api/dashboard', async (req, res) => {
             COALESCE(SUM(shares), 0)                             AS shares,
             COALESCE(SUM(saves), 0)                              AS saves
           FROM content_analytics
-          WHERE published_at >= NOW() - INTERVAL '1 day' * $1::int
+          WHERE published_at >= NOW() - INTERVAL '1 day' * $1::int ${chCond}
           GROUP BY platform
         `, [range]),
         // YouTube: real daily view counts
@@ -280,15 +312,50 @@ app.get('/api/dashboard', async (req, res) => {
   }
 });
 
+app.get('/api/latest-video', async (req, res) => {
+  try {
+    const chCond = getChannelCond();
+    const r = await pool.query(`
+      WITH avgs AS (
+        SELECT
+          AVG(NULLIF(COALESCE(views, 0), 0))           AS avg_views,
+          AVG(NULLIF(COALESCE(engagement_rate, 0), 0)) AS avg_er
+        FROM content_analytics
+        WHERE platform = 'youtube' ${chCond}
+      )
+      SELECT
+        ca.post_id, ca.title, ca.thumbnail_url, ca.published_at,
+        COALESCE(ca.views, 0)           AS views,
+        COALESCE(ca.likes, 0)           AS likes,
+        COALESCE(ca.comments, 0)        AS comments,
+        ca.avg_view_duration, ca.watch_time_minutes, ca.ctr,
+        COALESCE(ca.engagement_rate, 0) AS engagement_rate,
+        LEAST(100, GREATEST(1, ROUND(
+          (COALESCE(ca.views, 0)::numeric / NULLIF(avgs.avg_views, 0) * 35
+          + COALESCE(ca.engagement_rate, 0)::numeric / NULLIF(avgs.avg_er, 0) * 15)
+        )::int)) AS score
+      FROM content_analytics ca, avgs
+      WHERE ca.platform = 'youtube' ${chCond}
+      ORDER BY ca.published_at DESC NULLS LAST
+      LIMIT 1
+    `);
+    if (!r.rows.length) return res.json(null);
+    res.json(r.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/followers', async (req, res) => {
   try {
-    const platform = req.query.platform || 'all';
-    const [igR, ytR] = await Promise.all([
+    const platform  = req.query.platform || 'all';
+    const ytChannel = (process.env.YOUTUBE_CHANNEL_ID || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const [igR, ytRaw] = await Promise.all([
       fetch(`https://graph.instagram.com/v21.0/me?fields=followers_count&access_token=${process.env.INSTAGRAM_ACCESS_TOKEN}`),
-      fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${process.env.YOUTUBE_CHANNEL_ID}&key=${process.env.YOUTUBE_API_KEY}`),
+      ytChannel ? fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${ytChannel}&key=${process.env.YOUTUBE_API_KEY}`).then(r => r.json()) : Promise.resolve({}),
     ]);
     const ig = await igR.json();
-    const yt = await ytR.json();
+    const yt = ytRaw;
     const igN = Number(ig.followers_count || 0);
     const ytN = parseInt(yt.items?.[0]?.statistics?.subscriberCount || 0);
     const value = platform === 'instagram' ? igN : platform === 'youtube' ? ytN : igN + ytN;
@@ -303,7 +370,8 @@ app.get('/api/alltime', async (req, res) => {
   try {
     const platform = req.query.platform || 'all';
     const hasPf = platform === 'instagram' || platform === 'youtube';
-    const where = hasPf ? 'WHERE platform = $1' : '';
+    const chCond = getChannelCond();
+    const where = `WHERE 1=1 ${hasPf ? 'AND platform = $1' : ''} ${chCond}`;
     const args  = hasPf ? [platform] : [];
     const r = await pool.query(`
       SELECT
@@ -324,26 +392,27 @@ app.get('/api/insights', async (req, res) => {
   try {
     const platform = req.query.platform || 'all';
     const hasPf = platform === 'instagram' || platform === 'youtube';
-    const pf   = hasPf ? 'AND platform = $1' : '';
-    const args = hasPf ? [platform] : [];
+    const pf     = hasPf ? 'AND platform = $1' : '';
+    const args   = hasPf ? [platform] : [];
+    const chCond = getChannelCond();
 
     const [dowR, trajR, kwR, hourR] = await Promise.all([
       pool.query(`
         SELECT EXTRACT(DOW FROM published_at)::int AS dow,
                ROUND(AVG(views))::bigint           AS avg_views,
                COUNT(*)::int                       AS count
-        FROM content_analytics WHERE 1=1 ${pf}
+        FROM content_analytics WHERE 1=1 ${pf} ${chCond}
         GROUP BY dow ORDER BY dow
       `, args),
       pool.query(`
         SELECT TO_CHAR(published_at, 'YYYY-MM-DD') AS date,
                title, views::bigint, engagement_rate::float, platform, post_id
-        FROM content_analytics WHERE 1=1 ${pf}
+        FROM content_analytics WHERE 1=1 ${pf} ${chCond}
         ORDER BY published_at ASC
       `, args),
       pool.query(`
         SELECT title, views FROM content_analytics
-        WHERE platform = 'youtube' AND title IS NOT NULL
+        WHERE platform = 'youtube' AND title IS NOT NULL ${chCond}
         ORDER BY published_at DESC LIMIT 200
       `),
       pool.query(`
@@ -351,7 +420,7 @@ app.get('/api/insights', async (req, res) => {
                EXTRACT(HOUR FROM published_at)::int AS hour,
                ROUND(AVG(views))::bigint            AS avg_views,
                COUNT(*)::int                        AS count
-        FROM content_analytics WHERE 1=1 ${pf}
+        FROM content_analytics WHERE 1=1 ${pf} ${chCond}
         GROUP BY dow, hour ORDER BY dow, hour
       `, args),
     ]);
@@ -384,7 +453,7 @@ app.get('/api/insights', async (req, res) => {
                EXTRACT(DOW FROM published_at)::int AS dow,
                ROUND(AVG(views))::bigint            AS avg_views,
                COUNT(*)::int                        AS count
-        FROM content_analytics
+        FROM content_analytics WHERE 1=1 ${chCond}
         GROUP BY platform, dow
         ORDER BY platform, dow
       `);
@@ -487,12 +556,13 @@ app.get('/api/thumbnails', async (req, res) => {
     const platform = req.query.platform || 'youtube';
     const sort     = ['views','engagement_rate','likes','published_at'].includes(req.query.sort) ? req.query.sort : 'views';
     const hasPf    = platform === 'youtube' || platform === 'instagram';
-    const where    = hasPf ? `WHERE platform = '${platform}' AND thumbnail_url IS NOT NULL` : `WHERE thumbnail_url IS NOT NULL`;
+    const chCond   = getChannelCond();
+    const pfCond   = hasPf ? `AND platform = '${platform}'` : '';
     const r = await pool.query(`
       SELECT post_id, platform, title, thumbnail_url, published_at,
              views, likes, comments, engagement_rate, watch_time_minutes
       FROM content_analytics
-      ${where}
+      WHERE thumbnail_url IS NOT NULL ${pfCond} ${chCond}
       ORDER BY ${sort} DESC NULLS LAST
       LIMIT 50
     `);
@@ -690,7 +760,8 @@ app.get('/api/keyword-gap', async (req, res) => {
 app.get('/api/comments', async (req, res) => {
   try {
     const apiKey    = process.env.YOUTUBE_API_KEY;
-    const channelId = process.env.YOUTUBE_CHANNEL_ID;
+    const channelId = (process.env.YOUTUBE_CHANNEL_ID || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!channelId) return res.status(400).json({ error: 'YOUTUBE_CHANNEL_ID not configured' });
     const maxResults = Math.min(parseInt(req.query.limit) || 100, 100);
     const order      = ['time', 'relevance'].includes(req.query.order) ? req.query.order : 'time';
     const videoId    = req.query.videoId || null;
@@ -705,6 +776,7 @@ app.get('/api/comments', async (req, res) => {
     const data = await fetch(url).then(r => r.json());
     if (data.error) return res.status(400).json({ error: data.error.message });
 
+    const stripYTHtml = s => (s || '').replace(/<[^>]*>/g, ' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&apos;/g,"'").replace(/&nbsp;/g,' ').replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/\s+/g,' ').trim();
     const comments = (data.items || []).map(item => {
       const top = item.snippet.topLevelComment.snippet;
       return {
@@ -712,7 +784,7 @@ app.get('/api/comments', async (req, res) => {
         videoId:     top.videoId,
         author:      top.authorDisplayName,
         authorPic:   top.authorProfileImageUrl,
-        text:        top.textDisplay,
+        text:        stripYTHtml(top.textDisplay || top.textOriginal || ''),
         likes:       top.likeCount || 0,
         replyCount:  item.snippet.totalReplyCount || 0,
         publishedAt: top.publishedAt,
@@ -790,14 +862,15 @@ app.delete('/api/pipeline/:id', async (req, res) => {
 });
 
 // ── Sync helpers ──────────────────────────────────────────────────────────
-async function getYTAccessToken() {
+async function getYTAccessToken(refreshToken) {
+  // Uses the provided refresh token, or falls back to the owner's env var
   const r = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      client_id:     process.env.GOOGLE_CLIENT_ID,
-      client_secret: process.env.GOOGLE_CLIENT_SECRET,
-      refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+      client_id:     GOOGLE_CLIENT_ID,
+      client_secret: GOOGLE_CLIENT_SECRET,
+      refresh_token: refreshToken || process.env.GOOGLE_REFRESH_TOKEN,
       grant_type:    'refresh_token',
     }),
   });
@@ -806,13 +879,14 @@ async function getYTAccessToken() {
   return d.access_token;
 }
 
-async function syncYouTube(log) {
+
+async function syncYouTube(log, userChannelId, userRefreshToken) {
   const apiKey    = process.env.YOUTUBE_API_KEY;
-  const channelId = process.env.YOUTUBE_CHANNEL_ID;
+  const channelId = userChannelId || process.env.YOUTUBE_CHANNEL_ID;
   if (!apiKey || !channelId) throw new Error('Missing YOUTUBE_API_KEY or YOUTUBE_CHANNEL_ID');
 
   log('Getting YouTube access token…');
-  const accessToken = await getYTAccessToken();
+  const accessToken = await getYTAccessToken(userRefreshToken || null);
 
   // 1. Get uploads playlist ID
   log('Fetching channel uploads playlist…');
@@ -881,17 +955,18 @@ async function syncYouTube(log) {
 
     await pool.query(`
       INSERT INTO content_analytics
-        (platform, post_id, title, thumbnail_url, published_at, views, likes, comments,
+        (platform, post_id, channel_id, title, thumbnail_url, published_at, views, likes, comments,
          engagement_rate, ctr, avg_view_duration, watch_time_minutes, yt_impressions, updated_at)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,NOW())
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,NOW())
       ON CONFLICT (post_id) DO UPDATE SET
+        channel_id=EXCLUDED.channel_id,
         title=EXCLUDED.title, thumbnail_url=EXCLUDED.thumbnail_url,
         views=EXCLUDED.views, likes=EXCLUDED.likes, comments=EXCLUDED.comments,
         engagement_rate=EXCLUDED.engagement_rate, ctr=EXCLUDED.ctr,
         avg_view_duration=EXCLUDED.avg_view_duration,
         watch_time_minutes=EXCLUDED.watch_time_minutes,
         yt_impressions=EXCLUDED.yt_impressions, updated_at=NOW()
-    `, ['youtube', vid, snip.title, thumb, publishedAt,
+    `, ['youtube', vid, channelId, snip.title, thumb, publishedAt,
         views, likes, comments, er,
         an.ctr ?? null, an.avg_view_duration ?? null,
         an.watch_time_minutes ?? null, an.yt_impressions ?? null]);
@@ -996,7 +1071,7 @@ app.post('/api/sync', express.json(), async (req, res) => {
   try {
     const results = {};
     if (platform === 'all' || platform === 'youtube') {
-      try { results.youtube = await syncYouTube(log); }
+      try { results.youtube = await syncYouTube(log, null, null); }
       catch(e) { results.youtube = { error: e.message }; log('YouTube error: ' + e.message); }
     }
     if (platform === 'all' || platform === 'instagram') {
@@ -1042,6 +1117,7 @@ app.get('/api/patterns', async (req, res) => {
     const platform = req.query.platform || 'youtube';
     const pf = (platform === 'youtube' || platform === 'instagram') ? `AND platform = $1` : '';
     const args = pf ? [platform] : [];
+    const chCond = getChannelCond();
 
     const r = await pool.query(`
       SELECT title, views, engagement_rate, shares, saves,
@@ -1049,7 +1125,7 @@ app.get('/api/patterns', async (req, res) => {
              EXTRACT(HOUR FROM published_at)::int AS hour,
              EXTRACT(EPOCH FROM (NOW() - published_at)) / 86400 AS age_days
       FROM content_analytics
-      WHERE title IS NOT NULL ${pf}
+      WHERE title IS NOT NULL ${pf} ${chCond}
       ORDER BY views DESC
     `, args);
 
@@ -1167,43 +1243,66 @@ async function fetchChannelStats(channelId) {
 async function resolveChannelId(input) {
   const apiKey = process.env.YOUTUBE_API_KEY;
   input = input.trim();
-  // Extract from URL
-  const patterns = [
-    /youtube\.com\/channel\/([A-Za-z0-9_-]+)/,
-    /youtube\.com\/@([A-Za-z0-9_.-]+)/,
-    /youtube\.com\/c\/([A-Za-z0-9_-]+)/,
-    /youtube\.com\/user\/([A-Za-z0-9_-]+)/,
+
+  // 1. Direct channel ID
+  if (/^UC[A-Za-z0-9_-]{20,}$/.test(input)) return input;
+
+  // 2. Extract identifier from URL
+  let identifier = input;
+  const urlPatterns = [
+    /youtube\.com\/channel\/(UC[A-Za-z0-9_-]{20,})/,  // channel ID in URL → return directly
+    /youtube\.com\/@([A-Za-z0-9_.\-]+)/,
+    /youtube\.com\/c\/([A-Za-z0-9_.\-]+)/,
+    /youtube\.com\/user\/([A-Za-z0-9_.\-]+)/,
   ];
-  let handle = input, isChannelId = /^UC[A-Za-z0-9_-]{20,}$/.test(input);
-  for (const p of patterns) {
+  for (const p of urlPatterns) {
     const m = input.match(p);
-    if (m) { handle = m[1]; break; }
+    if (m) { identifier = m[1]; break; }
   }
-  if (isChannelId) return input;
-  // Try as handle (@username)
-  const cleanHandle = handle.startsWith('@') ? handle.slice(1) : handle;
-  const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${cleanHandle}&key=${apiKey}`);
-  const d = await r.json();
+  if (/^UC[A-Za-z0-9_-]{20,}$/.test(identifier)) return identifier;
+
+  // Clean @ prefix
+  const handle = identifier.startsWith('@') ? identifier.slice(1) : identifier;
+
+  const ytGet = url => fetch(url).then(r => r.json()).catch(() => ({}));
+
+  // 3. forHandle without @ (most reliable for new-style handles)
+  let d = await ytGet(`https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${encodeURIComponent(handle)}&key=${apiKey}`);
   if (d.items?.[0]?.id) return d.items[0].id;
-  // Fallback: search
-  const sr = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&maxResults=1&key=${apiKey}`);
-  const sd = await sr.json();
-  if (sd.items?.[0]?.id?.channelId) return sd.items[0].id.channelId;
-  throw new Error('Could not find channel: ' + input);
+
+  // 4. forHandle with @ prefix (some channels need this)
+  d = await ytGet(`https://www.googleapis.com/youtube/v3/channels?part=id&forHandle=${encodeURIComponent('@' + handle)}&key=${apiKey}`);
+  if (d.items?.[0]?.id) return d.items[0].id;
+
+  // 5. forUsername (legacy channels)
+  d = await ytGet(`https://www.googleapis.com/youtube/v3/channels?part=id&forUsername=${encodeURIComponent(handle)}&key=${apiKey}`);
+  if (d.items?.[0]?.id) return d.items[0].id;
+
+  // 6. Search — try to find exact handle match first, then fall back to first result
+  d = await ytGet(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&maxResults=5&key=${apiKey}`);
+  const results = d.items || [];
+  const exact = results.find(r =>
+    r.snippet?.customUrl?.replace('@','').toLowerCase() === handle.toLowerCase()
+  );
+  const best = exact || results[0];
+  if (best?.id?.channelId) return best.id.channelId;
+
+  throw new Error(`Channel not found. Try pasting the full YouTube URL (e.g. youtube.com/@handle)`);
 }
 
 app.get('/api/competitors', async (req, res) => {
   try {
     const r = await pool.query(`SELECT * FROM competitors ORDER BY added_at ASC`);
-    // Fetch live stats for all
+    if (!r.rows.length) return res.json([]);
+
+    // Batch-fetch live subscriber/view counts (cheap, 1 API call)
     const apiKey = process.env.YOUTUBE_API_KEY;
     const ids = r.rows.map(c => c.channel_id).join(',');
-    if (!ids) return res.json([]);
     const statsR = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=${ids}&key=${apiKey}`);
     const statsData = await statsR.json();
-    const statsMap = {};
+    const liveMap = {};
     (statsData.items || []).forEach(item => {
-      statsMap[item.id] = {
+      liveMap[item.id] = {
         subscribers: Number(item.statistics.subscriberCount || 0),
         total_views: Number(item.statistics.viewCount || 0),
         video_count: Number(item.statistics.videoCount || 0),
@@ -1211,7 +1310,27 @@ app.get('/api/competitors', async (req, res) => {
         name:        item.snippet.title,
       };
     });
-    const result = r.rows.map(c => ({ ...c, ...(statsMap[c.channel_id] || {}) }));
+
+    // Background-refresh avg_recent_views/posts_per_month for stale entries (>24h)
+    const stale = r.rows.filter(c => !c.stats_updated_at || Date.now() - new Date(c.stats_updated_at) > 86400000);
+    if (stale.length) {
+      Promise.all(stale.map(async c => {
+        try {
+          const s = await fetchChannelStats(c.channel_id);
+          await pool.query(
+            `UPDATE competitors SET avg_recent_views=$1, posts_per_month=$2, stats_updated_at=NOW() WHERE id=$3`,
+            [s.avg_recent_views, s.posts_per_month, c.id]
+          );
+        } catch(_) {}
+      })).catch(() => {});
+    }
+
+    const result = r.rows.map(c => ({
+      ...c,
+      avg_recent_views: c.avg_recent_views ? Number(c.avg_recent_views) : null,
+      posts_per_month:  c.posts_per_month  ? Number(c.posts_per_month)  : null,
+      ...(liveMap[c.channel_id] || {}),
+    }));
     res.json(result);
   } catch(err) { res.status(500).json({ error: err.message }); }
 });
@@ -1223,9 +1342,14 @@ app.post('/api/competitors', express.json(), async (req, res) => {
     const channelId = await resolveChannelId(input);
     const stats     = await fetchChannelStats(channelId);
     const r = await pool.query(
-      `INSERT INTO competitors (channel_id, name, handle, avatar_url)
-       VALUES ($1,$2,$3,$4) ON CONFLICT (channel_id) DO UPDATE SET name=EXCLUDED.name, handle=EXCLUDED.handle, avatar_url=EXCLUDED.avatar_url RETURNING *`,
-      [channelId, stats.name, stats.handle, stats.avatar_url]
+      `INSERT INTO competitors (channel_id, name, handle, avatar_url, avg_recent_views, posts_per_month, stats_updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,NOW())
+       ON CONFLICT (channel_id) DO UPDATE SET
+         name=EXCLUDED.name, handle=EXCLUDED.handle, avatar_url=EXCLUDED.avatar_url,
+         avg_recent_views=EXCLUDED.avg_recent_views, posts_per_month=EXCLUDED.posts_per_month,
+         stats_updated_at=NOW()
+       RETURNING *`,
+      [channelId, stats.name, stats.handle, stats.avatar_url, stats.avg_recent_views, stats.posts_per_month]
     );
     res.json({ ...r.rows[0], ...stats });
   } catch(err) { res.status(500).json({ error: err.message }); }
@@ -1240,10 +1364,55 @@ app.delete('/api/competitors/:id', async (req, res) => {
 
 app.get('/api/my-channel', async (req, res) => {
   try {
-    const channelId = process.env.YOUTUBE_CHANNEL_ID;
-    if (!channelId) return res.status(400).json({ error: 'YOUTUBE_CHANNEL_ID not set' });
+    const channelId = (process.env.YOUTUBE_CHANNEL_ID || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!channelId) return res.status(400).json({ error: 'No YouTube channel connected' });
     const stats = await fetchChannelStats(channelId);
     res.json(stats);
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+// Recent videos for a competitor channel (last 12 videos with view counts)
+app.get('/api/competitors/:channelId/videos', async (req, res) => {
+  try {
+    const apiKey = process.env.YOUTUBE_API_KEY;
+    const { channelId } = req.params;
+    if (!/^UC[A-Za-z0-9_-]{20,}$/.test(channelId)) return res.status(400).json({ error: 'Invalid channel ID' });
+
+    // Get uploads playlist
+    const chR = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`);
+    const chData = await chR.json();
+    const uploadsId = chData.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+    if (!uploadsId) return res.json([]);
+
+    // Get last 12 video IDs
+    const plR = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId=${uploadsId}&maxResults=12&key=${apiKey}`);
+    const plData = await plR.json();
+    const videoIds = (plData.items || []).map(i => i.contentDetails.videoId);
+    if (!videoIds.length) return res.json([]);
+
+    // Fetch stats + snippets
+    const vR = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoIds.join(',')}&key=${apiKey}`);
+    const vData = await vR.json();
+
+    // Compute channel avg for outlier score
+    const views = (vData.items || []).map(v => Number(v.statistics?.viewCount || 0));
+    const avgViews = views.reduce((a,b) => a+b, 0) / (views.length || 1);
+
+    const videos = (vData.items || []).map(v => {
+      const views = Number(v.statistics?.viewCount || 0);
+      const score = Math.min(100, Math.max(1, Math.round(views / (avgViews || 1) * 50)));
+      return {
+        id:            v.id,
+        title:         v.snippet.title,
+        thumbnail:     v.snippet.thumbnails?.medium?.url || v.snippet.thumbnails?.default?.url,
+        published_at:  v.snippet.publishedAt,
+        views,
+        likes:         Number(v.statistics?.likeCount || 0),
+        comments:      Number(v.statistics?.commentCount || 0),
+        score,
+      };
+    });
+    res.json(videos);
   } catch(err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -1286,93 +1455,173 @@ app.get('/api/outliers', async (req, res) => {
 });
 
 // ── YouTube-wide outlier search ────────────────────────────────────────────
-const _ytOutlierCache = new Map(); // key → {ts, data}
-const YT_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const _ytOutlierCache = new Map();
+const YT_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours — preserve daily quota
+
+const DIVERSE_TOPICS = [
+  'documentary', 'science experiment', 'history mystery',
+  'true crime investigation', 'life advice wisdom', 'travel adventure',
+  'technology explained', 'psychology human behavior', 'health transformation',
+  'investing money finance', 'comedy skit', 'news analysis',
+  'cooking technique', 'wildlife encounter', 'engineering build',
+  'philosophy deep', 'economics explained', 'motivation success story',
+  'art creation', 'education learning', 'unsolved mystery',
+  'behind the scenes', 'exposing secrets', 'survival challenge',
+  'social experiment', 'incredible story', 'amazing discovery',
+];
+
+function parseDurationSecs(str) {
+  if (!str) return 0;
+  const m = str.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!m) return 0;
+  return (parseInt(m[1]||0)*3600) + (parseInt(m[2]||0)*60) + (parseInt(m[3]||0));
+}
+function fmtDuration(s) {
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  return `${m}:${String(ss).padStart(2,'0')}`;
+}
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const d = Math.floor(diff/86400000);
+  if (d < 1) return 'today';
+  if (d < 7) return `${d}d ago`;
+  if (d < 30) return `${Math.floor(d/7)}wk ago`;
+  if (d < 365) return `${Math.floor(d/30)}mo ago`;
+  return `${Math.floor(d/365)}yr ago`;
+}
+
+// Debug: test raw YouTube search
+app.get('/api/debug/yt', async (req, res) => {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return res.json({ error: 'No YOUTUBE_API_KEY', key: null });
+  const q = req.query.q || 'documentary';
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(q)}&maxResults=3&key=${apiKey}`;
+  const r = await fetch(url).then(r => r.json());
+  res.json({ keyPrefix: apiKey.slice(0,10)+'…', url: url.replace(apiKey,'[KEY]'), response: r });
+});
 
 app.get('/api/outliers/youtube', async (req, res) => {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey) return res.status(400).json({ error: 'YOUTUBE_API_KEY not set' });
 
-  const q          = (req.query.q || '').trim();
-  const order      = ['viewCount','relevance','date','rating'].includes(req.query.order) ? req.query.order : 'viewCount';
-  const maxResults = Math.min(parseInt(req.query.maxResults) || 30, 50);
-  if (!q) return res.status(400).json({ error: 'q is required' });
+  const q      = (req.query.q || '').trim();
+  const order  = ['viewCount','relevance','date','rating'].includes(req.query.order) ? req.query.order : 'relevance';
+  const publishedAfter = req.query.publishedAfter || '';
+  const forceRefresh = req.query.refresh === '1';
 
-  const cacheKey = `${q}:${order}:${maxResults}`;
-  const cached   = _ytOutlierCache.get(cacheKey);
-  if (cached && Date.now() - cached.ts < YT_CACHE_TTL) return res.json(cached.data);
+  // Pick topics: specific query OR 2 from a time-based slot so the cache actually hits.
+  // Slot advances every 4 hours → ~6 different pairs per day, each cached for 24hr.
+  // Shuffle param shifts the slot by 1 so the button gives genuinely different results.
+  const slotShift = parseInt(req.query.slot || '0');
+  const slot = (Math.floor(Date.now() / (4 * 3600 * 1000)) + slotShift) % DIVERSE_TOPICS.length;
+  const topics = q ? [q] : [
+    DIVERSE_TOPICS[slot % DIVERSE_TOPICS.length],
+    DIVERSE_TOPICS[(slot + 1) % DIVERSE_TOPICS.length],
+  ];
+  const cacheKey = topics.join('|') + ':' + order + ':' + publishedAfter;
+
+  if (!forceRefresh) {
+    const hit = _ytOutlierCache.get(cacheKey);
+    if (hit && Date.now() - hit.ts < YT_CACHE_TTL) return res.json({ results: hit.data, cached: true });
+  }
 
   try {
-    // 1. Search YouTube (100 quota units)
-    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(q)}&order=${order}&maxResults=${maxResults}&key=${apiKey}`;
-    const searchR   = await fetch(searchUrl);
-    const searchD   = await searchR.json();
-    if (searchD.error) throw new Error(searchD.error.message);
+    // 1. Search each topic (100 quota units each)
+    const allItems = [], allChannelIds = new Set();
+    for (const term of topics) {
+      let url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=${encodeURIComponent(term)}&order=${order}&maxResults=15&key=${apiKey}`;
+      if (publishedAfter) url += `&publishedAfter=${encodeURIComponent(publishedAfter)}`;
+      const r = await fetch(url).then(r => r.json());
+      if (r.error) {
+        const msg = r.error.message || JSON.stringify(r.error);
+        if (r.error.errors?.[0]?.reason === 'quotaExceeded' || msg.toLowerCase().includes('quota')) {
+          throw new Error('QUOTA_EXCEEDED');
+        }
+        throw new Error(`YouTube API error (search "${term}"): ${msg}`);
+      }
+      for (const item of (r.items || [])) {
+        if (item.id?.videoId) { allItems.push(item); if (item.snippet?.channelId) allChannelIds.add(item.snippet.channelId); }
+      }
+    }
+    if (!allItems.length) return res.json({ results: [], cached: false });
 
-    const items      = searchD.items || [];
-    const videoIds   = items.map(i => i.id.videoId).filter(Boolean);
-    const channelIds = [...new Set(items.map(i => i.snippet.channelId).filter(Boolean))];
+    // Cap at 50 — YouTube batch endpoints reject longer lists
+    const videoIds   = [...new Set(allItems.map(i => i.id.videoId))].slice(0, 50);
+    const channelIds = [...allChannelIds].slice(0, 50);
 
-    if (!videoIds.length) return res.json([]);
-
-    // 2. Batch-fetch video stats + channel stats in parallel (~1 unit/video + 1 unit/channel)
-    const [videosR, channelsR] = await Promise.all([
-      fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoIds.join(',')}&key=${apiKey}`).then(r => r.json()),
+    // 2. Batch fetch video stats+contentDetails + channel stats
+    const [videosD, channelsD] = await Promise.all([
+      fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet,contentDetails&id=${videoIds.join(',')}&key=${apiKey}`).then(r => r.json()),
       fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelIds.join(',')}&key=${apiKey}`).then(r => r.json()),
     ]);
+    if (videosD.error)   throw new Error(`YouTube videos API: ${videosD.error.message}`);
+    if (channelsD.error) throw new Error(`YouTube channels API: ${channelsD.error.message}`);
 
-    // Build channel map: channelId → { name, avatar, subs, totalViews, videoCount, avgViews }
+    // 3. Build channel map
     const chanMap = {};
-    for (const ch of (channelsR.items || [])) {
-      const stats = ch.statistics || {};
-      const vc    = parseInt(stats.videoCount) || 1;
-      const tv    = parseInt(stats.viewCount)  || 0;
-      const subs  = parseInt(stats.subscriberCount) || 0;
+    for (const ch of (channelsD.items || [])) {
+      const s = ch.statistics || {}, vc = parseInt(s.videoCount)||1, tv = parseInt(s.viewCount)||0;
       chanMap[ch.id] = {
-        name:         ch.snippet?.title || 'Unknown',
-        avatar:       ch.snippet?.thumbnails?.default?.url || null,
-        subscribers:  subs,
-        total_views:  tv,
-        video_count:  vc,
-        avg_views:    Math.round(tv / vc),
+        name: ch.snippet?.title || 'Unknown',
+        handle: ch.snippet?.customUrl || '',
+        avatar: ch.snippet?.thumbnails?.default?.url || null,
+        subscribers: parseInt(s.subscriberCount)||0,
+        avg_views: Math.round(tv / vc),
+        video_count: vc,
       };
     }
 
-    // 3. Build result rows with outlier ratio
-    const results = (videosR.items || []).map(v => {
-      const stats     = v.statistics || {};
-      const views     = parseInt(stats.viewCount)    || 0;
-      const likes     = parseInt(stats.likeCount)    || 0;
-      const comments  = parseInt(stats.commentCount) || 0;
-      const chanId    = v.snippet?.channelId;
-      const chan      = chanMap[chanId] || {};
-      const avgViews  = chan.avg_views || 1;
-      const ratio     = Math.round((views / avgViews) * 10) / 10;
+    // 4. Build results — minimal filtering so we always get results
+    const results = (videosD.items || []).map(v => {
+      const stats = v.statistics || {};
+      const views = parseInt(stats.viewCount)||0;
+      const chanId = v.snippet?.channelId;
+      const chan = chanMap[chanId] || {};
+      const durationSecs = parseDurationSecs(v.contentDetails?.duration);
+      const avgViews = chan.avg_views || 0;
+      // Protect against avg=0 (hidden stats) — use views itself as baseline so ratio=1
+      const ratio = avgViews > 0 ? Math.round((views / avgViews) * 10) / 10 : 1.0;
       return {
-        post_id:        v.id,
-        title:          v.snippet?.title || '',
-        thumbnail_url:  v.snippet?.thumbnails?.high?.url || v.snippet?.thumbnails?.default?.url || null,
-        published_at:   v.snippet?.publishedAt || null,
+        video_id:          v.id,
+        title:             v.snippet?.title || '',
+        thumbnail_url:     v.snippet?.thumbnails?.maxres?.url || v.snippet?.thumbnails?.high?.url || null,
+        published_at:      v.snippet?.publishedAt || null,
+        duration_secs:     durationSecs,
+        duration_fmt:      durationSecs >= 60 ? fmtDuration(durationSecs) : null,
+        time_ago:          timeAgo(v.snippet?.publishedAt),
         views,
-        likes,
-        comments,
-        channel_id:     chanId,
-        channel_name:   chan.name,
-        channel_avatar: chan.avatar,
-        subscribers:    chan.subscribers,
-        channel_avg_views: chan.avg_views,
-        video_count:    chan.video_count,
-        view_ratio:     ratio,
-        yt_url:         `https://www.youtube.com/watch?v=${v.id}`,
+        channel_id:        chanId,
+        channel_name:      chan.name,
+        channel_handle:    chan.handle,
+        channel_avatar:    chan.avatar,
+        subscribers:       chan.subscribers,
+        channel_avg_views: avgViews,
+        video_count:       chan.video_count,
+        view_ratio:        ratio,
       };
     })
-    // Filter noise: skip channels with < 5 videos or < 500 subs (new/tiny channels skew ratios)
-    .filter(r => r.video_count >= 5 && r.subscribers >= 500)
+    // Filter out Shorts
+    .filter(r => r.duration_secs === 0 || r.duration_secs >= 120)
+    // Exclude mega-popular channels (>5M subs) and mega-viral videos (>3M views)
+    // We want mid-size creators having a breakout moment, not YouTube's biggest stars
+    .filter(r => (r.subscribers === 0 || r.subscribers <= 5_000_000) && r.views <= 3_000_000)
+    // Deduplicate — max 1 video per channel
+    .reduce((acc, r) => {
+      if (!acc.seen.has(r.channel_id)) { acc.seen.add(r.channel_id); acc.list.push(r); }
+      return acc;
+    }, { seen: new Set(), list: [] }).list
     .sort((a, b) => b.view_ratio - a.view_ratio);
 
     _ytOutlierCache.set(cacheKey, { ts: Date.now(), data: results });
-    res.json(results);
-  } catch(err) { res.status(500).json({ error: err.message }); }
+    res.json({ results, cached: false });
+  } catch(err) {
+    if (err.message === 'QUOTA_EXCEEDED') {
+      return res.status(429).json({ error: 'quota_exceeded', message: "YouTube API daily quota reached. Results reset at midnight Pacific time. Try again tomorrow, or hit Shuffle to view a different cached set." });
+    }
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── Lab: AI Title Suggestions from thumbnail ───────────────────────────────
@@ -1411,51 +1660,7 @@ Return ONLY a JSON array of 5 title strings, nothing else. Example:
   } catch(err) { res.status(500).json({ error: err.message }); }
 });
 
-// ── Auth ──────────────────────────────────────────────────────────────────
-app.post('/api/auth/login', express.json(), async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ ok: false, error: 'Email and password required' });
 
-    let user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-
-    if (user.rows.length === 0) {
-      // Auto-register new user
-      const hash = await bcrypt.hash(password, 10);
-      const r = await pool.query(
-        'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING *',
-        [email, hash]
-      );
-      user = { rows: [r.rows[0]] };
-    } else {
-      // Verify password
-      const valid = await bcrypt.compare(password, user.rows[0].password_hash);
-      if (!valid) return res.status(401).json({ ok: false, error: 'Invalid password' });
-    }
-
-    const u = user.rows[0];
-    const token = Buffer.from(JSON.stringify({ email: u.email, plan: u.plan, exp: Date.now() + 86400000 * 30 })).toString('base64');
-    res.json({ ok: true, token, user: { email: u.email, plan: u.plan } });
-  } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
-  }
-});
-
-app.get('/api/auth/me', async (req, res) => {
-  try {
-    const auth = req.headers.authorization || '';
-    const token = auth.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ error: 'No token' });
-    const data = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
-    if (data.exp < Date.now()) return res.status(401).json({ error: 'Token expired' });
-    // Re-fetch from DB for fresh plan
-    const r = await pool.query('SELECT email, plan FROM users WHERE email = $1', [data.email]);
-    if (!r.rows.length) return res.status(404).json({ error: 'User not found' });
-    res.json({ user: r.rows[0] });
-  } catch (err) {
-    res.status(401).json({ error: 'Invalid token' });
-  }
-});
 
 // ── Stripe ────────────────────────────────────────────────────────────────
 app.post('/api/stripe/checkout', express.json(), async (req, res) => {
@@ -1475,6 +1680,24 @@ app.post('/api/stripe/checkout', express.json(), async (req, res) => {
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   // webhook handling stub - implement after Stripe dashboard setup
   res.json({ received: true });
+});
+
+// One-time setup helper — retrieve stored YT refresh token from DB
+app.get('/api/admin/setup', async (req, res) => {
+  const secret = req.query.secret;
+  if (!secret || secret !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Pass ?secret=YOUR_ADMIN_SECRET query param' });
+  }
+  try {
+    const r = await pool.query('SELECT email, yt_refresh_token, yt_channel_id FROM users ORDER BY created_at LIMIT 1');
+    if (!r.rows.length) return res.json({ message: 'No users in DB' });
+    res.json({
+      email: r.rows[0].email,
+      yt_channel_id: r.rows[0].yt_channel_id,
+      yt_refresh_token: r.rows[0].yt_refresh_token,
+      next: 'Set GOOGLE_REFRESH_TOKEN = yt_refresh_token value in your Vercel env vars, then redeploy'
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 const PORT = process.env.PORT || 3000;
