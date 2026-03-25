@@ -113,7 +113,7 @@ pool.query(`
 pool.query(`ALTER TABLE content_analytics ADD COLUMN IF NOT EXISTS channel_id TEXT`)
   .then(() => {
     // Backfill existing rows that belong to the owner's channel
-    const ownerChannel = (process.env.YOUTUBE_CHANNEL_ID || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const ownerChannel = (process.env.YOUTUBE_CHANNEL_ID || '').trim().replace(/[^a-zA-Z0-9_-]/g, '');
     if (ownerChannel) {
       pool.query(`UPDATE content_analytics SET channel_id = $1 WHERE channel_id IS NULL AND platform = 'youtube'`, [ownerChannel])
         .catch(() => {});
@@ -128,7 +128,7 @@ const GOOGLE_CLIENT_ID     = (process.env.GOOGLE_CLIENT_ID     || '').trim();
 const GOOGLE_CLIENT_SECRET = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
 
 function getChannelCond() {
-  const id = (process.env.YOUTUBE_CHANNEL_ID || '').replace(/[^a-zA-Z0-9_-]/g, '');
+  const id = (process.env.YOUTUBE_CHANNEL_ID || '').trim().replace(/[^a-zA-Z0-9_-]/g, '');
   return id ? `AND (channel_id = '${id}' OR channel_id IS NULL)` : '';
 }
 
