@@ -904,15 +904,43 @@ app.get('/api/thumbnails', async (req, res) => {
     const hasPf    = platform === 'youtube' || platform === 'instagram';
     const chCond   = getChannelCond();
     const pfCond   = hasPf ? `AND platform = '${platform}'` : '';
+    // Exclude YouTube Shorts: filter by title containing #shorts or avg_view_duration ≤ 62s
+    const shortsFilter = `AND NOT (platform = 'youtube' AND (
+      LOWER(COALESCE(title,'')) LIKE '%#shorts%'
+      OR LOWER(COALESCE(title,'')) LIKE '% shorts%'
+      OR (avg_view_duration IS NOT NULL AND avg_view_duration <= 62)
+    ))`;
     const r = await pool.query(`
       SELECT post_id, platform, title, thumbnail_url, published_at,
-             views, likes, comments, engagement_rate, watch_time_minutes
+             views, likes, comments, engagement_rate, watch_time_minutes, avg_view_duration
       FROM content_analytics
-      WHERE thumbnail_url IS NOT NULL ${pfCond} ${chCond}
+      WHERE thumbnail_url IS NOT NULL ${pfCond} ${chCond} ${shortsFilter}
       ORDER BY ${sort} DESC NULLS LAST
       LIMIT 50
     `);
     res.json(r.rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── AI Thumbnail Image Generator ──────────────────────────────────────────
+
+app.post('/api/ideas/thumbnail', express.json(), async (req, res) => {
+  try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey || apiKey === 'your_openai_api_key_here') {
+      return res.status(400).json({ error: 'OPENAI_API_KEY not set in .env — add it to generate thumbnails' });
+    }
+    const { title = '', concept = '' } = req.body;
+    const prompt = `YouTube thumbnail for a video titled "${title}". Style: bold, high-contrast, eye-catching. Concept: ${concept}. 16:9 format, professional YouTube thumbnail with large expressive text overlay, vivid colors, dramatic lighting. No watermarks, no text explaining it's an image.`;
+
+    const r = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+      body: JSON.stringify({ model: 'dall-e-3', prompt, n: 1, size: '1792x1024', quality: 'standard' }),
+    });
+    const data = await r.json();
+    if (data.error) return res.status(500).json({ error: data.error.message });
+    res.json({ imageUrl: data.data[0].url });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

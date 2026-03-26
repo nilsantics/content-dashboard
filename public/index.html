@@ -473,26 +473,26 @@
     .pipeline-board { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; align-items:start; }
     .pipeline-col { background:#111e2e; border:1px solid #1a2f48; border-radius:12px; padding:12px; min-height:180px; transition:border-color .15s,background .15s; }
     .pipeline-col-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding:0 2px; }
-    .pipeline-col-title { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; }
-    .pipeline-count { font-size:11px; color:#3d5270; background:#0f1929; padding:2px 8px; border-radius:10px; border:1px solid #1a2f48; font-weight:700; }
-    .pipeline-card { background:#0f1929; border:1px solid #1a2f48; border-radius:10px; padding:13px; margin-bottom:8px; cursor:grab; user-select:none; transition:border-color .15s,transform .1s,box-shadow .15s; position:relative; }
+    .pipeline-col-title { font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; }
+    .pipeline-count { font-size:12px; color:#7a92b0; background:#0f1929; padding:2px 9px; border-radius:10px; border:1px solid #1a2f48; font-weight:700; }
+    .pipeline-card { background:#0f1929; border:1px solid #1a2f48; border-radius:10px; padding:14px; margin-bottom:8px; cursor:grab; user-select:none; transition:border-color .15s,transform .1s,box-shadow .15s; position:relative; }
     .pipeline-card:hover { border-color:#2a4868; box-shadow:0 3px 12px rgba(0,0,0,.3); }
     .pipeline-card:active { cursor:grabbing; transform:scale(1.02); }
     .pipeline-card.drag-over-card { border-color:#818cf8; }
     .pipeline-col.drag-over { border-color:#818cf8; background:#0f1929cc; }
-    .pipeline-card-title { font-size:13.5px; font-weight:700; color:#eef2f8; line-height:1.4; margin-bottom:7px; }
+    .pipeline-card-title { font-size:14px; font-weight:700; color:#eef2f8; line-height:1.4; margin-bottom:8px; }
     .pipeline-card-meta { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-    .pipeline-badge { font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; text-transform:uppercase; }
+    .pipeline-badge { font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:8px; text-transform:uppercase; }
     .badge-youtube { background:#818cf818; color:#818cf8; border:1px solid #818cf833; }
     .badge-instagram { background:#f472b618; color:#f472b6; border:1px solid #f472b633; }
     .badge-both { background:#fbbf2418; color:#fbbf24; border:1px solid #fbbf2433; }
-    .pipeline-date { font-size:10px; color:#3d5270; }
-    .pipeline-notes { font-size:10px; color:#3d5270; margin-top:5px; line-height:1.4; border-top:1px solid #1a2f48; padding-top:5px; white-space:pre-wrap; }
-    .pipeline-add-btn { width:100%; background:none; border:1px dashed #1a2f48; border-radius:8px; color:#354e68; font-size:11px; padding:7px; cursor:pointer; transition:border-color .15s,color .15s; margin-top:2px; }
+    .pipeline-date { font-size:11px; color:#7a92b0; }
+    .pipeline-notes { font-size:11.5px; color:#8aa0bc; margin-top:6px; line-height:1.5; border-top:1px solid #1a2f48; padding-top:6px; white-space:pre-wrap; }
+    .pipeline-add-btn { width:100%; background:none; border:1px dashed #1a2f48; border-radius:8px; color:#5a7090; font-size:12px; padding:8px; cursor:pointer; transition:border-color .15s,color .15s; margin-top:2px; }
     .pipeline-add-btn:hover { border-color:#818cf855; color:#818cf8; }
     .pipeline-card-actions { position:absolute; top:7px; right:7px; display:none; gap:4px; }
     .pipeline-card:hover .pipeline-card-actions { display:flex; }
-    .pipeline-act-btn { background:#111e2e; border:1px solid #1a2f48; border-radius:4px; color:#3d5270; font-size:10px; padding:2px 5px; cursor:pointer; transition:all .12s; }
+    .pipeline-act-btn { background:#111e2e; border:1px solid #1a2f48; border-radius:4px; color:#5a7090; font-size:11px; padding:3px 6px; cursor:pointer; transition:all .12s; }
     .pipeline-act-btn:hover { color:#c8d8ea; border-color:#354e68; }
     /* Card Detail Panel (Notion-style) */
     #card-detail-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); backdrop-filter:blur(4px); z-index:990; }
@@ -544,7 +544,7 @@
     .md-check-item { display:flex; align-items:center; gap:8px; margin:4px 0; list-style:none; }
     .md-check-item input[type=checkbox] { width:14px; height:14px; cursor:pointer; accent-color:#818cf8; }
     .md-check-item.checked span { text-decoration:line-through; color:#475569; }
-    .pipeline-card-note-preview { font-size:10px; color:#334155; margin-top:5px; line-height:1.4; border-top:1px solid #1a2740; padding-top:5px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+    .pipeline-card-note-preview { font-size:11.5px; color:#8aa0bc; margin-top:6px; line-height:1.4; border-top:1px solid #1a2740; padding-top:5px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
 
     /* ── Thumbnail Gallery ── */
     .thumb-grid { display:grid; gap:12px; }
@@ -5044,10 +5044,12 @@ function renderThumbnails() {
   if (!grid) return;
   grid.className = `thumb-grid size-${_thumbSize}`;
 
-  // Filter out Shorts (duration ≤ 60s or title/url contains "shorts")
+  // Filter out YouTube Shorts (avg_view_duration ≤ 62s, title contains #shorts, or post_id pattern)
   const filtered = _thumbData.filter(v => {
-    if (v.duration_secs != null && v.duration_secs <= 62) return false;
-    if (/shorts/i.test(v.title || '') || /shorts/i.test(v.post_id || '')) return false;
+    if (v.platform === 'youtube') {
+      if (v.avg_view_duration != null && v.avg_view_duration <= 62) return false;
+      if (/shorts/i.test(v.title || '') || /\bshort\b/i.test(v.title || '')) return false;
+    }
     return true;
   });
 
@@ -5204,18 +5206,47 @@ function renderIdeaCards(ideas) {
         <div class="idea-text">${escHtml(idea.angle)}</div>` : ''}
       ${idea.thumbnail ? `
         <div class="idea-label">Thumbnail concept</div>
-        <div style="background:#0d1826;border:1px solid #1a2f48;border-radius:8px;padding:10px 12px;font-size:12px;color:#8aa0bc;line-height:1.55;margin-bottom:10px;">
+        <div id="idea-thumb-box-${i}" style="background:#0d1826;border:1px solid #1a2f48;border-radius:8px;padding:10px 12px;font-size:12px;color:#8aa0bc;line-height:1.55;margin-bottom:10px;">
           🖼 ${escHtml(idea.thumbnail)}
         </div>` : ''}
       <div class="idea-actions">
         <button class="idea-action-btn idea-add-btn" id="idea-save-${i}" onclick="quickSaveIdea(${i}, this)">⚡ Save to Pipeline</button>
         <button class="idea-action-btn idea-copy-btn" onclick="ideaCopy(${i})">Copy title</button>
         <button class="idea-action-btn" style="background:#162840;color:#6a84a0;border:1px solid #1a2f48;" onclick="ideaAddToPipeline(${i})">Open &amp; Edit</button>
+        ${idea.thumbnail ? `<button class="idea-action-btn" id="idea-genthumb-${i}" style="background:linear-gradient(135deg,#1a2f48,#162840);color:#a0b8d0;border:1px solid #2a4868;" onclick="generateThumbnailImage(${i})">🎨 Generate Thumbnail</button>` : ''}
       </div>
     </div>`).join('');
 }
 
 let _lastIdeas = [];
+
+async function generateThumbnailImage(i) {
+  const idea = _lastIdeas[i];
+  if (!idea) return;
+  const btn  = document.getElementById(`idea-genthumb-${i}`);
+  const box  = document.getElementById(`idea-thumb-box-${i}`);
+  if (!btn || !box) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating…';
+  try {
+    const resp = await fetch('/api/ideas/thumbnail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: idea.title, concept: idea.thumbnail }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Generation failed');
+    box.innerHTML = `
+      <img src="${escHtml(data.imageUrl)}" alt="AI thumbnail" style="width:100%;border-radius:6px;display:block;margin-bottom:8px;">
+      <div style="font-size:11px;color:#6a84a0;">AI-generated thumbnail • <a href="${escHtml(data.imageUrl)}" target="_blank" style="color:#818cf8;">Open full size</a></div>`;
+    btn.textContent = '🔄 Regenerate';
+    btn.disabled = false;
+  } catch (err) {
+    btn.textContent = '🎨 Generate Thumbnail';
+    btn.disabled = false;
+    box.innerHTML += `<div style="color:#f87171;font-size:11px;margin-top:6px;">⚠ ${escHtml(err.message)}</div>`;
+  }
+}
 
 async function generateFromChannel() {
   const btn  = document.getElementById('ideas-channel-btn');
