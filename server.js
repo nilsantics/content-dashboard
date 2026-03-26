@@ -54,6 +54,7 @@ pool.query(`
     avg_view_duration INT,
     watch_time_minutes BIGINT,
     yt_impressions   BIGINT,
+    duration_secs    INT,
     updated_at       TIMESTAMPTZ DEFAULT NOW()
   )
 `).catch(err => console.warn('content_analytics init:', err.message));
@@ -110,6 +111,10 @@ pool.query(`
     ADD COLUMN IF NOT EXISTS posts_per_month  NUMERIC(5,1),
     ADD COLUMN IF NOT EXISTS stats_updated_at TIMESTAMPTZ
 `).catch(() => {});
+
+// Add duration_secs column for Shorts detection
+pool.query(`ALTER TABLE content_analytics ADD COLUMN IF NOT EXISTS duration_secs INT`)
+  .catch(err => console.warn('duration_secs migration:', err.message));
 
 // Add channel_id to content_analytics
 pool.query(`ALTER TABLE content_analytics ADD COLUMN IF NOT EXISTS channel_id TEXT`)
@@ -904,15 +909,15 @@ app.get('/api/thumbnails', async (req, res) => {
     const hasPf    = platform === 'youtube' || platform === 'instagram';
     const chCond   = getChannelCond();
     const pfCond   = hasPf ? `AND platform = '${platform}'` : '';
-    // Exclude YouTube Shorts: filter by title containing #shorts or avg_view_duration ≤ 62s
+    // Exclude YouTube Shorts: duration_secs ≤ 60 is definitive; also filter by title
     const shortsFilter = `AND NOT (platform = 'youtube' AND (
-      LOWER(COALESCE(title,'')) LIKE '%#shorts%'
+      (duration_secs IS NOT NULL AND duration_secs <= 60)
+      OR LOWER(COALESCE(title,'')) LIKE '%#shorts%'
       OR LOWER(COALESCE(title,'')) LIKE '% shorts%'
-      OR (avg_view_duration IS NOT NULL AND avg_view_duration <= 62)
     ))`;
     const r = await pool.query(`
       SELECT post_id, platform, title, thumbnail_url, published_at,
-             views, likes, comments, engagement_rate, watch_time_minutes, avg_view_duration
+             views, likes, comments, engagement_rate, watch_time_minutes, avg_view_duration, duration_secs
       FROM content_analytics
       WHERE thumbnail_url IS NOT NULL ${pfCond} ${chCond} ${shortsFilter}
       ORDER BY ${sort} DESC NULLS LAST
@@ -2280,6 +2285,32 @@ app.get('/api/admin/setup', async (req, res) => {
       yt_refresh_token: r.rows[0].yt_refresh_token,
       next: 'Set GOOGLE_REFRESH_TOKEN = yt_refresh_token value in your Vercel env vars, then redeploy'
     });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Backfill duration_secs for existing YouTube videos ─────────────────────
+app.post('/api/admin/backfill-duration', async (req, res) => {
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) return res.status(400).json({ error: 'YOUTUBE_API_KEY not set' });
+  try {
+    const missing = await pool.query(
+      `SELECT post_id FROM content_analytics WHERE platform = 'youtube' AND duration_secs IS NULL LIMIT 50`
+    );
+    if (!missing.rows.length) return res.json({ updated: 0, message: 'All videos already have duration_secs' });
+    const ids = missing.rows.map(r => r.post_id);
+    const data = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${ids.join(',')}&key=${apiKey}`
+    ).then(r => r.json());
+    if (data.error) return res.status(500).json({ error: data.error.message });
+    let updated = 0;
+    for (const v of data.items || []) {
+      const secs = parseDurationSecs(v.contentDetails?.duration);
+      if (secs > 0) {
+        await pool.query(`UPDATE content_analytics SET duration_secs=$1 WHERE post_id=$2`, [secs, v.id]);
+        updated++;
+      }
+    }
+    res.json({ updated, remaining: missing.rows.length - updated });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

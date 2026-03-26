@@ -2,6 +2,13 @@ require('dotenv').config();
 const cron = require('node-cron');
 const { Pool } = require('pg');
 
+function parseDurationSecs(str) {
+  if (!str) return 0;
+  const m = str.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!m) return 0;
+  return (parseInt(m[1]||0)*3600) + (parseInt(m[2]||0)*60) + (parseInt(m[3]||0));
+}
+
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 pool.query(`
@@ -162,9 +169,9 @@ async function syncYoutube() {
   const videoIds = searchData.items.map(item => item.id.videoId);
   if (!videoIds.length) return [];
 
-  // Fetch snippet + statistics
+  // Fetch snippet + statistics + contentDetails (for duration/Shorts detection)
   const statsData = await fetch(
-    `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${videoIds.join(',')}&key=${apiKey}`
+    `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoIds.join(',')}&key=${apiKey}`
   ).then(r => r.json());
   if (statsData.error) throw new Error(`YouTube videos fetch failed: ${statsData.error.message}`);
 
@@ -180,6 +187,7 @@ async function syncYoutube() {
     const comms = parseInt(s.commentCount || 0, 10);
     const a     = analytics[video.id] || {};
     const thumbs = video.snippet.thumbnails;
+    const durationSecs = parseDurationSecs(video.contentDetails?.duration);
 
     return {
       platform:           'youtube',
@@ -198,6 +206,7 @@ async function syncYoutube() {
       avg_view_duration:  a.avg_view_duration ?? null,
       watch_time_minutes: a.watch_time_minutes ?? null,
       yt_impressions:     a.yt_impressions    ?? null,
+      duration_secs:      durationSecs || null,
     };
   });
 }
@@ -210,8 +219,8 @@ async function upsertRecords(records) {
       `INSERT INTO content_analytics
          (platform, post_id, title, thumbnail_url, published_at,
           views, likes, comments, shares, saves, reach, engagement_rate,
-          ctr, avg_view_duration, watch_time_minutes, yt_impressions, updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,NOW())
+          ctr, avg_view_duration, watch_time_minutes, yt_impressions, duration_secs, updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,NOW())
        ON CONFLICT (post_id) DO UPDATE SET
          views               = EXCLUDED.views,
          likes               = EXCLUDED.likes,
@@ -224,10 +233,12 @@ async function upsertRecords(records) {
          avg_view_duration   = COALESCE(EXCLUDED.avg_view_duration,  content_analytics.avg_view_duration),
          watch_time_minutes  = COALESCE(EXCLUDED.watch_time_minutes, content_analytics.watch_time_minutes),
          yt_impressions      = COALESCE(EXCLUDED.yt_impressions,     content_analytics.yt_impressions),
+         duration_secs       = COALESCE(EXCLUDED.duration_secs,      content_analytics.duration_secs),
          updated_at          = NOW()`,
       [r.platform, r.post_id, r.title, r.thumbnail_url, r.published_at,
        r.views, r.likes, r.comments, r.shares, r.saves, r.reach, r.engagement_rate,
-       r.ctr ?? null, r.avg_view_duration ?? null, r.watch_time_minutes ?? null, r.yt_impressions ?? null]
+       r.ctr ?? null, r.avg_view_duration ?? null, r.watch_time_minutes ?? null,
+       r.yt_impressions ?? null, r.duration_secs ?? null]
     );
   }
 }

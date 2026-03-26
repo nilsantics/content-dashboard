@@ -5044,11 +5044,11 @@ function renderThumbnails() {
   if (!grid) return;
   grid.className = `thumb-grid size-${_thumbSize}`;
 
-  // Filter out YouTube Shorts (avg_view_duration ≤ 62s, title contains #shorts, or post_id pattern)
+  // Filter out YouTube Shorts (duration_secs ≤ 60 is definitive; title fallback)
   const filtered = _thumbData.filter(v => {
     if (v.platform === 'youtube') {
-      if (v.avg_view_duration != null && v.avg_view_duration <= 62) return false;
-      if (/shorts/i.test(v.title || '') || /\bshort\b/i.test(v.title || '')) return false;
+      if (v.duration_secs != null && v.duration_secs <= 60) return false;
+      if (/shorts/i.test(v.title || '')) return false;
     }
     return true;
   });
