@@ -206,11 +206,11 @@
     main { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
 
     /* ── KPI Grid ── */
-    #kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; margin-bottom:16px; }
+    #kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:10px; margin-bottom:14px; }
 
     /* ── KPI Card ── */
-    .kpi-card { background:linear-gradient(135deg,#0d1524 0%,#080d14 100%); border:1px solid #1e2d45; border-radius:14px; padding:18px 20px; position:relative; overflow:hidden; transition:border-color .2s,transform .15s; cursor:default; display:flex; flex-direction:column; gap:10px; }
-    .kpi-card:hover { border-color:#334155; transform:translateY(-1px); }
+    .kpi-card { background:linear-gradient(135deg,#0d1524 0%,#080d14 100%); border:1px solid #1a2740; border-radius:14px; padding:16px 18px; position:relative; overflow:hidden; transition:border-color .2s,box-shadow .2s,transform .15s; cursor:default; display:flex; flex-direction:column; gap:8px; }
+    .kpi-card:hover { border-color:#2d3f5c; box-shadow:0 4px 24px rgba(99,102,241,.08); transform:translateY(-1px); }
     .kpi-accent { position:absolute; top:0; left:0; right:0; height:2px; border-radius:14px 14px 0 0; }
     .kpi-header { display:flex; align-items:center; justify-content:space-between; }
     .kpi-label-row { display:flex; align-items:center; gap:5px; }
@@ -250,16 +250,18 @@
     }
 
     /* ── Section cards ── */
-    .card { background:#080d14; border:1px solid #1a2740; border-radius:16px; padding:22px 24px; margin-bottom:0; }
+    .card { background:#080d14; border:1px solid #1a2740; border-radius:16px; padding:22px 24px; margin-bottom:0; transition:border-color .2s; }
+    .card:hover { border-color:#1e2d45; }
     .card-title { font-size:14px; font-weight:700; color:#f1f5f9; letter-spacing:-.01em; }
+    .section-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:#334155; margin-bottom:4px; display:block; }
     .btn-primary { background:linear-gradient(135deg,#6366f1,#4f46e5); border:none; border-radius:8px; color:#fff; font-size:12px; font-weight:700; padding:8px 18px; cursor:pointer; transition:opacity .15s,transform .1s; letter-spacing:.01em; }
     .btn-primary:hover { opacity:.9; transform:translateY(-1px); }
     .btn-secondary { background:#0f1a2e; border:1px solid #1e2d45; border-radius:8px; color:#64748b; font-size:12px; font-weight:600; padding:8px 18px; cursor:pointer; transition:all .15s; }
     .btn-secondary:hover { border-color:#334155; color:#94a3b8; }
 
     /* ── Charts rows ── */
-    .charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:14px; }
-    .charts-grid-half { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:12px; }
+    .charts-grid-half { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
     @media(max-width:900px){ .charts-grid,.charts-grid-half { grid-template-columns:1fr; } }
 
     /* ── All-time banner ── */
@@ -289,9 +291,9 @@
       border-bottom:1px solid #1a2740;
     }
     .posts-table th.r { text-align:right; }
-    .posts-table td { padding:11px 12px; border-bottom:1px solid #0f1a2e; vertical-align:middle; }
+    .posts-table td { padding:10px 12px; border-bottom:1px solid #0d1321; vertical-align:middle; }
     .posts-table tr:last-child td { border-bottom:none; }
-    .posts-table tr:hover td { background:rgba(99,102,241,.04); }
+    .posts-table tr:hover td { background:rgba(99,102,241,.05); cursor:pointer; }
     .badge { font-size:9px; font-weight:800; padding:3px 8px; border-radius:20px; white-space:nowrap; letter-spacing:.04em; }
     .badge-ig { background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045); color:#fff; }
     .badge-yt { background:#dc2626; color:#fff; }
@@ -450,7 +452,7 @@
     .pipeline-act-btn:hover { color:#e2e8f0; border-color:#334155; }
     /* Card Detail Panel (Notion-style) */
     #card-detail-overlay { display:none; position:fixed; inset:0; background:#00000060; z-index:990; }
-    #card-detail-panel { position:fixed; right:0; top:0; bottom:0; width:780px; max-width:100vw; background:#0d1524; border-left:1px solid #1a2740; z-index:1000; display:none; flex-direction:column; box-shadow:-12px 0 48px rgba(0,0,0,.5); }
+    #card-detail-panel { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:860px; max-width:calc(100vw - 32px); max-height:90vh; background:#0d1524; border:1px solid #1e2d45; border-radius:18px; z-index:1000; display:none; flex-direction:column; box-shadow:0 32px 100px rgba(0,0,0,.85); overflow:hidden; }
     #card-detail-panel.open { display:flex; }
     .cdp-header { padding:18px 24px 14px; border-bottom:1px solid #1a2740; display:flex; gap:10px; align-items:flex-start; }
     .cdp-title-input { background:none; border:none; font-size:17px; font-weight:700; color:#e2e8f0; flex:1; outline:none; font-family:inherit; line-height:1.35; padding:0; }
@@ -856,7 +858,7 @@
     .tab-btn:hover { color:#94a3b8; }
     .tab-btn.active { color:#818cf8; border-bottom-color:#818cf8; }
     .tab-btn .tab-icon { margin-right:6px; opacity:.7; }
-    .tab-panel { display:none; flex-direction:column; gap:20px; }
+    .tab-panel { display:none; flex-direction:column; gap:14px; }
     .tab-panel.active { display:flex; }
     .analytics-controls { transition:opacity .2s; }
     .analytics-controls.hidden { opacity:0; pointer-events:none; }
@@ -1102,8 +1104,8 @@
     <div id="kpi-grid"></div>
 
     <!-- Latest Video Widget -->
-    <div id="latest-video-wrap" style="display:none;margin-bottom:4px;max-width:620px;">
-      <div class="card" id="latest-video-card"></div>
+    <div id="latest-video-wrap" style="display:none;margin-bottom:4px;">
+      <div class="card" id="latest-video-card" style="padding:16px 20px;"></div>
     </div>
 
     <!-- Views & Reach + Engagement Breakdown -->
@@ -1183,22 +1185,22 @@
       </div>
     </div>
 
-    <!-- Hour Heatmap -->
-    <div class="card" id="heatmap-section">
-      <div style="margin-bottom:16px;">
-        <span class="card-title">Best Hour to Post</span>
-        <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views by day &amp; hour — darker = better performance</p>
+    <!-- Hour Heatmap + Title Length side-by-side -->
+    <div class="charts-grid-half">
+      <div class="card" id="heatmap-section">
+        <div style="margin-bottom:16px;">
+          <span class="card-title">Best Hour to Post</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views by day &amp; hour — darker = better performance</p>
+        </div>
+        <div class="heatmap-wrap"><div id="heatmap-grid"></div></div>
       </div>
-      <div class="heatmap-wrap"><div id="heatmap-grid"></div></div>
-    </div>
-
-    <!-- Title Length Performance -->
-    <div class="card" id="title-length-section">
-      <div style="margin-bottom:16px;">
-        <span class="card-title">Title Length vs Performance</span>
-        <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views by title word count — what length works best for you?</p>
+      <div class="card" id="title-length-section">
+        <div style="margin-bottom:16px;">
+          <span class="card-title">Title Length vs Performance</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views by title word count — what length works best?</p>
+        </div>
+        <div id="title-length-inner"></div>
       </div>
-      <div id="title-length-inner"></div>
     </div>
 
     <!-- Content Patterns -->
@@ -1648,7 +1650,7 @@
 
   <!-- Pipeline Modal (global, outside panels) -->
   <!-- Card detail overlay -->
-  <div id="card-detail-overlay"></div>
+  <div id="card-detail-overlay" onclick="closeCardDetail()" style="cursor:default;"></div>
 
   <!-- Card detail panel -->
   <div id="card-detail-panel">
@@ -2166,34 +2168,33 @@ function renderLatestVideo(v) {
   const wt   = v.watch_time_minutes ? `<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtWatchTime(v.watch_time_minutes)}</div><div style="font-size:10px;color:#475569;">Watch Time</div></div>` : '';
   const ytLink = `https://youtube.com/watch?v=${v.post_id}`;
   card.innerHTML = `
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-      <span class="card-title">Latest Upload</span>
-      <span style="font-size:11px;background:#1a2740;color:#64748b;padding:2px 8px;border-radius:20px;font-weight:600;">${age}</span>
-    </div>
-    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
-      ${v.thumbnail_url ? `<a href="${ytLink}" target="_blank" style="flex-shrink:0;display:block;">
-        <img src="${v.thumbnail_url}" style="width:160px;height:90px;object-fit:cover;border-radius:8px;display:block;border:1px solid #1e2d45;" onerror="this.style.display='none'">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      ${v.thumbnail_url ? `<a href="${ytLink}" target="_blank" style="flex-shrink:0;display:block;position:relative;">
+        <img src="${v.thumbnail_url}" style="width:128px;height:72px;object-fit:cover;border-radius:8px;display:block;border:1px solid #1e2d45;" onerror="this.style.display='none'">
       </a>` : ''}
-      <div style="flex:1;min-width:0;">
-        <a href="${ytLink}" target="_blank" style="font-size:14px;font-weight:600;color:#f1f5f9;text-decoration:none;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px;line-height:1.4;">${escHtml(v.title || 'Untitled')}</a>
-        <div style="font-size:12px;color:#475569;margin-bottom:12px;">${fmtDateLong(v.published_at)}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;">
-          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-            <span style="font-size:26px;font-weight:800;color:${scoreColor};line-height:1;">${sc}</span>
-            <span style="font-size:10px;color:#475569;font-weight:600;letter-spacing:.04em;">/ 100</span>
-          </div>
-          <div style="width:1px;height:36px;background:#1e2d45;flex-shrink:0;"></div>
-          <div style="display:flex;gap:16px;flex-wrap:wrap;">
-            <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtNum(v.views)}</div><div style="font-size:10px;color:#475569;">Views</div></div>
-            <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtNum(v.likes)}</div><div style="font-size:10px;color:#475569;">Likes</div></div>
-            <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtNum(v.comments)}</div><div style="font-size:10px;color:#475569;">Comments</div></div>
-            ${avd}${wt}
-          </div>
-          <button id="lv-analyze-btn" onclick="analyzeLatestVideo()" style="margin-left:auto;background:linear-gradient(135deg,#818cf8,#6366f1);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;padding:7px 14px;cursor:pointer;white-space:nowrap;">🧠 Analyze Performance</button>
+      <div style="flex:1;min-width:160px;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
+          <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#475569;">Latest Upload</span>
+          <span style="font-size:10px;background:#1a2740;color:#64748b;padding:1px 7px;border-radius:20px;font-weight:600;">${age}</span>
         </div>
+        <a href="${ytLink}" target="_blank" style="font-size:13px;font-weight:700;color:#f1f5f9;text-decoration:none;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35;margin-bottom:2px;">${escHtml(v.title || 'Untitled')}</a>
+        <div style="font-size:11px;color:#334155;">${fmtDateLong(v.published_at)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <div style="text-align:center;padding:0 12px;border-right:1px solid #1e2d45;">
+          <div style="font-size:22px;font-weight:800;color:${scoreColor};line-height:1;">${sc}</div>
+          <div style="font-size:9px;color:#475569;font-weight:600;letter-spacing:.04em;">SCORE</div>
+        </div>
+        <div style="display:flex;gap:20px;padding:0 12px;border-right:1px solid #1e2d45;">
+          <div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:#cbd5e1;">${fmtNum(v.views)}</div><div style="font-size:9px;color:#475569;">Views</div></div>
+          <div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:#cbd5e1;">${fmtNum(v.likes)}</div><div style="font-size:9px;color:#475569;">Likes</div></div>
+          <div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:#cbd5e1;">${fmtNum(v.comments)}</div><div style="font-size:9px;color:#475569;">Comments</div></div>
+          ${v.avg_view_duration ? `<div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:#cbd5e1;">${fmtDuration(v.avg_view_duration)}</div><div style="font-size:9px;color:#475569;">Avg View</div></div>` : ''}
+        </div>
+        <button id="lv-analyze-btn" onclick="analyzeLatestVideo()" style="background:linear-gradient(135deg,#818cf8,#6366f1);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:8px 16px;cursor:pointer;white-space:nowrap;flex-shrink:0;">🧠 Analyze</button>
       </div>
     </div>
-    <div id="lv-analysis-wrap" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #1e2d45;">
+    <div id="lv-analysis-wrap" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #1e2d45;">
       <div id="lv-analysis-text" style="font-size:13px;color:#cbd5e1;line-height:1.6;"></div>
     </div>`;
 }
@@ -4537,10 +4538,10 @@ function renderTitleLength(posts) {
   const buckets = { '1–4': [], '5–7': [], '8–10': [], '11+': [] };
   for (const p of ytPosts) {
     const wc = p.title.trim().split(/\s+/).length;
-    if (wc <= 4) buckets['1–4'].push(p.views);
-    else if (wc <= 7) buckets['5–7'].push(p.views);
-    else if (wc <= 10) buckets['8–10'].push(p.views);
-    else buckets['11+'].push(p.views);
+    if (wc <= 4) buckets['1–4'].push(Number(p.views));
+    else if (wc <= 7) buckets['5–7'].push(Number(p.views));
+    else if (wc <= 10) buckets['8–10'].push(Number(p.views));
+    else buckets['11+'].push(Number(p.views));
   }
 
   const rows = Object.entries(buckets).map(([label, arr]) => ({
