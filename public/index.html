@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { margin:0; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#020813; color:#dde4f0; font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; min-height:100vh; transition:background .25s,color .25s; font-feature-settings:'ss01','cv01'; }
+    body { margin:0; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#000000; color:#c8d8ea; font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; min-height:100vh; transition:background .25s,color .25s; font-feature-settings:'ss01','cv01'; }
     ::-webkit-scrollbar { width:5px; height:5px; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:#1a2a40; border-radius:10px; }
@@ -79,69 +79,106 @@
 
     /* ── Sidebar ── */
     .sidebar {
-      position: fixed; left: 0; top: 0; height: 100vh; width: 216px;
-      background: #040c18; border-right: 1px solid #0f1e30;
+      position: fixed; left: 0; top: 0; height: 100vh; width: 240px;
+      background: #030810; border-right: 1px solid #0c1a2c;
       display: flex; flex-direction: column; gap: 0;
-      overflow-y: auto; z-index: 100;
-      padding: 0 0 16px 0;
+      overflow-y: auto; z-index: 100; padding: 0 0 12px 0;
     }
     body.light .sidebar { background: #ffffff; border-right-color: #e8edf4; }
-    .sidebar-brand { display:flex; align-items:center; gap:10px; padding:20px 16px 16px; }
+    .sidebar-brand { display:flex; align-items:center; gap:9px; padding:16px 14px 12px; }
     .brand-icon {
-      width: 32px; height: 32px; border-radius: 9px; flex-shrink:0;
+      width: 30px; height: 30px; border-radius: 8px; flex-shrink:0;
       background: linear-gradient(135deg, #5d60ef, #7c3aed);
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 16px rgba(99,102,241,.35), 0 2px 8px rgba(0,0,0,.4);
+      box-shadow: 0 0 14px rgba(99,102,241,.4), 0 2px 6px rgba(0,0,0,.5);
     }
-    .brand-name { font-size: 13px; font-weight: 700; color: #eef2f8; letter-spacing: -.2px; line-height:1.2; }
-    .brand-sub  { font-size: 9.5px; color: #3d5270; font-weight: 500; margin-top: 1px; letter-spacing:.02em; }
+    .brand-name { font-size: 12.5px; font-weight: 700; color: #eef2f8; letter-spacing: -.2px; line-height:1.2; }
+    .brand-sub  { font-size: 9.5px; color: #253548; font-weight: 600; margin-top: 1px; letter-spacing:.02em; }
     body.light .brand-name { color: #0f172a; }
-    .sidebar-section { padding: 6px 10px 4px; }
-    .sidebar-divider { height: 1px; background: #0f1e30; margin: 6px 10px; }
+
+    /* ── Sidebar channel profile block ── */
+    .sidebar-channel { margin: 0 10px 2px; background: #07111f; border: 1px solid #0f1e30; border-radius: 10px; padding: 10px 12px; display:flex; align-items:center; gap:10px; }
+    body.light .sidebar-channel { background: #f4f7fb; border-color: #e2e8f0; }
+    .sidebar-ch-avatar {
+      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 800; color: #fff; letter-spacing:-.5px;
+    }
+    .sidebar-ch-info { flex: 1; min-width: 0; }
+    .sidebar-ch-name { font-size: 12px; font-weight: 700; color: #eef2f8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    body.light .sidebar-ch-name { color: #0f172a; }
+    .sidebar-ch-subs { font-size: 10.5px; color: #3d5270; font-weight: 600; margin-top: 1px; }
+    body.light .sidebar-ch-subs { color: #64748b; }
+    .sidebar-ch-platform { font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 4px; }
+    .sidebar-ch-platform.yt { background: rgba(220,38,38,.18); color: #f87171; }
+    .sidebar-ch-platform.ig { background: rgba(244,114,182,.15); color: #f472b6; }
+
+    /* ── Sidebar vertical nav ── */
+    .sidebar-nav { display:flex; flex-direction:column; gap:1px; padding:4px 8px; }
+    .sidebar-nav-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #1e3554; padding: 8px 6px 4px; display:block; }
+    .sidebar-nav-btn {
+      display: flex; align-items: center; gap: 9px; width: 100%;
+      background: transparent; border: none; border-radius: 8px;
+      color: #3d5270; font-size: 12px; font-weight: 600; padding: 7px 10px;
+      cursor: pointer; transition: all .15s; text-align: left; font-family: inherit;
+      white-space: nowrap;
+    }
+    .sidebar-nav-btn:hover { background: rgba(255,255,255,.04); color: #7a90b0; }
+    .sidebar-nav-btn.active { background: rgba(99,102,241,.16); color: #c4c9ff; }
+    body.light .sidebar-nav-btn { color: #64748b; }
+    body.light .sidebar-nav-btn:hover { background: #f0f4f8; color: #0f172a; }
+    body.light .sidebar-nav-btn.active { background: rgba(99,102,241,.1); color: #4f46e5; }
+    .snav-icon { width: 15px; height: 15px; flex-shrink: 0; opacity: .55; }
+    .sidebar-nav-btn.active .snav-icon { opacity: 1; }
+    .sidebar-nav-btn:hover .snav-icon { opacity: .8; }
+
+    .sidebar-section { padding: 4px 10px; }
+    .sidebar-divider { height: 1px; background: #0c1a2c; margin: 6px 10px; }
     body.light .sidebar-divider { background: #e8edf4; }
-    .sidebar-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #253548; padding: 4px 6px 5px; display:block; }
+    .sidebar-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #1e3554; padding: 4px 6px 4px; display:block; }
     .sidebar-btn {
       display: flex; align-items: center; gap: 8px; width: 100%;
       background: transparent; border: none; border-radius: 7px;
-      color: #3d5270; font-size: 12px; font-weight: 600; padding: 7px 10px;
+      color: #3d5270; font-size: 12px; font-weight: 600; padding: 6px 10px;
       cursor: pointer; transition: all .15s; text-align: left; font-family: inherit;
     }
     .sidebar-btn:hover { background: rgba(255,255,255,.04); color: #7a90b0; }
     body.light .sidebar-btn:hover { background: #f0f4f8; color: #0f172a; }
     .sidebar-btn.active { background: rgba(99,102,241,.12); color: #818cf8; }
-    .sidebar-btn[data-platform="youtube"].active { background: rgba(220,38,38,.1); color: #f87171; }
-    .sidebar-btn[data-platform="instagram"].active { background: rgba(253,29,29,.08); color: #f472b6; }
+    .sidebar-btn[data-platform="youtube"].active { background: rgba(220,38,38,.12); color: #f87171; }
+    .sidebar-btn[data-platform="instagram"].active { background: rgba(244,114,182,.1); color: #f472b6; }
     body.light .sidebar-btn.active { background: rgba(99,102,241,.1); color: #6366f1; }
     .sidebar-range-btn {
       display: block; width: 100%;
-      background: transparent; border: 1px solid transparent; border-radius: 8px;
-      color: #64748b; font-size: 12px; font-weight: 600; padding: 7px 10px;
+      background: transparent; border: 1px solid transparent; border-radius: 7px;
+      color: #2d4a66; font-size: 11.5px; font-weight: 600; padding: 6px 10px;
       cursor: pointer; transition: all .15s; text-align: left; font-family: inherit;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
-    .sidebar-range-btn:hover { border-color: #1e2d45; color: #94a3b8; }
+    .sidebar-range-btn:hover { border-color: #0f1e30; color: #6a84a0; }
     body.light .sidebar-range-btn:hover { border-color: #e2e8f0; color: #0f172a; }
-    .sidebar-range-btn.active { background: rgba(99,102,241,.15); border-color: #6366f155; color: #818cf8; }
+    .sidebar-range-btn.active { background: rgba(99,102,241,.14); border-color: #6366f144; color: #c4c9ff; }
     body.light .sidebar-range-btn.active { background: rgba(99,102,241,.1); color: #6366f1; border-color: #6366f133; }
     .sidebar-date-input {
-      width: 100%; background: #0f1a2e; border: 1px solid #1e2d45; border-radius: 8px;
-      color: #94a3b8; font-size: 11px; padding: 6px 8px; margin-bottom: 6px;
+      width: 100%; background: #07111f; border: 1px solid #0f1e30; border-radius: 8px;
+      color: #6a84a0; font-size: 11px; padding: 6px 8px; margin-bottom: 5px;
       cursor: pointer; transition: border-color .15s; font-family: inherit; box-sizing: border-box;
     }
     body.light .sidebar-date-input { background: #f8fafc; border-color: #e2e8f0; color: #0f172a; }
-    .sidebar-date-input:focus { outline: none; border-color: #6366f1; color: #e2e8f0; }
+    .sidebar-date-input:focus { outline: none; border-color: #6366f1; color: #c8d8ea; }
     body.light .sidebar-date-input:focus { color: #0f172a; }
-    .sidebar-date-input::-webkit-calendar-picker-indicator { filter: invert(.4); cursor: pointer; }
+    .sidebar-date-input::-webkit-calendar-picker-indicator { filter: invert(.35); cursor: pointer; }
     .sidebar-sync-btn {
       display: flex; align-items: center; gap: 6px; width: 100%;
-      background: #0f1a2e; border: 1px solid #1e2d45; border-radius: 9px;
-      color: #64748b; font-size: 11px; font-weight: 700; padding: 8px 10px;
+      background: #07111f; border: 1px solid #0f1e30; border-radius: 8px;
+      color: #3d5270; font-size: 11px; font-weight: 700; padding: 7px 10px;
       cursor: pointer; transition: all .15s; font-family: inherit;
     }
-    body.light .sidebar-sync-btn { background: #f8fafc; border-color: #e2e8f0; }
-    .sidebar-sync-btn:hover:not(:disabled) { border-color: #818cf8; color: #818cf8; }
+    body.light .sidebar-sync-btn { background: #f8fafc; border-color: #e2e8f0; color: #64748b; }
+    .sidebar-sync-btn:hover:not(:disabled) { border-color: #818cf855; color: #818cf8; }
     .sidebar-sync-btn:disabled { opacity: .5; cursor: not-allowed; }
-    .sidebar-sync-btn.syncing { color: #818cf8; border-color: #818cf8; }
+    .sidebar-sync-btn.syncing { color: #818cf8; border-color: #818cf855; }
     .sidebar-login-btn {
       display: flex; align-items: center; gap: 6px; width: 100%;
       background: rgba(99,102,241,.08); border: 1px solid rgba(99,102,241,.2); border-radius: 8px;
@@ -149,29 +186,29 @@
       cursor: pointer; transition: all .15s; font-family: inherit;
     }
     .sidebar-login-btn:hover { background: rgba(99,102,241,.15); }
-    .sidebar-user-info { font-size: 11px; color: #64748b; padding: 4px 10px; }
+    .sidebar-user-info { font-size: 11px; color: #3d5270; padding: 3px 10px; }
     body.light .sidebar-user-info { color: #475569; }
     .sidebar-upgrade-btn {
-      display: flex; align-items: center; gap: 6px; width: calc(100% - 24px); margin: 4px 12px 0;
+      display: flex; align-items: center; gap: 6px; width: calc(100% - 20px); margin: 0 10px;
       background: linear-gradient(135deg, #f59e0b, #d97706); border: none; border-radius: 9px;
-      color: #000; font-size: 12px; font-weight: 800; padding: 10px 12px;
-      cursor: pointer; transition: opacity .15s; margin-top: auto;
+      color: #000; font-size: 12px; font-weight: 800; padding: 9px 12px;
+      cursor: pointer; transition: opacity .15s;
     }
     .sidebar-upgrade-btn:hover { opacity: .9; }
-    .sidebar-spacer { flex: 1; min-height: 12px; }
+    .sidebar-spacer { flex: 1; min-height: 10px; }
     .sidebar-light-btn {
       display: flex; align-items: center; gap: 8px; width: 100%;
-      background: rgba(255,255,255,.04); border: 1px solid #1a2740; border-radius: 8px;
-      color: #64748b; font-size: 11px; font-weight: 600; padding: 7px 10px;
+      background: rgba(255,255,255,.03); border: 1px solid #0c1a2c; border-radius: 8px;
+      color: #2d4a66; font-size: 11px; font-weight: 600; padding: 7px 10px;
       cursor: pointer; transition: all .15s; font-family: inherit;
     }
     body.light .sidebar-light-btn { background: #f1f5f9; border-color: #e2e8f0; color: #0f172a; }
-    .sidebar-light-btn:hover { border-color: #334155; color: #94a3b8; }
+    .sidebar-light-btn:hover { border-color: #1a2d45; color: #6a84a0; }
     body.light .sidebar-light-btn:hover { border-color: #cbd5e1; }
-    .sidebar-sync-last { font-size: 10px; color: #334155; padding: 2px 10px 4px; }
+    .sidebar-sync-last { font-size: 10px; color: #1e3554; padding: 2px 10px 3px; }
 
     /* ── Main content area ── */
-    .main-wrap { margin-left: 216px; display: flex; flex-direction: column; min-height: 100vh; }
+    .main-wrap { margin-left: 240px; display: flex; flex-direction: column; min-height: 100vh; }
 
     /* ── Controls (hidden - moved to sidebar) ── */
     .controls { display: none; }
@@ -209,23 +246,23 @@
     #kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; margin-bottom:14px; }
 
     /* ── KPI Card ── */
-    .kpi-card { background:#07111f; border:1px solid #112035; border-radius:14px; padding:16px 18px; position:relative; overflow:hidden; transition:border-color .2s,box-shadow .2s,transform .18s; cursor:default; display:flex; flex-direction:column; gap:7px; }
-    .kpi-card:hover { border-color:#1e3554; box-shadow:0 6px 28px rgba(0,0,0,.35),0 0 0 1px rgba(99,102,241,.06); transform:translateY(-2px); }
-    .kpi-accent { position:absolute; top:0; left:0; right:0; height:2px; border-radius:14px 14px 0 0; }
+    .kpi-card { background:#0a1422; border:1px solid #162840; border-radius:14px; padding:16px 18px; position:relative; overflow:hidden; transition:border-color .2s,box-shadow .2s,transform .18s; cursor:default; display:flex; flex-direction:column; gap:7px; box-shadow:0 2px 12px rgba(0,0,0,.5); }
+    .kpi-card:hover { border-color:#1e3a5f; box-shadow:0 8px 32px rgba(0,0,0,.7),0 0 0 1px rgba(99,102,241,.08); transform:translateY(-2px); }
+    .kpi-accent { position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
     .kpi-header { display:flex; align-items:center; justify-content:space-between; }
     .kpi-label-row { display:flex; align-items:center; gap:5px; }
-    .kpi-label { font-size:10.5px; color:#3d5270; font-weight:700; text-transform:uppercase; letter-spacing:.07em; }
-    .kpi-icon-wrap { width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; opacity:.75; }
-    .kpi-value { font-size:26px; font-weight:800; color:#eef2f8; letter-spacing:-.5px; line-height:1; }
+    .kpi-label { font-size:10px; color:#2d4a66; font-weight:800; text-transform:uppercase; letter-spacing:.08em; }
+    .kpi-icon-wrap { width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; opacity:.7; }
+    .kpi-value { font-size:28px; font-weight:800; color:#ffffff; letter-spacing:-.6px; line-height:1; }
     .kpi-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .change-badge {
       font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
       display: inline-flex; align-items: center; gap: 2px;
     }
-    .up   { color:#4ade80; background:rgba(74,222,128,.1); }
-    .down { color:#f87171; background:rgba(248,113,113,.1); }
-    .neutral { color:#64748b; }
-    .kpi-period { font-size:10px; color:#253548; }
+    .up   { color:#4ade80; background:rgba(74,222,128,.12); }
+    .down { color:#f87171; background:rgba(248,113,113,.12); }
+    .neutral { color:#3d5270; }
+    .kpi-period { font-size:10px; color:#1e3554; }
     .kpi-sparkline { height: 42px; margin: 0 -2px; }
 
     /* ── Tooltip ── */
@@ -250,10 +287,10 @@
     }
 
     /* ── Section cards ── */
-    .card { background:#060e1c; border:1px solid #0f1e30; border-radius:16px; padding:20px 22px; margin-bottom:0; transition:border-color .2s,box-shadow .2s; }
-    .card:hover { border-color:#162840; box-shadow:0 4px 20px rgba(0,0,0,.25); }
-    body.light .card { background:#ffffff; border-color:#e8edf4; box-shadow:0 1px 8px rgba(0,0,0,.05); }
-    body.light .card:hover { border-color:#d0d9e8; box-shadow:0 4px 20px rgba(0,0,0,.08); }
+    .card { background:#0a1422; border:1px solid #162840; border-radius:16px; padding:20px 22px; margin-bottom:0; transition:border-color .2s,box-shadow .2s; box-shadow:0 2px 12px rgba(0,0,0,.5); }
+    .card:hover { border-color:#1e3a5f; box-shadow:0 6px 24px rgba(0,0,0,.7); }
+    body.light .card { background:#ffffff; border-color:#e8edf4; box-shadow:0 1px 8px rgba(0,0,0,.06); }
+    body.light .card:hover { border-color:#d0d9e8; box-shadow:0 4px 20px rgba(0,0,0,.09); }
     .card-title { font-size:13.5px; font-weight:700; color:#eef2f8; letter-spacing:-.02em; }
     .section-label { font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:#253548; margin-bottom:4px; display:block; }
     .btn-primary { background:linear-gradient(135deg,#6366f1,#4f46e5); border:none; border-radius:8px; color:#fff; font-size:12px; font-weight:700; padding:7px 16px; cursor:pointer; transition:opacity .15s,transform .1s; letter-spacing:.01em; }
@@ -860,17 +897,10 @@
     .lab-zoom-overlay.open { display:flex; }
     .lab-zoom-overlay img { max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 0 60px rgba(0,0,0,.6); }
 
-    /* ── Tab nav ── */
-    .tab-nav { display:flex; gap:3px; background:rgba(4,12,24,.96); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-bottom:1px solid #0f1e30; padding:10px 20px; overflow-x:auto; position:sticky; top:0; z-index:50; scrollbar-width:none; }
-    .tab-nav::-webkit-scrollbar { display:none; }
-    body.light .tab-nav { background:rgba(255,255,255,.95); border-bottom-color:#e8edf4; }
-    .tab-btn { background:none; border:1px solid transparent; border-radius:8px; color:#3d5270; font-size:12px; font-weight:600; padding:6px 13px; cursor:pointer; white-space:nowrap; transition:all .15s; letter-spacing:.01em; line-height:1.4; }
-    .tab-btn:hover { color:#7a90b0; background:rgba(255,255,255,.04); border-color:#0f1e30; }
-    .tab-btn.active { color:#c4c9ff; background:rgba(99,102,241,.16); border-color:rgba(99,102,241,.3); box-shadow:0 0 12px rgba(99,102,241,.12); }
-    body.light .tab-btn { color:#64748b; }
-    body.light .tab-btn:hover { color:#334155; background:#f1f5f9; border-color:#e2e8f0; }
-    body.light .tab-btn.active { color:#4f46e5; background:rgba(99,102,241,.1); border-color:rgba(99,102,241,.3); box-shadow:none; }
-    .tab-btn .tab-icon { margin-right:5px; opacity:.8; }
+    /* ── Tab nav (hidden — tabs live in sidebar now) ── */
+    .tab-nav { display: none !important; }
+    /* tab-btn still used for active state toggling by JS, keep base style */
+    .tab-btn { display:none; }
     .tab-panel { display:none; flex-direction:column; gap:14px; }
     .tab-panel.active { display:flex; }
     .analytics-controls { transition:opacity .2s; }
@@ -1005,16 +1035,71 @@
   <!-- Brand -->
   <div class="sidebar-brand">
     <div class="brand-icon">
-      <svg width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+      <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
         <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
       </svg>
     </div>
     <div>
-      <div class="brand-name">Nils Glenn</div>
-      <div class="brand-sub">Content Analytics</div>
+      <div class="brand-name">ContentIQ</div>
+      <div class="brand-sub">Analytics Dashboard</div>
     </div>
   </div>
 
+  <!-- Channel profile block -->
+  <div class="sidebar-channel">
+    <div class="sidebar-ch-avatar" id="sidebar-ch-avatar">N</div>
+    <div class="sidebar-ch-info">
+      <div class="sidebar-ch-name" id="sidebar-ch-name">Nils Glenn</div>
+      <div class="sidebar-ch-subs" id="sidebar-ch-subs">Loading...</div>
+    </div>
+  </div>
+
+  <div class="sidebar-divider" style="margin-top:10px;"></div>
+
+  <!-- Vertical Tab Navigation -->
+  <div class="sidebar-nav">
+    <span class="sidebar-nav-label">Navigation</span>
+    <button class="sidebar-nav-btn tab-btn active" data-tab="analytics">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Analytics
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="insights">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+      Insights
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="growth">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      Growth
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="pipeline">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      Pipeline
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="comments" id="comments-tab-btn">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Comments
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="ideas">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      AI Ideas
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="thumbnails">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Thumbnails
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="compete">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Compete
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="lab">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v11l-5 5h16l-5-5V3"/></svg>
+      Thumbnail Lab
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="outliers">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Outliers
+    </button>
+  </div>
 
   <div class="sidebar-divider"></div>
 
@@ -1022,11 +1107,11 @@
   <div class="sidebar-section">
     <span class="sidebar-label">Platform</span>
     <button class="sidebar-btn active" data-platform="youtube">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
       YouTube
     </button>
     <button class="sidebar-btn" data-platform="instagram">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
       Instagram
     </button>
   </div>
@@ -1053,13 +1138,14 @@
   <!-- Sync -->
   <div class="sidebar-section">
     <button class="sidebar-sync-btn" id="sync-btn" title="Sync latest data">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="sync-icon"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="sync-icon"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
       Sync Now
     </button>
     <div class="sidebar-sync-last" id="sync-last"></div>
   </div>
 
-  <div class="sidebar-divider"></div>
+  <!-- Spacer pushes bottom items down -->
+  <div class="sidebar-spacer"></div>
 
   <!-- Light/Dark toggle -->
   <div class="sidebar-section">
@@ -1068,13 +1154,12 @@
     </button>
   </div>
 
-  <!-- Spacer pushes upgrade to bottom -->
-  <div class="sidebar-spacer"></div>
-
   <!-- Upgrade button -->
-  <button class="sidebar-upgrade-btn" onclick="openUpgradeModal()">
-    ⭐ Upgrade to Premium
-  </button>
+  <div class="sidebar-section" style="padding-top:6px;">
+    <button class="sidebar-upgrade-btn" onclick="openUpgradeModal()">
+      ⭐ Upgrade to Premium
+    </button>
+  </div>
 </aside>
 
 <!-- Keep old controls hidden for JS compatibility -->
@@ -3929,6 +4014,22 @@ async function refresh() {
     renderAlltimeBanner(alltime);
     renderRevenue(alltime, dash.kpis);
     renderMilestones(alltime, dash.kpis, fol.youtube, fol.instagram);
+    // Update sidebar channel profile
+    (function() {
+      const isPlatYT = state.platform === 'youtube';
+      const subs = isPlatYT ? fol.youtube : fol.instagram;
+      const el = document.getElementById('sidebar-ch-subs');
+      const pl = document.getElementById('sidebar-ch-avatar');
+      if (el && subs != null) {
+        const label = isPlatYT ? 'subscribers' : 'followers';
+        el.textContent = (subs >= 1000 ? (subs/1000).toFixed(subs>=10000?0:1)+'K' : subs.toLocaleString()) + ' ' + label;
+      }
+      if (pl) {
+        pl.style.background = isPlatYT
+          ? 'linear-gradient(135deg,#dc2626,#991b1b)'
+          : 'linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)';
+      }
+    })();
     // Compute sub growth % from snapshot history over the selected range
     let followerChange = null;
     if (subHistory && subHistory.length >= 2) {
