@@ -2684,12 +2684,22 @@ app.get('/api/hub/notion', async (req, res) => {
       body: JSON.stringify({ filter: { value: 'page', property: 'object' }, page_size: 10, sort: { direction: 'descending', timestamp: 'last_edited_time' } }),
     }).then(r => r.json());
     if (data.status === 401 || data.code === 'unauthorized') return res.json({ connected: false, error: 'Invalid Notion API key' });
+    const getNotionTitle = p => {
+      // Find the property with type 'title' (could be named anything)
+      if (p.properties) {
+        for (const [, prop] of Object.entries(p.properties)) {
+          if (prop.type === 'title' && prop.title?.[0]?.plain_text) return prop.title[0].plain_text;
+        }
+      }
+      // Fallback: page-level title for non-database pages
+      return p.title?.[0]?.plain_text || 'Untitled';
+    };
     const pages = (data.results || []).map(p => ({
       id: p.id,
-      title: p.properties?.title?.title?.[0]?.plain_text || p.properties?.Name?.title?.[0]?.plain_text || 'Untitled',
+      title: getNotionTitle(p),
       url: p.url,
       edited: p.last_edited_time,
-      icon: p.icon?.emoji || '📄',
+      icon: p.icon?.emoji || (p.object === 'database' ? '🗃️' : '📄'),
     }));
     res.json({ connected: true, pages });
   } catch (err) { res.status(500).json({ error: err.message }); }
