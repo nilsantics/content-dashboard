@@ -116,6 +116,68 @@ pool.query(`
 pool.query(`ALTER TABLE content_analytics ADD COLUMN IF NOT EXISTS duration_secs INT`)
   .catch(err => console.warn('duration_secs migration:', err.message));
 
+// ── Hub tables ────────────────────────────────────────────────────────────────
+pool.query(`
+  CREATE TABLE IF NOT EXISTS clients (
+    id          BIGSERIAL PRIMARY KEY,
+    name        TEXT NOT NULL,
+    company     TEXT,
+    email       TEXT,
+    status      TEXT DEFAULT 'active',
+    tags        TEXT,
+    notes       TEXT,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('clients init:', err.message));
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS client_projects (
+    id          BIGSERIAL PRIMARY KEY,
+    client_id   BIGINT,
+    title       TEXT NOT NULL,
+    status      TEXT DEFAULT 'active',
+    due_date    DATE,
+    budget      NUMERIC(10,2),
+    notes       TEXT,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('client_projects init:', err.message));
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS hub_milestones (
+    id          BIGSERIAL PRIMARY KEY,
+    label       TEXT NOT NULL,
+    metric      TEXT NOT NULL,
+    threshold   BIGINT NOT NULL,
+    hit         BOOLEAN DEFAULT FALSE,
+    hit_at      TIMESTAMPTZ,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('hub_milestones init:', err.message));
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS quick_links (
+    id          BIGSERIAL PRIMARY KEY,
+    title       TEXT NOT NULL,
+    url         TEXT NOT NULL,
+    emoji       TEXT DEFAULT '🔗',
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('quick_links init:', err.message));
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS hub_tokens (
+    id          BIGSERIAL PRIMARY KEY,
+    service     TEXT NOT NULL UNIQUE,
+    refresh_token TEXT,
+    access_token TEXT,
+    expires_at  TIMESTAMPTZ,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('hub_tokens init:', err.message));
+
 // Add channel_id to content_analytics
 pool.query(`ALTER TABLE content_analytics ADD COLUMN IF NOT EXISTS channel_id TEXT`)
   .then(() => {
@@ -2285,6 +2347,339 @@ app.get('/api/admin/setup', async (req, res) => {
       yt_refresh_token: r.rows[0].yt_refresh_token,
       next: 'Set GOOGLE_REFRESH_TOKEN = yt_refresh_token value in your Vercel env vars, then redeploy'
     });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Clients CRM ───────────────────────────────────────────────────────────────
+app.get('/api/clients', async (req, res) => {
+  try {
+    const clients = await pool.query('SELECT * FROM clients ORDER BY created_at DESC');
+    const projects = await pool.query('SELECT * FROM client_projects ORDER BY created_at DESC');
+    const rows = clients.rows.map(c => ({
+      ...c,
+      projects: projects.rows.filter(p => p.client_id === c.id),
+    }));
+    res.json(rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/clients', express.json(), async (req, res) => {
+  try {
+    const { name, company='', email='', status='active', tags='', notes='' } = req.body;
+    const r = await pool.query(
+      `INSERT INTO clients (name,company,email,status,tags,notes) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [name, company, email, status, tags, notes]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.put('/api/clients/:id', express.json(), async (req, res) => {
+  try {
+    const { name, company, email, status, tags, notes } = req.body;
+    const r = await pool.query(
+      `UPDATE clients SET name=$1,company=$2,email=$3,status=$4,tags=$5,notes=$6,updated_at=NOW() WHERE id=$7 RETURNING *`,
+      [name, company, email, status, tags, notes, req.params.id]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.delete('/api/clients/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM client_projects WHERE client_id=$1', [req.params.id]);
+    await pool.query('DELETE FROM clients WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Client projects
+app.post('/api/clients/:clientId/projects', express.json(), async (req, res) => {
+  try {
+    const { title, status='active', due_date=null, budget=null, notes='' } = req.body;
+    const r = await pool.query(
+      `INSERT INTO client_projects (client_id,title,status,due_date,budget,notes) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [req.params.clientId, title, status, due_date, budget, notes]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.put('/api/clients/projects/:id', express.json(), async (req, res) => {
+  try {
+    const { title, status, due_date, budget, notes } = req.body;
+    const r = await pool.query(
+      `UPDATE client_projects SET title=$1,status=$2,due_date=$3,budget=$4,notes=$5,updated_at=NOW() WHERE id=$6 RETURNING *`,
+      [title, status, due_date, budget, notes, req.params.id]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.delete('/api/clients/projects/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM client_projects WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Milestones ────────────────────────────────────────────────────────────────
+app.get('/api/hub/milestones', async (req, res) => {
+  try {
+    const ms = await pool.query('SELECT * FROM hub_milestones ORDER BY threshold ASC');
+    // Check current sub counts to auto-mark hit
+    const subs = await pool.query(
+      `SELECT platform, count FROM subscriber_snapshots ORDER BY recorded_at DESC LIMIT 2`
+    );
+    const ytSubs = subs.rows.find(r => r.platform === 'youtube')?.count || 0;
+    const igSubs = subs.rows.find(r => r.platform === 'instagram')?.count || 0;
+    const views  = await pool.query(
+      `SELECT SUM(views) AS total FROM content_analytics WHERE platform='youtube'`
+    );
+    const totalViews = Number(views.rows[0]?.total || 0);
+    const vals = { youtube_subs: ytSubs, instagram_subs: igSubs, youtube_views: totalViews };
+    for (const m of ms.rows) {
+      const current = vals[m.metric] || 0;
+      if (!m.hit && current >= m.threshold) {
+        await pool.query(`UPDATE hub_milestones SET hit=true,hit_at=NOW() WHERE id=$1`, [m.id]);
+        m.hit = true; m.hit_at = new Date();
+      }
+      m.current = current;
+    }
+    res.json(ms.rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/hub/milestones', express.json(), async (req, res) => {
+  try {
+    const { label, metric, threshold } = req.body;
+    const r = await pool.query(
+      `INSERT INTO hub_milestones (label,metric,threshold) VALUES ($1,$2,$3) RETURNING *`,
+      [label, metric, threshold]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.delete('/api/hub/milestones/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM hub_milestones WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Best time to post ─────────────────────────────────────────────────────────
+app.get('/api/best-time-to-post', async (req, res) => {
+  try {
+    const chCond = getChannelCond();
+    const r = await pool.query(`
+      SELECT
+        EXTRACT(DOW FROM published_at AT TIME ZONE 'UTC')::int  AS dow,
+        EXTRACT(HOUR FROM published_at AT TIME ZONE 'UTC')::int AS hour,
+        COUNT(*)                AS posts,
+        AVG(views)              AS avg_views,
+        AVG(engagement_rate)    AS avg_er
+      FROM content_analytics
+      WHERE platform='youtube' AND published_at IS NOT NULL ${chCond}
+      GROUP BY dow, hour
+      ORDER BY avg_views DESC
+    `);
+    res.json(r.rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Weekly AI Digest ──────────────────────────────────────────────────────────
+app.post('/api/weekly-digest', async (req, res) => {
+  try {
+    if (!process.env.ANTHROPIC_API_KEY) return res.status(400).json({ error: 'ANTHROPIC_API_KEY not set' });
+    const chCond = getChannelCond();
+    const [weekR, prevR, subR] = await Promise.all([
+      pool.query(`SELECT title, views, likes, engagement_rate, published_at FROM content_analytics WHERE platform='youtube' AND published_at > NOW()-INTERVAL '7 days' ${chCond} ORDER BY views DESC LIMIT 10`),
+      pool.query(`SELECT title, views, likes, engagement_rate FROM content_analytics WHERE platform='youtube' AND published_at BETWEEN NOW()-INTERVAL '14 days' AND NOW()-INTERVAL '7 days' ${chCond} ORDER BY views DESC LIMIT 10`),
+      pool.query(`SELECT platform, count, recorded_at FROM subscriber_snapshots ORDER BY recorded_at DESC LIMIT 6`),
+    ]);
+    const thisWeekViews = weekR.rows.reduce((s, r) => s + Number(r.views || 0), 0);
+    const prevWeekViews = prevR.rows.reduce((s, r) => s + Number(r.views || 0), 0);
+    const ytSubs = subR.rows.filter(r => r.platform === 'youtube');
+    const subGrowth = ytSubs.length >= 2 ? Number(ytSubs[0].count) - Number(ytSubs[ytSubs.length - 1].count) : null;
+
+    const prompt = `You are a sharp YouTube strategy coach writing a weekly performance digest for a creator. Be direct, specific, and actionable. No fluff.
+
+THIS WEEK'S DATA:
+Videos posted this week: ${weekR.rows.length}
+Total views this week: ${thisWeekViews.toLocaleString()} (prev week: ${prevWeekViews.toLocaleString()}, ${prevWeekViews > 0 ? ((thisWeekViews - prevWeekViews) / prevWeekViews * 100).toFixed(1) + '%' : 'N/A'} change)
+${subGrowth != null ? `Subscriber growth this week: +${subGrowth.toLocaleString()}` : ''}
+
+TOP VIDEOS THIS WEEK:
+${weekR.rows.map(v => `- "${v.title}" — ${Number(v.views).toLocaleString()} views, ${v.engagement_rate}% ER`).join('\n') || 'No videos this week'}
+
+Write a weekly digest with exactly these sections:
+## This Week's Wins
+(2-3 specific highlights from the data above)
+
+## What the Numbers Tell You
+(What patterns or signals stand out — good or bad)
+
+## 3 Actions for Next Week
+(Concrete, specific — based on what's working and what's not)
+
+## One Big Opportunity
+(The single most important thing to focus on based on all data)
+
+Keep the whole thing under 300 words. Be like a smart coach, not a corporate memo.`;
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('X-Accel-Buffering', 'no');
+
+    const Anthropic = require('@anthropic-ai/sdk');
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const stream = client.messages.stream({
+      model: 'claude-opus-4-6',
+      max_tokens: 600,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    for await (const chunk of stream) {
+      if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
+        res.write(chunk.delta.text);
+      }
+    }
+    res.end();
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Quick Links ────────────────────────────────────────────────────────────────
+app.get('/api/hub/links', async (req, res) => {
+  try { res.json((await pool.query('SELECT * FROM quick_links ORDER BY created_at ASC')).rows); }
+  catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/hub/links', express.json(), async (req, res) => {
+  try {
+    const { title, url, emoji='🔗' } = req.body;
+    const r = await pool.query(`INSERT INTO quick_links (title,url,emoji) VALUES ($1,$2,$3) RETURNING *`, [title, url, emoji]);
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.delete('/api/hub/links/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM quick_links WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Hub: Google OAuth for Gmail/Drive/Calendar ─────────────────────────────────
+const HUB_GOOGLE_SCOPES = [
+  'https://www.googleapis.com/auth/gmail.readonly',
+  'https://www.googleapis.com/auth/drive.readonly',
+  'https://www.googleapis.com/auth/calendar.readonly',
+].join(' ');
+
+app.get('/api/hub/connect/google', (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) return res.status(400).send('GOOGLE_CLIENT_ID not set');
+  const redirect = `${req.protocol}://${req.get('host')}/api/hub/callback/google`;
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?` +
+    `client_id=${clientId}&redirect_uri=${encodeURIComponent(redirect)}` +
+    `&response_type=code&scope=${encodeURIComponent(HUB_GOOGLE_SCOPES)}&access_type=offline&prompt=consent`;
+  res.redirect(url);
+});
+
+app.get('/api/hub/callback/google', async (req, res) => {
+  const { code } = req.query;
+  const redirect = `${req.protocol}://${req.get('host')}/api/hub/callback/google`;
+  try {
+    const data = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code, client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: redirect, grant_type: 'authorization_code',
+      }),
+    }).then(r => r.json());
+    if (data.error) throw new Error(data.error_description || data.error);
+    await pool.query(
+      `INSERT INTO hub_tokens (service,refresh_token,access_token,expires_at) VALUES ('google',$1,$2,NOW()+INTERVAL '1 hour')
+       ON CONFLICT (service) DO UPDATE SET refresh_token=COALESCE($1,hub_tokens.refresh_token),access_token=$2,expires_at=NOW()+INTERVAL '1 hour'`,
+      [data.refresh_token || null, data.access_token]
+    );
+    res.send(`<html><body style="font-family:sans-serif;padding:40px;background:#0d1623;color:#c8d8ea"><h2>✅ Google connected!</h2><p>You can close this tab.</p><script>window.opener && window.opener.postMessage('google-connected','*');window.close();</script></body></html>`);
+  } catch (err) {
+    res.send(`<html><body style="font-family:sans-serif;padding:40px;background:#0d1623;color:#f87171"><h2>❌ ${err.message}</h2></body></html>`);
+  }
+});
+
+async function getHubGoogleToken() {
+  const row = await pool.query(`SELECT * FROM hub_tokens WHERE service='google'`).then(r => r.rows[0]).catch(() => null);
+  if (!row) return null;
+  if (row.expires_at && new Date(row.expires_at) > new Date(Date.now() + 60000)) return row.access_token;
+  if (!row.refresh_token) return null;
+  const data = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: process.env.GOOGLE_CLIENT_ID, client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      refresh_token: row.refresh_token, grant_type: 'refresh_token',
+    }),
+  }).then(r => r.json());
+  if (data.access_token) {
+    await pool.query(`UPDATE hub_tokens SET access_token=$1,expires_at=NOW()+INTERVAL '1 hour' WHERE service='google'`, [data.access_token]);
+    return data.access_token;
+  }
+  return null;
+}
+
+app.get('/api/hub/status', async (req, res) => {
+  try {
+    const token = await pool.query(`SELECT service FROM hub_tokens`).then(r => r.rows.map(r => r.service)).catch(() => []);
+    const notion = !!process.env.NOTION_API_KEY;
+    res.json({ google: token.includes('google'), notion });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/hub/gmail', async (req, res) => {
+  try {
+    const token = await getHubGoogleToken();
+    if (!token) return res.json({ connected: false });
+    const list = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=10&labelIds=INBOX', {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json());
+    if (list.error) return res.json({ connected: false, error: list.error.message });
+    const messages = await Promise.all((list.messages || []).slice(0, 8).map(async m => {
+      const full = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(r => r.json());
+      const hdrs = full.payload?.headers || [];
+      const get = name => hdrs.find(h => h.name === name)?.value || '';
+      return { id: m.id, subject: get('Subject'), from: get('From'), date: get('Date'), snippet: full.snippet, unread: full.labelIds?.includes('UNREAD') };
+    }));
+    res.json({ connected: true, messages });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/hub/drive', async (req, res) => {
+  try {
+    const token = await getHubGoogleToken();
+    if (!token) return res.json({ connected: false });
+    const data = await fetch('https://www.googleapis.com/drive/v3/files?pageSize=12&orderBy=modifiedTime+desc&fields=files(id,name,mimeType,modifiedTime,webViewLink,iconLink,owners)', {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json());
+    if (data.error) return res.json({ connected: false, error: data.error.message });
+    res.json({ connected: true, files: data.files || [] });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/hub/notion', async (req, res) => {
+  try {
+    const key = process.env.NOTION_API_KEY;
+    if (!key) return res.json({ connected: false });
+    const data = await fetch('https://api.notion.com/v1/search', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
+      body: JSON.stringify({ filter: { value: 'page', property: 'object' }, page_size: 10, sort: { direction: 'descending', timestamp: 'last_edited_time' } }),
+    }).then(r => r.json());
+    if (data.status === 401 || data.code === 'unauthorized') return res.json({ connected: false, error: 'Invalid Notion API key' });
+    const pages = (data.results || []).map(p => ({
+      id: p.id,
+      title: p.properties?.title?.title?.[0]?.plain_text || p.properties?.Name?.title?.[0]?.plain_text || 'Untitled',
+      url: p.url,
+      edited: p.last_edited_time,
+      icon: p.icon?.emoji || '📄',
+    }));
+    res.json({ connected: true, pages });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

@@ -546,6 +546,77 @@
     .md-check-item.checked span { text-decoration:line-through; color:#475569; }
     .pipeline-card-note-preview { font-size:11.5px; color:#8aa0bc; margin-top:6px; line-height:1.4; border-top:1px solid #1a2740; padding-top:5px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
 
+    /* ── Calendar ── */
+    .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .cal-nav-btn { background:#111e2e; border:1px solid #1a2f48; border-radius:8px; color:#7a90b0; font-size:13px; padding:6px 14px; cursor:pointer; transition:all .15s; }
+    .cal-nav-btn:hover { border-color:#354e68; color:#c8d8ea; }
+    .cal-month-label { font-size:17px; font-weight:700; color:#eef2f8; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+    .cal-dow { text-align:center; font-size:10px; font-weight:700; color:#3d5270; text-transform:uppercase; letter-spacing:.05em; padding:4px 0 8px; }
+    .cal-day { min-height:88px; background:#111e2e; border:1px solid #1a2f48; border-radius:10px; padding:7px 8px; transition:border-color .15s; }
+    .cal-day.today { border-color:#818cf8; }
+    .cal-day.other-month { opacity:.35; }
+    .cal-day-num { font-size:11px; font-weight:700; color:#3d5270; margin-bottom:4px; }
+    .cal-day.today .cal-day-num { color:#818cf8; }
+    .cal-event { font-size:10px; font-weight:600; border-radius:4px; padding:2px 5px; margin-bottom:2px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; transition:opacity .12s; }
+    .cal-event:hover { opacity:.8; }
+    .cal-event.stage-idea        { background:#818cf822; color:#818cf8; border-left:2px solid #818cf8; }
+    .cal-event.stage-research    { background:#f59e0b22; color:#f59e0b; border-left:2px solid #f59e0b; }
+    .cal-event.stage-scripting   { background:#22d3ee22; color:#22d3ee; border-left:2px solid #22d3ee; }
+    .cal-event.stage-filming     { background:#f472b622; color:#f472b6; border-left:2px solid #f472b6; }
+    .cal-event.stage-editing     { background:#a78bfa22; color:#a78bfa; border-left:2px solid #a78bfa; }
+    .cal-event.stage-published   { background:#34d39922; color:#34d399; border-left:2px solid #34d399; }
+    .cal-digest-box { background:#111e2e; border:1px solid #1a2f48; border-radius:12px; padding:18px 20px; white-space:pre-wrap; font-size:13.5px; line-height:1.75; color:#c8d8ea; }
+    .cal-digest-box h2 { font-size:14px; font-weight:700; color:#eef2f8; margin:14px 0 4px; }
+    /* ── Clients CRM ── */
+    .client-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px; }
+    .client-card { background:#111e2e; border:1px solid #1a2f48; border-radius:12px; padding:16px; transition:border-color .15s; }
+    .client-card:hover { border-color:#2a4868; }
+    .client-name { font-size:15px; font-weight:700; color:#eef2f8; margin-bottom:2px; }
+    .client-company { font-size:12px; color:#7a92b0; margin-bottom:8px; }
+    .client-status { font-size:10px; font-weight:700; border-radius:6px; padding:2px 8px; text-transform:uppercase; }
+    .status-active   { background:#34d39922; color:#34d399; }
+    .status-lead     { background:#f59e0b22; color:#f59e0b; }
+    .status-paused   { background:#64748b22; color:#64748b; }
+    .status-done     { background:#818cf822; color:#818cf8; }
+    .client-email { font-size:11px; color:#5a7090; margin-top:6px; }
+    .client-projects { margin-top:10px; border-top:1px solid #1a2f48; padding-top:10px; }
+    .proj-item { display:flex; align-items:center; gap:8px; padding:5px 0; border-bottom:1px solid #1a2f4840; font-size:12px; color:#8aa0bc; }
+    .proj-status-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .proj-active  { background:#34d399; }
+    .proj-done    { background:#818cf8; }
+    .proj-paused  { background:#64748b; }
+    .client-add-form { background:#111e2e; border:1px solid #1a2f48; border-radius:12px; padding:16px; }
+    .client-input { width:100%; background:#0a1420; border:1px solid #1a2f48; border-radius:7px; color:#c8d8ea; font-size:12px; padding:7px 10px; font-family:inherit; box-sizing:border-box; }
+    .client-input:focus { outline:none; border-color:#818cf8; }
+    /* ── Hub ── */
+    .hub-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:14px; }
+    .hub-card { background:#111e2e; border:1px solid #1a2f48; border-radius:14px; padding:18px; }
+    .hub-card-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+    .hub-card-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .hub-card-title { font-size:14px; font-weight:700; color:#eef2f8; }
+    .hub-card-sub { font-size:11px; color:#3d5270; }
+    .hub-item { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid #1a2f4860; cursor:pointer; transition:opacity .12s; text-decoration:none; }
+    .hub-item:last-child { border-bottom:none; }
+    .hub-item:hover { opacity:.75; }
+    .hub-item-icon { font-size:14px; flex-shrink:0; margin-top:1px; }
+    .hub-item-title { font-size:12.5px; font-weight:600; color:#c8d8ea; line-height:1.35; }
+    .hub-item-sub { font-size:11px; color:#3d5270; margin-top:1px; }
+    .hub-connect-btn { width:100%; background:linear-gradient(135deg,#1a2f48,#162840); border:1px dashed #2a4868; border-radius:8px; color:#7a92b0; font-size:12px; font-weight:600; padding:12px; cursor:pointer; transition:all .15s; }
+    .hub-connect-btn:hover { border-color:#818cf8; color:#c4c9ff; }
+    .hub-links-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
+    .hub-link-chip { background:#0f1929; border:1px solid #1a2f48; border-radius:8px; padding:10px 12px; text-align:center; text-decoration:none; cursor:pointer; transition:border-color .15s; }
+    .hub-link-chip:hover { border-color:#354e68; }
+    .hub-link-emoji { font-size:20px; display:block; margin-bottom:4px; }
+    .hub-link-label { font-size:11px; color:#8aa0bc; font-weight:600; }
+    .milestone-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #1a2f4840; }
+    .milestone-row:last-child { border-bottom:none; }
+    .milestone-label { font-size:13px; color:#c8d8ea; flex:1; }
+    .milestone-prog { flex:2; }
+    .milestone-bar-track { background:#0f1929; border-radius:4px; height:6px; overflow:hidden; }
+    .milestone-bar-fill  { height:6px; border-radius:4px; background:linear-gradient(90deg,#818cf8,#6366f1); transition:width .4s; }
+    .milestone-val { font-size:11px; color:#7a92b0; white-space:nowrap; min-width:60px; text-align:right; }
+    .milestone-hit { font-size:14px; }
     /* ── Thumbnail Gallery ── */
     .thumb-grid { display:grid; gap:12px; }
     .thumb-grid.size-small  { grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); }
@@ -1097,6 +1168,21 @@
     <button class="sidebar-nav-btn tab-btn" data-tab="outliers">
       <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
       Outliers
+    </button>
+
+    <div style="height:1px;background:#1a2f48;margin:6px 10px;"></div>
+
+    <button class="sidebar-nav-btn tab-btn" data-tab="calendar">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendar
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="clients">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Clients
+    </button>
+    <button class="sidebar-nav-btn tab-btn" data-tab="hub">
+      <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Hub
     </button>
   </div>
 
@@ -1768,6 +1854,164 @@
     </div>
 
   </div><!-- /tab-outliers -->
+
+  <!-- ── Calendar Tab ────────────────────────────────────────────────────── -->
+  <div class="tab-panel" id="tab-calendar">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-size:17px;font-weight:700;color:#eef2f8;margin:0;">Content Calendar</h2>
+        <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Pipeline cards plotted by target date.</p>
+      </div>
+      <button id="digest-btn" onclick="generateWeeklyDigest()" style="background:linear-gradient(135deg,#818cf8,#6366f1);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;">✨ Weekly Digest</button>
+    </div>
+
+    <div id="digest-output" style="display:none;" class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span class="card-title">Weekly AI Digest</span>
+        <button onclick="document.getElementById('digest-output').style.display='none'" style="background:none;border:none;color:#3d5270;cursor:pointer;font-size:18px;line-height:1;">×</button>
+      </div>
+      <div id="digest-text" class="cal-digest-box"></div>
+    </div>
+
+    <div class="card">
+      <div class="cal-header">
+        <button class="cal-nav-btn" onclick="calNav(-1)">‹ Prev</button>
+        <span class="cal-month-label" id="cal-month-label"></span>
+        <button class="cal-nav-btn" onclick="calNav(1)">Next ›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid">
+        <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div>
+        <div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="margin-bottom:14px;">
+        <span class="card-title">Best Time to Post</span>
+        <p style="font-size:12px;color:#3d5270;margin-top:3px;">Your actual publish times vs avg views — hotter = more views</p>
+      </div>
+      <div id="best-time-grid" style="overflow-x:auto;"></div>
+    </div>
+  </div><!-- /tab-calendar -->
+
+  <!-- ── Clients Tab ─────────────────────────────────────────────────────── -->
+  <div class="tab-panel" id="tab-clients">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-size:17px;font-weight:700;color:#eef2f8;margin:0;">Clients</h2>
+        <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Track client work, projects, and status at a glance.</p>
+      </div>
+      <button onclick="openAddClient()" style="background:#818cf8;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;">+ New Client</button>
+    </div>
+
+    <div id="client-add-panel" style="display:none;" class="client-add-form card">
+      <div style="font-size:13px;font-weight:700;color:#eef2f8;margin-bottom:12px;" id="client-form-title">New Client</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <input class="client-input" id="cf-name" placeholder="Name *">
+        <input class="client-input" id="cf-company" placeholder="Company">
+        <input class="client-input" id="cf-email" placeholder="Email" type="email">
+        <select class="client-input" id="cf-status">
+          <option value="lead">Lead</option>
+          <option value="active" selected>Active</option>
+          <option value="paused">Paused</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+      <input class="client-input" id="cf-tags" placeholder="Tags (comma-separated)" style="margin-bottom:8px;width:100%;box-sizing:border-box;">
+      <textarea class="client-input" id="cf-notes" placeholder="Notes..." rows="3" style="resize:vertical;margin-bottom:10px;width:100%;box-sizing:border-box;"></textarea>
+      <div style="display:flex;gap:8px;">
+        <button onclick="saveClient()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;padding:7px 18px;cursor:pointer;" id="cf-save-btn">Save</button>
+        <button onclick="closeAddClient()" style="background:#0f1929;border:1px solid #1a2f48;border-radius:7px;color:#5a7090;font-size:12px;padding:7px 14px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+
+    <div class="client-grid" id="clients-grid"><div style="color:#3d5270;font-size:13px;padding:20px;">Loading…</div></div>
+  </div><!-- /tab-clients -->
+
+  <!-- ── Hub Tab ─────────────────────────────────────────────────────────── -->
+  <div class="tab-panel" id="tab-hub">
+    <div style="margin-bottom:4px;">
+      <h2 style="font-size:17px;font-weight:700;color:#eef2f8;margin:0;">Hub</h2>
+      <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Your one-stop dashboard — email, files, pages, links.</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span class="card-title">Quick Links</span>
+        <button onclick="toggleAddLink()" style="background:#111e2e;border:1px solid #1a2f48;border-radius:6px;color:#7a92b0;font-size:11px;padding:4px 10px;cursor:pointer;">+ Add</button>
+      </div>
+      <div id="add-link-form" style="display:none;margin-bottom:12px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <input id="lf-emoji" class="client-input" placeholder="🔗" style="width:48px;">
+          <input id="lf-title" class="client-input" placeholder="Label" style="flex:1;min-width:100px;">
+          <input id="lf-url" class="client-input" placeholder="https://..." style="flex:2;min-width:160px;" type="url">
+          <button onclick="saveLink()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;padding:6px 14px;cursor:pointer;white-space:nowrap;">Add Link</button>
+        </div>
+      </div>
+      <div class="hub-links-grid" id="hub-links-grid"><div style="color:#3d5270;font-size:12px;">Loading…</div></div>
+    </div>
+
+    <div class="hub-grid">
+      <div class="hub-card">
+        <div class="hub-card-header">
+          <div class="hub-card-icon" style="background:#ea433522;">📧</div>
+          <div style="flex:1;">
+            <div class="hub-card-title">Gmail</div>
+            <div class="hub-card-sub" id="gmail-status-sub">Not connected</div>
+          </div>
+          <button id="gmail-connect-btn" onclick="connectGoogle()" class="hub-connect-btn" style="width:auto;padding:5px 12px;font-size:11px;">Connect</button>
+        </div>
+        <div id="gmail-list"><div style="color:#3d5270;font-size:12px;text-align:center;padding:16px;">Connect Google to see inbox</div></div>
+      </div>
+
+      <div class="hub-card">
+        <div class="hub-card-header">
+          <div class="hub-card-icon" style="background:#fbbc0422;">📁</div>
+          <div style="flex:1;">
+            <div class="hub-card-title">Google Drive</div>
+            <div class="hub-card-sub" id="drive-status-sub">Not connected</div>
+          </div>
+          <button id="drive-connect-btn" onclick="connectGoogle()" class="hub-connect-btn" style="width:auto;padding:5px 12px;font-size:11px;">Connect</button>
+        </div>
+        <div id="drive-list"><div style="color:#3d5270;font-size:12px;text-align:center;padding:16px;">Connect Google to see files</div></div>
+      </div>
+
+      <div class="hub-card">
+        <div class="hub-card-header">
+          <div class="hub-card-icon" style="background:#ffffff12;">📓</div>
+          <div>
+            <div class="hub-card-title">Notion</div>
+            <div class="hub-card-sub" id="notion-status-sub">Add NOTION_API_KEY to .env</div>
+          </div>
+        </div>
+        <div id="notion-list"><div style="color:#3d5270;font-size:12px;text-align:center;padding:16px;">Not connected</div></div>
+      </div>
+
+      <div class="hub-card">
+        <div class="hub-card-header">
+          <div class="hub-card-icon" style="background:#34d39922;">🏆</div>
+          <div style="flex:1;">
+            <div class="hub-card-title">Milestones</div>
+            <div class="hub-card-sub">Track subscriber &amp; view goals</div>
+          </div>
+          <button onclick="toggleAddMilestone()" class="hub-connect-btn" style="width:auto;padding:5px 12px;font-size:11px;">+ Add</button>
+        </div>
+        <div id="add-milestone-form" style="display:none;margin-bottom:10px;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+            <input id="mf-label" class="client-input" placeholder="e.g. 100K subs" style="flex:1;min-width:120px;">
+            <select id="mf-metric" class="client-input" style="flex:1;min-width:120px;">
+              <option value="youtube_subs">YouTube Subs</option>
+              <option value="instagram_subs">Instagram Followers</option>
+              <option value="youtube_views">Total YT Views</option>
+            </select>
+            <input id="mf-threshold" class="client-input" placeholder="100000" type="number" style="width:100px;">
+            <button onclick="saveMilestone()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;padding:6px 14px;cursor:pointer;">Add</button>
+          </div>
+        </div>
+        <div id="hub-milestones-list"><div style="color:#3d5270;font-size:12px;text-align:center;padding:12px;">No milestones yet — add one above</div></div>
+      </div>
+    </div>
+  </div><!-- /tab-hub -->
 
   <!-- Zoom overlay for thumb lab -->
   <div class="lab-zoom-overlay" id="lab-zoom-overlay" onclick="this.classList.remove('open')">
@@ -5579,7 +5823,458 @@ document.addEventListener('DOMContentLoaded', async () => {
       topicInput.dataset.lastTitle = e.target.value;
     }
   });
+
+  // Global ESC key handler
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    closeCardDetail();
+    document.getElementById('thumb-modal')?.classList.remove('open');
+    document.getElementById('lab-zoom-overlay')?.classList.remove('open');
+    document.getElementById('card-detail-overlay')?.style.setProperty('display','none');
+  });
+
+  // Tab switching — new tabs
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.tab === 'calendar' && !_calLoaded) { _calLoaded = true; loadCalendar(); loadBestTime(); }
+      if (btn.dataset.tab === 'clients'  && !_clientsLoaded) { _clientsLoaded = true; loadClients(); }
+      if (btn.dataset.tab === 'hub'      && !_hubLoaded)  { _hubLoaded = true; loadHub(); }
+    });
+  });
 });
+
+// ── ESC + modal flags ─────────────────────────────────────────────────────────
+let _calLoaded = false, _clientsLoaded = false, _hubLoaded = false;
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CALENDAR
+// ══════════════════════════════════════════════════════════════════════════════
+let _calYear = new Date().getFullYear(), _calMonth = new Date().getMonth();
+let _calCards = [];
+
+function calNav(dir) {
+  _calMonth += dir;
+  if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+  if (_calMonth < 0)  { _calMonth = 11; _calYear--; }
+  renderCal();
+}
+
+async function loadCalendar() {
+  const r = await fetch('/api/pipeline').catch(() => null);
+  if (!r?.ok) return;
+  _calCards = await r.json();
+  renderCal();
+}
+
+function renderCal() {
+  const label = document.getElementById('cal-month-label');
+  const grid  = document.getElementById('cal-grid');
+  if (!label || !grid) return;
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  label.textContent = `${monthNames[_calMonth]} ${_calYear}`;
+
+  const today = new Date();
+  const firstDay = new Date(_calYear, _calMonth, 1).getDay();
+  const daysInMonth = new Date(_calYear, _calMonth + 1, 0).getDate();
+  const daysInPrev  = new Date(_calYear, _calMonth, 0).getDate();
+
+  // Keep DOW headers (first 7 children)
+  const headers = Array.from(grid.children).slice(0, 7);
+  grid.innerHTML = '';
+  headers.forEach(h => grid.appendChild(h));
+
+  const cardsThisMonth = _calCards.filter(c => {
+    if (!c.target_date) return false;
+    const d = new Date(c.target_date);
+    return d.getFullYear() === _calYear && d.getMonth() === _calMonth;
+  });
+
+  const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+  for (let i = 0; i < totalCells; i++) {
+    let day, isThis = true;
+    if (i < firstDay) { day = daysInPrev - firstDay + i + 1; isThis = false; }
+    else if (i >= firstDay + daysInMonth) { day = i - firstDay - daysInMonth + 1; isThis = false; }
+    else { day = i - firstDay + 1; }
+
+    const isToday = isThis && day === today.getDate() && _calMonth === today.getMonth() && _calYear === today.getFullYear();
+    const dayCards = isThis ? cardsThisMonth.filter(c => new Date(c.target_date).getDate() === day) : [];
+
+    const cell = document.createElement('div');
+    cell.className = `cal-day${!isThis ? ' other-month' : ''}${isToday ? ' today' : ''}`;
+    cell.innerHTML = `<div class="cal-day-num">${day}</div>` +
+      dayCards.map(c => `<div class="cal-event stage-${c.stage}" onclick="switchTab('pipeline');openCardDetail(${c.id})">${escHtml(c.title)}</div>`).join('');
+    grid.appendChild(cell);
+  }
+}
+
+// ── Best time to post ─────────────────────────────────────────────────────────
+async function loadBestTime() {
+  const container = document.getElementById('best-time-grid');
+  if (!container) return;
+  const data = await fetch('/api/best-time-to-post').then(r => r.json()).catch(() => []);
+  if (!data.length) { container.innerHTML = `<div style="color:#3d5270;font-size:12px;padding:12px;">Not enough data yet — post more videos to see patterns.</div>`; return; }
+
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const hours = Array.from({length:24}, (_,i) => i);
+
+  // Build a map: dow+hour → avg_views
+  const map = {};
+  let maxV = 0;
+  for (const r of data) {
+    const key = `${r.dow}-${r.hour}`;
+    map[key] = Number(r.avg_views || 0);
+    if (map[key] > maxV) maxV = map[key];
+  }
+
+  const fmtH = h => { const ampm = h < 12 ? 'am' : 'pm'; return `${h === 0 ? 12 : h > 12 ? h - 12 : h}${ampm}`; };
+  let html = `<table style="border-collapse:collapse;font-size:10px;min-width:600px;">`;
+  html += `<tr><th style="width:36px;"></th>` + hours.map(h => `<th style="color:#3d5270;font-weight:600;padding:2px 4px;text-align:center;">${fmtH(h)}</th>`).join('') + `</tr>`;
+  for (let d = 0; d < 7; d++) {
+    html += `<tr><td style="color:#5a7090;font-weight:700;font-size:11px;padding:3px 8px 3px 0;">${days[d]}</td>`;
+    for (const h of hours) {
+      const v = map[`${d}-${h}`] || 0;
+      const pct = maxV > 0 ? v / maxV : 0;
+      const bg = pct === 0 ? '#0a1420' : `rgba(99,102,241,${(0.1 + pct * 0.9).toFixed(2)})`;
+      const tooltip = v > 0 ? `${fmtH(h)} ${days[d]} — avg ${Math.round(v).toLocaleString()} views` : '';
+      html += `<td title="${tooltip}" style="background:${bg};width:22px;height:22px;border-radius:3px;margin:1px;cursor:${v > 0 ? 'help' : 'default'};"></td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `</table><div style="font-size:10px;color:#3d5270;margin-top:8px;">Darker purple = more views on average. Based on ${data.length} data points.</div>`;
+  container.innerHTML = html;
+}
+
+// ── Weekly digest ─────────────────────────────────────────────────────────────
+async function generateWeeklyDigest() {
+  const btn  = document.getElementById('digest-btn');
+  const out  = document.getElementById('digest-output');
+  const text = document.getElementById('digest-text');
+  btn.disabled = true; btn.textContent = '⏳ Generating…';
+  out.style.display = 'block'; text.textContent = '';
+  try {
+    const resp = await fetch('/api/weekly-digest', { method: 'POST' });
+    if (!resp.ok) { const e = await resp.json().catch(()=>({error:resp.statusText})); throw new Error(e.error); }
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      text.textContent += dec.decode(value);
+    }
+  } catch (err) {
+    text.textContent = '⚠ ' + err.message;
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ Weekly Digest';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CLIENTS CRM
+// ══════════════════════════════════════════════════════════════════════════════
+let _clients = [], _editingClientId = null;
+
+async function loadClients() {
+  const grid = document.getElementById('clients-grid');
+  _clients = await fetch('/api/clients').then(r => r.json()).catch(() => []);
+  renderClients();
+}
+
+function renderClients() {
+  const grid = document.getElementById('clients-grid');
+  if (!_clients.length) {
+    grid.innerHTML = `<div style="color:#3d5270;font-size:13px;padding:20px;text-align:center;">No clients yet — add your first one above.</div>`;
+    return;
+  }
+  grid.innerHTML = _clients.map(c => {
+    const statusCls = { active:'status-active', lead:'status-lead', paused:'status-paused', done:'status-done' }[c.status] || 'status-active';
+    const projects = (c.projects || []);
+    return `
+    <div class="client-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">
+        <div>
+          <div class="client-name">${escHtml(c.name)}</div>
+          ${c.company ? `<div class="client-company">${escHtml(c.company)}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:5px;align-items:center;flex-shrink:0;">
+          <span class="client-status ${statusCls}">${c.status}</span>
+          <button onclick="editClient(${c.id})" style="background:none;border:none;color:#3d5270;cursor:pointer;font-size:12px;padding:2px 5px;" title="Edit">✏</button>
+          <button onclick="deleteClient(${c.id})" style="background:none;border:none;color:#3d5270;cursor:pointer;font-size:12px;padding:2px 5px;" title="Delete">✕</button>
+        </div>
+      </div>
+      ${c.email ? `<div class="client-email">✉ <a href="mailto:${escHtml(c.email)}" style="color:#5a7090;text-decoration:none;">${escHtml(c.email)}</a></div>` : ''}
+      ${c.tags ? `<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">${c.tags.split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span style="background:#1a2f48;border-radius:4px;padding:1px 6px;font-size:10px;color:#7a92b0;">${escHtml(t)}</span>`).join('')}</div>` : ''}
+      ${c.notes ? `<div style="font-size:11.5px;color:#5a7090;margin-top:8px;line-height:1.5;border-top:1px solid #1a2f48;padding-top:8px;">${escHtml(c.notes)}</div>` : ''}
+      <div class="client-projects">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:11px;font-weight:700;color:#3d5270;text-transform:uppercase;letter-spacing:.05em;">Projects (${projects.length})</span>
+          <button onclick="addProject(${c.id})" style="background:none;border:none;color:#818cf8;font-size:11px;cursor:pointer;">+ Add</button>
+        </div>
+        ${projects.map(p => {
+          const dotCls = { active:'proj-active', done:'proj-done', paused:'proj-paused' }[p.status] || 'proj-active';
+          return `<div class="proj-item">
+            <div class="proj-status-dot ${dotCls}"></div>
+            <span style="flex:1;">${escHtml(p.title)}</span>
+            ${p.due_date ? `<span style="font-size:10px;color:#3d5270;">${new Date(p.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>` : ''}
+            <button onclick="deleteProject(${p.id})" style="background:none;border:none;color:#1a2f48;cursor:pointer;font-size:11px;padding:0 2px;" title="Delete">✕</button>
+          </div>`;
+        }).join('')}
+        ${!projects.length ? `<div style="color:#3d5270;font-size:11px;">No projects yet</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openAddClient() {
+  _editingClientId = null;
+  document.getElementById('client-form-title').textContent = 'New Client';
+  document.getElementById('cf-name').value = '';
+  document.getElementById('cf-company').value = '';
+  document.getElementById('cf-email').value = '';
+  document.getElementById('cf-status').value = 'active';
+  document.getElementById('cf-tags').value = '';
+  document.getElementById('cf-notes').value = '';
+  document.getElementById('client-add-panel').style.display = 'block';
+  document.getElementById('cf-name').focus();
+}
+
+function closeAddClient() { document.getElementById('client-add-panel').style.display = 'none'; }
+
+function editClient(id) {
+  const c = _clients.find(c => c.id === id);
+  if (!c) return;
+  _editingClientId = id;
+  document.getElementById('client-form-title').textContent = 'Edit Client';
+  document.getElementById('cf-name').value = c.name || '';
+  document.getElementById('cf-company').value = c.company || '';
+  document.getElementById('cf-email').value = c.email || '';
+  document.getElementById('cf-status').value = c.status || 'active';
+  document.getElementById('cf-tags').value = c.tags || '';
+  document.getElementById('cf-notes').value = c.notes || '';
+  document.getElementById('client-add-panel').style.display = 'block';
+  document.getElementById('cf-name').focus();
+}
+
+async function saveClient() {
+  const name = document.getElementById('cf-name').value.trim();
+  if (!name) { alert('Name is required'); return; }
+  const body = {
+    name, company: document.getElementById('cf-company').value.trim(),
+    email: document.getElementById('cf-email').value.trim(),
+    status: document.getElementById('cf-status').value,
+    tags: document.getElementById('cf-tags').value.trim(),
+    notes: document.getElementById('cf-notes').value.trim(),
+  };
+  const url = _editingClientId ? `/api/clients/${_editingClientId}` : '/api/clients';
+  const method = _editingClientId ? 'PUT' : 'POST';
+  const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!r.ok) { showToast('Error saving client'); return; }
+  closeAddClient();
+  await loadClients();
+  showToast(_editingClientId ? 'Client updated' : 'Client added');
+}
+
+async function deleteClient(id) {
+  if (!confirm('Delete this client and all their projects?')) return;
+  await fetch(`/api/clients/${id}`, { method: 'DELETE' });
+  await loadClients();
+  showToast('Client deleted');
+}
+
+async function addProject(clientId) {
+  const title = prompt('Project title:');
+  if (!title?.trim()) return;
+  const due = prompt('Due date (YYYY-MM-DD) or leave blank:');
+  await fetch(`/api/clients/${clientId}/projects`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title: title.trim(), due_date: due || null }),
+  });
+  await loadClients();
+}
+
+async function deleteProject(id) {
+  await fetch(`/api/clients/projects/${id}`, { method: 'DELETE' });
+  await loadClients();
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HUB
+// ══════════════════════════════════════════════════════════════════════════════
+async function loadHub() {
+  loadHubLinks();
+  loadHubStatus();
+  loadMilestones();
+}
+
+// ── Quick Links ───────────────────────────────────────────────────────────────
+async function loadHubLinks() {
+  const grid = document.getElementById('hub-links-grid');
+  const links = await fetch('/api/hub/links').then(r => r.json()).catch(() => []);
+  if (!links.length) {
+    grid.innerHTML = `<div style="color:#3d5270;font-size:12px;">No links yet — add your first one above.</div>`;
+    return;
+  }
+  grid.innerHTML = links.map(l => `
+    <div style="position:relative;display:inline-block;">
+      <a href="${escHtml(l.url)}" target="_blank" rel="noopener" class="hub-link-chip">
+        <span class="hub-link-emoji">${escHtml(l.emoji || '🔗')}</span>
+        <span class="hub-link-label">${escHtml(l.title)}</span>
+      </a>
+      <button onclick="deleteLink(${l.id})" style="position:absolute;top:-4px;right:-4px;background:#0f1929;border:1px solid #1a2f48;border-radius:50%;width:16px;height:16px;font-size:9px;color:#5a7090;cursor:pointer;display:none;line-height:1;padding:0;" class="link-del-btn">✕</button>
+    </div>`).join('');
+  // Show delete buttons on hover
+  grid.querySelectorAll('[style*="position:relative"]').forEach(wrap => {
+    const btn = wrap.querySelector('.link-del-btn');
+    wrap.addEventListener('mouseenter', () => btn.style.display = 'block');
+    wrap.addEventListener('mouseleave', () => btn.style.display = 'none');
+  });
+}
+
+function toggleAddLink() {
+  const f = document.getElementById('add-link-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function saveLink() {
+  const emoji = document.getElementById('lf-emoji').value.trim() || '🔗';
+  const title = document.getElementById('lf-title').value.trim();
+  const url   = document.getElementById('lf-url').value.trim();
+  if (!title || !url) { showToast('Title and URL are required'); return; }
+  await fetch('/api/hub/links', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ emoji, title, url }) });
+  document.getElementById('lf-emoji').value = '';
+  document.getElementById('lf-title').value = '';
+  document.getElementById('lf-url').value = '';
+  document.getElementById('add-link-form').style.display = 'none';
+  loadHubLinks();
+}
+
+async function deleteLink(id) {
+  await fetch(`/api/hub/links/${id}`, { method: 'DELETE' });
+  loadHubLinks();
+}
+
+// ── Hub status + integrations ─────────────────────────────────────────────────
+async function loadHubStatus() {
+  const status = await fetch('/api/hub/status').then(r => r.json()).catch(() => ({}));
+  if (status.google) {
+    document.getElementById('gmail-connect-btn').style.display = 'none';
+    document.getElementById('drive-connect-btn').style.display = 'none';
+    document.getElementById('gmail-status-sub').textContent = 'Connected';
+    document.getElementById('drive-status-sub').textContent = 'Connected';
+    loadGmail();
+    loadDrive();
+  }
+  if (status.notion) {
+    document.getElementById('notion-status-sub').textContent = 'Connected';
+    loadNotion();
+  }
+}
+
+function connectGoogle() {
+  const win = window.open('/api/hub/connect/google', '_blank', 'width=500,height=600');
+  window.addEventListener('message', async (e) => {
+    if (e.data === 'google-connected') {
+      win?.close();
+      await loadHubStatus();
+      showToast('Google connected!');
+    }
+  }, { once: true });
+}
+
+async function loadGmail() {
+  const list = document.getElementById('gmail-list');
+  list.innerHTML = `<div style="color:#3d5270;font-size:12px;padding:8px;">Loading…</div>`;
+  const data = await fetch('/api/hub/gmail').then(r => r.json()).catch(() => ({}));
+  if (!data.connected) { list.innerHTML = `<div style="color:#3d5270;font-size:12px;padding:8px;">${data.error || 'Connect Google above'}</div>`; return; }
+  list.innerHTML = (data.messages || []).map(m => `
+    <a class="hub-item" href="https://mail.google.com/mail/u/0/#inbox/${m.id}" target="_blank" rel="noopener">
+      <div class="hub-item-icon">${m.unread ? '📬' : '📭'}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="hub-item-title" style="${m.unread ? 'color:#eef2f8;font-weight:700;' : ''}">${escHtml((m.subject||'(no subject)').substring(0,60))}</div>
+        <div class="hub-item-sub">${escHtml((m.from||'').replace(/<[^>]+>/, '').trim().substring(0,40))}</div>
+      </div>
+    </a>`).join('') || '<div style="color:#3d5270;font-size:12px;padding:8px;">Inbox empty</div>';
+}
+
+async function loadDrive() {
+  const list = document.getElementById('drive-list');
+  list.innerHTML = `<div style="color:#3d5270;font-size:12px;padding:8px;">Loading…</div>`;
+  const data = await fetch('/api/hub/drive').then(r => r.json()).catch(() => ({}));
+  if (!data.connected) { list.innerHTML = `<div style="color:#3d5270;font-size:12px;padding:8px;">${data.error || 'Connect Google above'}</div>`; return; }
+  const mimeIcons = { 'application/vnd.google-apps.folder':'📁', 'application/vnd.google-apps.document':'📄', 'application/vnd.google-apps.spreadsheet':'📊', 'application/vnd.google-apps.presentation':'📽', 'application/pdf':'📄', 'image/':'🖼', 'video/':'🎬' };
+  const getIcon = mime => { for (const [k,v] of Object.entries(mimeIcons)) { if (mime?.startsWith(k)) return v; } return '📎'; };
+  list.innerHTML = (data.files || []).map(f => `
+    <a class="hub-item" href="${escHtml(f.webViewLink||'#')}" target="_blank" rel="noopener">
+      <div class="hub-item-icon">${getIcon(f.mimeType)}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="hub-item-title">${escHtml((f.name||'').substring(0,50))}</div>
+        <div class="hub-item-sub">${f.modifiedTime ? 'Modified ' + new Date(f.modifiedTime).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}</div>
+      </div>
+    </a>`).join('') || '<div style="color:#3d5270;font-size:12px;padding:8px;">No files found</div>';
+}
+
+async function loadNotion() {
+  const list = document.getElementById('notion-list');
+  list.innerHTML = `<div style="color:#3d5270;font-size:12px;padding:8px;">Loading…</div>`;
+  const data = await fetch('/api/hub/notion').then(r => r.json()).catch(() => ({}));
+  if (!data.connected) { list.innerHTML = `<div style="color:#3d5270;font-size:12px;padding:8px;">${data.error || 'Add NOTION_API_KEY to .env'}</div>`; return; }
+  document.getElementById('notion-status-sub').textContent = 'Connected';
+  list.innerHTML = (data.pages || []).map(p => `
+    <a class="hub-item" href="${escHtml(p.url)}" target="_blank" rel="noopener">
+      <div class="hub-item-icon">${escHtml(p.icon)}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="hub-item-title">${escHtml((p.title||'Untitled').substring(0,50))}</div>
+        <div class="hub-item-sub">${p.edited ? 'Edited ' + new Date(p.edited).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : ''}</div>
+      </div>
+    </a>`).join('') || '<div style="color:#3d5270;font-size:12px;padding:8px;">No pages found</div>';
+}
+
+// ── Milestones ────────────────────────────────────────────────────────────────
+function toggleAddMilestone() {
+  const f = document.getElementById('add-milestone-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function loadMilestones() {
+  const list = document.getElementById('hub-milestones-list');
+  const ms = await fetch('/api/hub/milestones').then(r => r.json()).catch(() => []);
+  if (!ms.length) { list.innerHTML = `<div style="color:#3d5270;font-size:12px;text-align:center;padding:12px;">No milestones yet — add one above</div>`; return; }
+  list.innerHTML = ms.map(m => {
+    const pct = Math.min(100, m.threshold > 0 ? Math.round((m.current / m.threshold) * 100) : 0);
+    const metricLabel = { youtube_subs:'YT Subs', instagram_subs:'IG Followers', youtube_views:'YT Views' }[m.metric] || m.metric;
+    return `<div class="milestone-row">
+      <div style="flex:1;">
+        <div class="milestone-label">${m.hit ? '🏆 ' : ''}${escHtml(m.label)}</div>
+        <div style="font-size:10px;color:#3d5270;">${metricLabel}</div>
+      </div>
+      <div class="milestone-prog">
+        <div class="milestone-bar-track"><div class="milestone-bar-fill" style="width:${pct}%;${m.hit?'background:linear-gradient(90deg,#34d399,#059669);':''}"></div></div>
+      </div>
+      <div class="milestone-val">${fmtNum(m.current)} / ${fmtNum(m.threshold)}</div>
+      <button onclick="deleteMilestone(${m.id})" style="background:none;border:none;color:#3d5270;cursor:pointer;font-size:11px;padding:2px 4px;">✕</button>
+    </div>`;
+  }).join('');
+  // Also populate milestones-inner in Growth tab
+  const inner = document.getElementById('milestones-inner');
+  if (inner) inner.innerHTML = list.innerHTML;
+}
+
+async function saveMilestone() {
+  const label = document.getElementById('mf-label').value.trim();
+  const metric = document.getElementById('mf-metric').value;
+  const threshold = parseInt(document.getElementById('mf-threshold').value);
+  if (!label || !threshold) { showToast('Fill in all fields'); return; }
+  await fetch('/api/hub/milestones', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label,metric,threshold}) });
+  document.getElementById('mf-label').value = '';
+  document.getElementById('mf-threshold').value = '';
+  document.getElementById('add-milestone-form').style.display = 'none';
+  loadMilestones();
+  showToast('Milestone added');
+}
+
+async function deleteMilestone(id) {
+  await fetch(`/api/hub/milestones/${id}`, { method:'DELETE' });
+  loadMilestones();
+}
 </script>
 <footer style="text-align:center;padding:24px;font-size:11px;color:#475569;border-top:1px solid #1e2d45;margin-top:40px;">
   Content Dashboard &nbsp;·&nbsp; <a href="/privacy" style="color:#64748b;text-decoration:none;" target="_blank">Privacy Policy</a>
