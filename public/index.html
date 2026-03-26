@@ -1703,6 +1703,15 @@
       <div class="compete-grid" id="compete-cards"></div>
     </div>
 
+    <!-- You vs Them bar chart -->
+    <div class="card" id="comp-insights-card" style="display:none;">
+      <div style="margin-bottom:16px;">
+        <span class="card-title">You vs Them</span>
+        <p style="font-size:12px;color:#3d5270;margin-top:3px;">How you stack up across key metrics</p>
+      </div>
+      <div id="comp-insights-body" style="display:flex;flex-direction:column;gap:18px;"></div>
+    </div>
+
     <div class="card" id="compete-compare-section" style="display:none;">
       <div style="margin-bottom:18px;">
         <span class="card-title">Head-to-Head Comparison</span>
@@ -1970,8 +1979,10 @@
           <option value="done">Done</option>
         </select>
       </div>
-      <input class="client-input" id="cf-tags" placeholder="Tags (comma-separated)" style="margin-bottom:8px;width:100%;box-sizing:border-box;">
-      <textarea class="client-input" id="cf-notes" placeholder="Notes..." rows="3" style="resize:vertical;margin-bottom:10px;width:100%;box-sizing:border-box;"></textarea>
+      <input class="client-input" id="cf-retainer" placeholder="Monthly retainer ($)" type="number" min="0" step="0.01">
+      </div>
+      <input class="client-input" id="cf-tags" placeholder="Tags (comma-separated)" style="width:100%;box-sizing:border-box;margin-bottom:8px;">
+      <textarea class="client-input" id="cf-notes" placeholder="Notes..." rows="3" style="resize:vertical;margin-bottom:10px;width:100%;box-sizing:border-box;display:block;"></textarea>
       <div style="display:flex;gap:8px;">
         <button onclick="saveClient()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;padding:7px 18px;cursor:pointer;" id="cf-save-btn">Save</button>
         <button onclick="closeAddClient()" style="background:#0f1929;border:1px solid #1a2f48;border-radius:7px;color:#5a7090;font-size:12px;padding:7px 14px;cursor:pointer;">Cancel</button>
@@ -2036,25 +2047,7 @@
       </div>
     </div>
 
-    <!-- Google setup guide (shown when not connected) -->
-    <div id="google-setup-guide" class="card" style="display:none;border-color:#f59e0b44;background:#111e2e;">
-      <div style="display:flex;gap:12px;align-items:flex-start;">
-        <div style="font-size:22px;">⚙️</div>
-        <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-bottom:6px;">One-time Google setup required</div>
-          <div style="font-size:12px;color:#8aa0bc;line-height:1.7;">
-            To connect Gmail &amp; Google Drive, you need to register this callback URL in your Google Cloud Console:<br>
-            <code id="hub-redirect-uri-display" style="background:#0a1420;border:1px solid #2a4868;border-radius:5px;padding:3px 8px;font-size:11px;color:#818cf8;display:inline-block;margin:6px 0;word-break:break-all;">Loading…</code><br>
-            <strong style="color:#c8d8ea;">Steps:</strong>
-            <span style="color:#8aa0bc;"> Go to </span>
-            <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#818cf8;">console.cloud.google.com/apis/credentials</a>
-            <span style="color:#8aa0bc;"> → click your OAuth 2.0 client → add the URL above to <em>Authorized redirect URIs</em> → Save → then click Connect below.</span>
-          </div>
-          <button onclick="document.getElementById('google-setup-guide').style.display='none'" style="background:none;border:none;color:#3d5270;font-size:11px;cursor:pointer;margin-top:4px;">Dismiss</button>
-        </div>
-      </div>
-    </div>
-
+    <!-- Quick Links -->
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <span class="card-title">Quick Links</span>
@@ -2082,65 +2075,35 @@
       <div class="hub-links-grid" id="hub-links-grid"><div style="color:#3d5270;font-size:12px;padding:4px;">Loading…</div></div>
     </div>
 
-    <div class="hub-grid">
-      <div class="hub-card">
-        <div class="hub-card-header">
-          <div class="hub-card-icon" style="background:#ea433522;">📧</div>
-          <div style="flex:1;">
-            <div class="hub-card-title">Gmail</div>
-            <div class="hub-card-sub" id="gmail-status-sub">Not connected</div>
-          </div>
-          <button id="gmail-connect-btn" onclick="connectGoogle()" class="hub-connect-btn" style="width:auto;padding:5px 12px;font-size:11px;">Connect</button>
-        </div>
-        <div id="gmail-list"><div style="color:#3d5270;font-size:12px;text-align:center;padding:16px;">Connect Google to see inbox</div></div>
-      </div>
 
-      <div class="hub-card">
-        <div class="hub-card-header">
-          <div class="hub-card-icon" style="background:#fbbc0422;">📁</div>
-          <div style="flex:1;">
-            <div class="hub-card-title">Google Drive</div>
-            <div class="hub-card-sub" id="drive-status-sub">Not connected</div>
-          </div>
-          <button id="drive-connect-btn" onclick="connectGoogle()" class="hub-connect-btn" style="width:auto;padding:5px 12px;font-size:11px;">Connect</button>
-        </div>
-        <div id="drive-list"><div style="color:#3d5270;font-size:12px;text-align:center;padding:16px;">Connect Google to see files</div></div>
+    <!-- Profile Links -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span class="card-title">Profile Links</span>
+        <button onclick="toggleAddProfileLink()" style="background:#111e2e;border:1px solid #1a2f48;border-radius:6px;color:#7a92b0;font-size:11px;padding:4px 10px;cursor:pointer;">+ Add</button>
       </div>
+      <div id="add-profile-link-form" style="display:none;margin-bottom:14px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <input id="plf-label" class="client-input" placeholder="Label (e.g. YouTube Channel)" style="flex:1;min-width:120px;">
+          <input id="plf-url" class="client-input" placeholder="https://..." style="flex:2;min-width:160px;" type="url">
+          <button onclick="saveProfileLink()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:600;padding:7px 16px;cursor:pointer;white-space:nowrap;">Add</button>
+        </div>
+      </div>
+      <div id="profile-links-list" style="display:flex;flex-direction:column;gap:6px;">
+        <div style="color:#3d5270;font-size:12px;">Loading…</div>
+      </div>
+    </div>
 
-      <div class="hub-card">
-        <div class="hub-card-header">
-          <div class="hub-card-icon" style="background:#ffffff12;">📓</div>
-          <div>
-            <div class="hub-card-title">Notion</div>
-            <div class="hub-card-sub" id="notion-status-sub">Add NOTION_API_KEY to .env</div>
-          </div>
+    <!-- Personal Achievements -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div>
+          <span class="card-title">Personal Achievements</span>
+          <div style="font-size:11px;color:#3d5270;margin-top:2px;">Auto-saved — use this for your bio, cover letters, LinkedIn</div>
         </div>
-        <div id="notion-list"><div style="color:#3d5270;font-size:12px;text-align:center;padding:16px;">Not connected</div></div>
+        <span id="achievements-save-indicator" style="font-size:10px;color:#34d399;opacity:0;transition:opacity .4s;">Saved</span>
       </div>
-
-      <div class="hub-card">
-        <div class="hub-card-header">
-          <div class="hub-card-icon" style="background:#34d39922;">🏆</div>
-          <div style="flex:1;">
-            <div class="hub-card-title">Milestones</div>
-            <div class="hub-card-sub">Track subscriber &amp; view goals</div>
-          </div>
-          <button onclick="toggleAddMilestone()" class="hub-connect-btn" style="width:auto;padding:5px 12px;font-size:11px;">+ Add</button>
-        </div>
-        <div id="add-milestone-form" style="display:none;margin-bottom:10px;">
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
-            <input id="mf-label" class="client-input" placeholder="e.g. 100K subs" style="flex:1;min-width:120px;">
-            <select id="mf-metric" class="client-input" style="flex:1;min-width:120px;">
-              <option value="youtube_subs">YouTube Subs</option>
-              <option value="instagram_subs">Instagram Followers</option>
-              <option value="youtube_views">Total YT Views</option>
-            </select>
-            <input id="mf-threshold" class="client-input" placeholder="100000" type="number" style="width:100px;">
-            <button onclick="saveMilestone()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;padding:6px 14px;cursor:pointer;">Add</button>
-          </div>
-        </div>
-        <div id="hub-milestones-list"><div style="color:#3d5270;font-size:12px;text-align:center;padding:12px;">No milestones yet — add one above</div></div>
-      </div>
+      <textarea id="achievements-textarea" style="width:100%;min-height:160px;background:#0a1420;border:1px solid #1a2f48;border-radius:8px;color:#c8d8ea;font-size:12.5px;padding:12px 14px;resize:vertical;font-family:inherit;line-height:1.6;box-sizing:border-box;" placeholder="• 100K YouTube subscribers (Month Year)&#10;• Grew Instagram from 0 → 50K in 6 months&#10;• Featured in [Publication]&#10;• Launched [Product] generating $X revenue&#10;&#10;Write anything you want remembered — milestones, wins, press, skills..."></textarea>
     </div>
   </div><!-- /tab-hub -->
 
@@ -2178,24 +2141,6 @@
         <option value="youtube">YouTube</option>
         <option value="instagram">Instagram</option>
       </select>
-      <select class="cdp-meta-sel" id="cdp-hook-type" title="Hook type — used for correlation analytics">
-        <option value="">Hook type…</option>
-        <option value="question">❓ Question</option>
-        <option value="shocking_stat">📊 Shocking Stat</option>
-        <option value="mystery">🕵️ Mystery/Teaser</option>
-        <option value="story_start">📖 Story Start</option>
-        <option value="controversy">🔥 Controversy</option>
-        <option value="bold_claim">⚡ Bold Claim</option>
-      </select>
-      <select class="cdp-meta-sel" id="cdp-content-type" title="Content format — correlates with AVD">
-        <option value="">Format…</option>
-        <option value="talking_head">🎙 Talking Head</option>
-        <option value="mini_doc">🎞 Mini-Doc</option>
-        <option value="tutorial">📚 Tutorial</option>
-        <option value="story">📖 Story</option>
-        <option value="shorts">⚡ Shorts</option>
-        <option value="livestream">📡 Livestream</option>
-      </select>
       <input class="cdp-date-input" id="cdp-date" type="date" title="Target date" />
     </div>
     <div class="cdp-tab-nav">
@@ -2203,7 +2148,6 @@
       <button class="cdp-tab-btn" data-cdp-tab="script" onclick="switchCdpTab('script')">✍️ Script</button>
       <button class="cdp-tab-btn" data-cdp-tab="hooks" onclick="switchCdpTab('hooks')">🎣 Hooks</button>
       <button class="cdp-tab-btn" data-cdp-tab="thumbnails" onclick="switchCdpTab('thumbnails')">🖼 Thumbs</button>
-      <button class="cdp-tab-btn" data-cdp-tab="publish" onclick="switchCdpTab('publish')">✅ Publish</button>
     </div>
     <div class="cdp-body">
       <!-- Research tab -->
@@ -2257,11 +2201,6 @@
           <input id="cdp-thumb-input" class="client-input" placeholder="Describe a thumbnail concept… (e.g. 'close-up shocked face + red text FORBIDDEN')" style="flex:1;">
           <button onclick="addThumbConcept()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer;white-space:nowrap;">+ Add</button>
         </div>
-      </div>
-      <!-- Publish checklist tab -->
-      <div class="cdp-tab-panel" id="cdp-panel-publish" style="display:none;padding:20px 24px;overflow-y:auto;">
-        <div style="font-size:12px;color:#5a7090;margin-bottom:16px;">Check off each item before publishing. Progress saves automatically when you hit Save.</div>
-        <div id="cdp-publish-checklist" style="display:flex;flex-direction:column;gap:10px;"></div>
       </div>
     </div>
     <div class="cdp-footer">
@@ -3602,6 +3541,7 @@ async function loadCompetitors() {
     _myChannelStats = myStats && !myStats.error ? myStats : null;
     renderCompeteCards();
     renderCompareChart();
+    loadCompetitorInsights();
     // Auto-load 3 recent videos for each competitor
     _competitors.filter(c => c.channel_id).forEach(c => autoLoadCompVideos(c.channel_id));
   } catch(e) { console.warn('competitors:', e.message); }
@@ -3783,6 +3723,46 @@ function renderCompareChart() {
       </div>`;
     }).join('');
     return `<div class="compare-row"><div class="compare-label">${m.label}</div><div class="compare-bars">${bars}</div></div>`;
+  }).join('');
+}
+
+// ── Competitor Insights ────────────────────────────────────────────────────────
+function loadCompetitorInsights() {
+  const card = document.getElementById('comp-insights-card');
+  const body = document.getElementById('comp-insights-body');
+  if (!card || !body) return;
+  // Need at least one competitor and "you" channel
+  const you = _competitors.find(c => c.is_you);
+  const others = _competitors.filter(c => !c.is_you);
+  if (!you || !others.length) { card.style.display = 'none'; return; }
+  card.style.display = '';
+
+  const all = [you, ...others];
+  const metrics = [
+    { key:'subscribers',      label:'Subscribers',       fmt: v => fmtNum(v) },
+    { key:'total_views',      label:'Total Views',       fmt: v => fmtNum(v) },
+    { key:'avg_recent_views', label:'Avg Recent Views',  fmt: v => fmtNum(v) },
+    { key:'posts_per_month',  label:'Videos / Month',    fmt: v => (v||0).toFixed(1) },
+  ];
+
+  body.innerHTML = metrics.map(m => {
+    const vals = all.map(c => ({ name: c.name || c.channel_id, val: Number(c[m.key] || 0), is_you: !!c.is_you }));
+    const maxVal = Math.max(...vals.map(v => v.val), 1);
+    return `<div>
+      <div style="font-size:11px;font-weight:700;color:#3d5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">${m.label}</div>
+      ${vals.map(v => {
+        const pct = Math.round((v.val / maxVal) * 100);
+        const color = v.is_you ? '#818cf8' : '#334155';
+        const textColor = v.is_you ? '#a5b4fc' : '#5a7090';
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <div style="width:110px;font-size:11.5px;color:${textColor};font-weight:${v.is_you?'700':'400'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escHtml(v.name)}">${v.is_you ? '👤 ' : ''}${escHtml(v.name)}</div>
+          <div style="flex:1;background:#0a1420;border-radius:4px;height:14px;overflow:hidden;">
+            <div style="width:${pct}%;height:100%;background:${color};border-radius:4px;transition:width .6s;"></div>
+          </div>
+          <div style="width:70px;text-align:right;font-size:11px;color:${textColor};font-weight:${v.is_you?'700':'400'};">${m.fmt(v.val)}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
   }).join('');
 }
 
@@ -4715,9 +4695,6 @@ function renderPipeline() {
 function pipelineCardHTML(c) {
   const badgeClass = c.platform === 'youtube' ? 'badge-youtube' : c.platform === 'instagram' ? 'badge-instagram' : 'badge-both';
   const badgeLabel = c.platform === 'youtube' ? 'YT' : c.platform === 'instagram' ? 'IG' : 'Both';
-  const dateStr = c.target_date
-    ? `<span class="pipeline-date">🎯 ${c.target_date}</span>`
-    : '';
   const notePreview = c.notes
     ? `<div class="pipeline-card-note-preview">${escHtml(c.notes.replace(/#+\s|[*_`]/g,'').slice(0,120))}</div>`
     : '';
@@ -4732,7 +4709,9 @@ function pipelineCardHTML(c) {
       <div class="pipeline-card-title">${escHtml(c.title)}</div>
       <div class="pipeline-card-meta">
         <span class="pipeline-badge ${badgeClass}">${badgeLabel}</span>
-        ${dateStr}
+        <label onclick="event.stopPropagation()" title="Set target date" style="cursor:pointer;display:flex;align-items:center;gap:3px;color:#3d5270;font-size:10px;background:#0a1420;border:1px solid #1a2f48;border-radius:5px;padding:2px 6px;">
+          📅<input type="date" value="${c.target_date||''}" onchange="event.stopPropagation();setCardDate(${c.id},this.value)" style="background:none;border:none;color:#7a92b0;font-size:10px;cursor:pointer;width:88px;outline:none;padding:0;">
+        </label>
       </div>
       ${notePreview}
     </div>`;
@@ -4855,7 +4834,7 @@ function switchCdpTab(tab) {
   _currentCdpTab = tab;
   document.querySelectorAll('.cdp-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.cdpTab === tab));
   document.querySelectorAll('.cdp-tab-panel').forEach(p => p.style.display = 'none');
-  document.getElementById('cdp-panel-' + tab).style.display = (tab === 'publish' || tab === 'thumbnails') ? 'block' : 'flex';
+  document.getElementById('cdp-panel-' + tab).style.display = tab === 'thumbnails' ? 'block' : 'flex';
   if (tab === 'script') updateWordCount();
 }
 
@@ -4876,10 +4855,7 @@ function openCardDetail(id, defaultStage) {
   document.getElementById('cdp-notes').value     = card?.notes       || '';
   document.getElementById('cdp-script').value    = card?.script      || '';
   document.getElementById('cdp-hook').value      = card?.hook        || '';
-  document.getElementById('cdp-hook-type').value    = card?.hook_type    || '';
-  document.getElementById('cdp-content-type').value = card?.content_type || '';
-  document.getElementById('cdp-research-topic').value = card?.title     || '';
-  renderPublishChecklist(card?.publish_checklist || {});
+  document.getElementById('cdp-research-topic').value = card?.title || '';
   renderThumbConcepts(card?.thumbnail_concepts || []);
 
   // Analytics link for published cards
@@ -4911,9 +4887,6 @@ async function saveCardDetail() {
     notes:            document.getElementById('cdp-notes').value.trim() || null,
     script:           document.getElementById('cdp-script').value.trim() || null,
     hook:             document.getElementById('cdp-hook').value.trim() || null,
-    hook_type:           document.getElementById('cdp-hook-type').value || null,
-    content_type:        document.getElementById('cdp-content-type').value || null,
-    publish_checklist:   readPublishChecklist(),
     thumbnail_concepts:  readThumbConcepts(),
   };
   if (!payload.title) { document.getElementById('cdp-title').focus(); return; }
@@ -5038,8 +5011,21 @@ async function generateHooks() {
   btn.disabled = false;
 }
 
+async function setCardDate(id, date) {
+  await fetch(`/api/pipeline/${id}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ target_date: date || null }),
+  });
+  const card = pipelineCards.find(c => c.id == id);
+  if (card) card.target_date = date || null;
+  renderPipeline();
+  if (_calLoaded) renderCal();
+  showToast('Date updated');
+}
+
 async function pipelineDelete(id) {
-  pipelineCards = pipelineCards.filter(c => c.id !== id);
+  if (!confirm('Delete this card?')) return;
+  pipelineCards = pipelineCards.filter(c => c.id != id);
   renderPipeline();
   await fetch(`/api/pipeline/${id}`, { method: 'DELETE' });
 }
@@ -5909,6 +5895,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (btn.dataset.tab === 'comments'   && !_commentsLoaded)   loadComments();
       if (btn.dataset.tab === 'thumbnails' && !_thumbLoaded)      loadThumbnails();
       if (btn.dataset.tab === 'compete'    && !_competitorsLoaded)  { loadCompetitors(); _competitorsLoaded = true; }
+      if (btn.dataset.tab === 'compete') loadCompetitorInsights();
       if (btn.dataset.tab === 'outliers' && !_outliersLoaded) {
         _outliersLoaded = true;
         searchYTOutliers(); // auto-load diverse outliers (no topic = random variety)
@@ -6221,13 +6208,19 @@ async function generateWeeklyDigest() {
 // ══════════════════════════════════════════════════════════════════════════════
 // CLIENTS CRM
 // ══════════════════════════════════════════════════════════════════════════════
-let _clients = [], _editingClientId = null, _invoices = [], _editingInvoiceId = null;
+let _clients = [], _editingClientId = null, _invoices = [], _editingInvoiceId = null, _clientTodos = {};
 
 async function loadClients() {
   [_clients, _invoices] = await Promise.all([
     fetch('/api/clients').then(r => r.json()).catch(() => []),
     fetch('/api/invoices').then(r => r.json()).catch(() => []),
   ]);
+  // Load todos for all clients
+  _clientTodos = {};
+  await Promise.all(_clients.map(async c => {
+    const todos = await fetch(`/api/clients/${c.id}/todos`).then(r => r.json()).catch(() => []);
+    _clientTodos[c.id] = todos;
+  }));
   renderClients();
   renderInvoices();
   loadRevenueSummary();
@@ -6314,6 +6307,7 @@ function renderClients() {
         ${hasPending ? `<div><div style="font-size:13px;font-weight:700;color:#f59e0b;">${fmtMoney(totalBilled - totalPaid)}</div><div style="font-size:9.5px;color:#3d5270;text-transform:uppercase;">Outstanding</div></div>` : ''}
         <div style="margin-left:auto;display:flex;align-items:center;"><button onclick="openAddInvoice(${c.id})" style="background:none;border:1px solid #1a2f48;border-radius:5px;color:#818cf8;font-size:10px;padding:3px 8px;cursor:pointer;">+ Invoice</button></div>
       </div>` : `<div style="margin-top:8px;"><button onclick="openAddInvoice(${c.id})" style="background:none;border:none;color:#818cf8;font-size:11px;cursor:pointer;padding:0;">+ Add invoice</button></div>`}
+      ${c.monthly_retainer ? `<div style="margin-top:8px;display:inline-flex;align-items:center;gap:5px;background:#0a1420;border:1px solid #1a2f48;border-radius:6px;padding:3px 9px;font-size:11px;color:#818cf8;font-weight:700;">${fmtMoney(c.monthly_retainer)}<span style="font-weight:400;color:#3d5270;">/mo retainer</span></div>` : ''}
       ${c.notes ? `<div style="font-size:11.5px;color:#5a7090;margin-top:8px;line-height:1.5;border-top:1px solid #1a2f48;padding-top:8px;">${escHtml(c.notes)}</div>` : ''}
       <div class="client-projects">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -6332,6 +6326,29 @@ function renderClients() {
         ${!projects.length ? `<div style="color:#3d5270;font-size:11px;">No projects yet</div>` : ''}
       </div>
       ${renderOnboardingChecklist(c.id, c.onboarding_checklist || {})}
+      <div style="margin-top:12px;border-top:1px solid #1a2f48;padding-top:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:11px;font-weight:700;color:#3d5270;text-transform:uppercase;letter-spacing:.05em;">To-Dos</span>
+          <button onclick="toggleClientTodoForm(${c.id})" style="background:none;border:none;color:#818cf8;font-size:11px;cursor:pointer;">+ Add</button>
+        </div>
+        <div id="client-todo-form-${c.id}" style="display:none;margin-bottom:8px;">
+          <div style="display:flex;gap:5px;align-items:center;">
+            <input id="ctf-task-${c.id}" class="client-input" placeholder="Task..." style="flex:1;font-size:11.5px;padding:5px 8px;">
+            <input id="ctf-due-${c.id}" class="client-input" type="date" style="width:130px;font-size:11.5px;padding:5px 8px;">
+            <button onclick="addClientTodo(${c.id})" style="background:#818cf8;border:none;border-radius:6px;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer;white-space:nowrap;">Add</button>
+          </div>
+        </div>
+        <div id="client-todos-${c.id}" style="display:flex;flex-direction:column;gap:4px;">
+          ${(_clientTodos[c.id] || []).map(t => `
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+              <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleClientTodo(${t.id},this.checked)" style="cursor:pointer;accent-color:#818cf8;">
+              <span style="flex:1;${t.done ? 'text-decoration:line-through;color:#3d5270;' : 'color:#c8d8ea;'}">${escHtml(t.task)}</span>
+              ${t.due_date ? `<span style="font-size:10px;color:${new Date(t.due_date) < new Date() && !t.done ? '#f87171' : '#3d5270'};">${new Date(t.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>` : ''}
+              <button onclick="deleteClientTodo(${t.id},${c.id})" style="background:none;border:none;color:#1a2f48;cursor:pointer;font-size:10px;padding:0 2px;" title="Delete">✕</button>
+            </div>`).join('')}
+          ${!(_clientTodos[c.id]||[]).length ? `<div style="color:#3d5270;font-size:11px;">No to-dos</div>` : ''}
+        </div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -6343,6 +6360,7 @@ function openAddClient() {
   document.getElementById('cf-company').value = '';
   document.getElementById('cf-email').value = '';
   document.getElementById('cf-status').value = 'active';
+  document.getElementById('cf-retainer').value = '';
   document.getElementById('cf-tags').value = '';
   document.getElementById('cf-notes').value = '';
   document.getElementById('client-add-panel').style.display = 'block';
@@ -6360,6 +6378,7 @@ function editClient(id) {
   document.getElementById('cf-company').value = c.company || '';
   document.getElementById('cf-email').value = c.email || '';
   document.getElementById('cf-status').value = c.status || 'active';
+  document.getElementById('cf-retainer').value = c.monthly_retainer || '';
   document.getElementById('cf-tags').value = c.tags || '';
   document.getElementById('cf-notes').value = c.notes || '';
   document.getElementById('client-add-panel').style.display = 'block';
@@ -6369,10 +6388,12 @@ function editClient(id) {
 async function saveClient() {
   const name = document.getElementById('cf-name').value.trim();
   if (!name) { alert('Name is required'); return; }
+  const retainerVal = document.getElementById('cf-retainer').value;
   const body = {
     name, company: document.getElementById('cf-company').value.trim(),
     email: document.getElementById('cf-email').value.trim(),
     status: document.getElementById('cf-status').value,
+    monthly_retainer: retainerVal ? parseFloat(retainerVal) : null,
     tags: document.getElementById('cf-tags').value.trim(),
     notes: document.getElementById('cf-notes').value.trim(),
   };
@@ -6405,6 +6426,42 @@ async function addProject(clientId) {
 
 async function deleteProject(id) {
   await fetch(`/api/clients/projects/${id}`, { method: 'DELETE' });
+  await loadClients();
+}
+
+// ── Client To-Dos ─────────────────────────────────────────────────────────────
+function toggleClientTodoForm(clientId) {
+  const f = document.getElementById(`client-todo-form-${clientId}`);
+  if (!f) return;
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') document.getElementById(`ctf-task-${clientId}`)?.focus();
+}
+
+async function addClientTodo(clientId) {
+  const task = document.getElementById(`ctf-task-${clientId}`)?.value.trim();
+  if (!task) return;
+  const due = document.getElementById(`ctf-due-${clientId}`)?.value || null;
+  await fetch(`/api/clients/${clientId}/todos`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task, due_date: due }),
+  });
+  document.getElementById(`ctf-task-${clientId}`).value = '';
+  document.getElementById(`ctf-due-${clientId}`).value = '';
+  document.getElementById(`client-todo-form-${clientId}`).style.display = 'none';
+  await loadClients();
+}
+
+async function toggleClientTodo(todoId, done) {
+  await fetch(`/api/clients/todos/${todoId}`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ done }),
+  });
+  await loadClients();
+}
+
+async function deleteClientTodo(todoId, clientId) {
+  await fetch(`/api/clients/todos/${todoId}`, { method: 'DELETE' });
+  _clientTodos[clientId] = (_clientTodos[clientId] || []).filter(t => t.id != todoId);
   await loadClients();
 }
 
@@ -6512,9 +6569,9 @@ async function deleteInvoice(id) {
 // ══════════════════════════════════════════════════════════════════════════════
 async function loadHub() {
   loadHubLinks();
-  loadHubStatus();
-  loadMilestones();
   loadMorningBrief();
+  loadProfileLinks();
+  loadAchievements();
 }
 
 // ── Morning Brief ─────────────────────────────────────────────────────────────
@@ -6970,6 +7027,76 @@ async function saveMilestone() {
 async function deleteMilestone(id) {
   await fetch(`/api/hub/milestones/${id}`, { method:'DELETE' });
   loadMilestones();
+}
+
+// ── Profile Links ─────────────────────────────────────────────────────────────
+async function loadProfileLinks() {
+  const el = document.getElementById('profile-links-list');
+  if (!el) return;
+  const links = await fetch('/api/profile-links').then(r => r.json()).catch(() => []);
+  if (!links.length) { el.innerHTML = `<div style="color:#3d5270;font-size:12px;">No profile links yet — add one above.</div>`; return; }
+  el.innerHTML = links.map(l => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#0a1420;border:1px solid #1a2f48;border-radius:8px;">
+      <span style="flex:1;font-size:12.5px;color:#c8d8ea;font-weight:600;">${escHtml(l.label)}</span>
+      <span style="font-size:11px;color:#5a7090;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;">${escHtml(l.url)}</span>
+      <button onclick="copyProfileLink('${escHtml(l.url)}')" style="background:#818cf822;border:1px solid #818cf844;border-radius:5px;color:#818cf8;font-size:10.5px;padding:3px 9px;cursor:pointer;white-space:nowrap;">Copy</button>
+      <button onclick="deleteProfileLink(${l.id})" style="background:none;border:none;color:#3d5270;cursor:pointer;font-size:11px;padding:0 2px;" title="Delete">✕</button>
+    </div>`).join('');
+}
+
+function toggleAddProfileLink() {
+  const f = document.getElementById('add-profile-link-form');
+  f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  if (f.style.display === 'block') document.getElementById('plf-label')?.focus();
+}
+
+async function saveProfileLink() {
+  const label = document.getElementById('plf-label').value.trim();
+  const url   = document.getElementById('plf-url').value.trim();
+  if (!label || !url) { showToast('Label and URL are required'); return; }
+  await fetch('/api/profile-links', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({label,url}) });
+  document.getElementById('plf-label').value = '';
+  document.getElementById('plf-url').value   = '';
+  document.getElementById('add-profile-link-form').style.display = 'none';
+  loadProfileLinks();
+  showToast('Link saved');
+}
+
+async function deleteProfileLink(id) {
+  await fetch(`/api/profile-links/${id}`, { method:'DELETE' });
+  loadProfileLinks();
+}
+
+function copyProfileLink(url) {
+  navigator.clipboard.writeText(url).then(() => showToast('Copied!')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    showToast('Copied!');
+  });
+}
+
+// ── Personal Achievements ─────────────────────────────────────────────────────
+let _achievementsTimer = null;
+async function loadAchievements() {
+  const ta = document.getElementById('achievements-textarea');
+  if (!ta) return;
+  const data = await fetch('/api/settings/achievements').then(r => r.json()).catch(() => null);
+  if (data?.value) ta.value = data.value;
+  ta.addEventListener('input', () => {
+    clearTimeout(_achievementsTimer);
+    _achievementsTimer = setTimeout(() => autoSaveAchievements(), 1200);
+  });
+}
+
+async function autoSaveAchievements() {
+  const ta = document.getElementById('achievements-textarea');
+  if (!ta) return;
+  await fetch('/api/settings/achievements', {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ value: ta.value }),
+  });
+  const ind = document.getElementById('achievements-save-indicator');
+  if (ind) { ind.style.opacity = '1'; setTimeout(() => ind.style.opacity = '0', 1500); }
 }
 </script>
 <footer style="text-align:center;padding:24px;font-size:11px;color:#475569;border-top:1px solid #1e2d45;margin-top:40px;">
