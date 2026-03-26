@@ -132,6 +132,21 @@ pool.query(`
 `).catch(err => console.warn('clients init:', err.message));
 
 pool.query(`
+  CREATE TABLE IF NOT EXISTS invoices (
+    id          BIGSERIAL PRIMARY KEY,
+    client_id   BIGINT,
+    title       TEXT NOT NULL,
+    amount      NUMERIC(10,2) NOT NULL DEFAULT 0,
+    status      TEXT DEFAULT 'draft',
+    due_date    DATE,
+    paid_date   DATE,
+    notes       TEXT,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('invoices init:', err.message));
+
+pool.query(`
   CREATE TABLE IF NOT EXISTS client_projects (
     id          BIGSERIAL PRIMARY KEY,
     client_id   BIGINT,
@@ -1277,11 +1292,17 @@ pool.query(`
 pool.query(`ALTER TABLE pipeline_cards ADD COLUMN IF NOT EXISTS script TEXT`).catch(() => {});
 pool.query(`ALTER TABLE pipeline_cards ADD COLUMN IF NOT EXISTS hook TEXT`).catch(() => {});
 pool.query(`ALTER TABLE pipeline_cards ADD COLUMN IF NOT EXISTS linked_post_id TEXT`).catch(() => {});
+pool.query(`ALTER TABLE pipeline_cards ADD COLUMN IF NOT EXISTS hook_type TEXT`).catch(() => {});
+pool.query(`ALTER TABLE pipeline_cards ADD COLUMN IF NOT EXISTS publish_checklist JSONB DEFAULT '{}'`).catch(() => {});
+pool.query(`ALTER TABLE pipeline_cards ADD COLUMN IF NOT EXISTS content_type TEXT`).catch(() => {});
+pool.query(`ALTER TABLE pipeline_cards ADD COLUMN IF NOT EXISTS thumbnail_concepts JSONB DEFAULT '[]'`).catch(() => {});
+pool.query(`ALTER TABLE clients ADD COLUMN IF NOT EXISTS onboarding_checklist JSONB DEFAULT '{}'`).catch(() => {});
 
 app.get('/api/pipeline', async (req, res) => {
   try {
     const r = await pool.query(`
       SELECT id, stage, title, notes, script, hook, linked_post_id, platform,
+             hook_type, publish_checklist, content_type, thumbnail_concepts,
              TO_CHAR(target_date, 'YYYY-MM-DD') AS target_date,
              sort_order, created_at
       FROM pipeline_cards
@@ -1305,22 +1326,29 @@ app.post('/api/pipeline', express.json(), async (req, res) => {
 
 app.put('/api/pipeline/:id', express.json(), async (req, res) => {
   try {
-    const { title, stage, notes, script, hook, linked_post_id, platform, target_date, sort_order } = req.body;
+    const { title, stage, notes, script, hook, linked_post_id, platform, target_date, sort_order, hook_type, publish_checklist, content_type, thumbnail_concepts } = req.body;
     const r = await pool.query(`
       UPDATE pipeline_cards
-      SET title          = COALESCE($1, title),
-          stage          = COALESCE($2, stage),
-          notes          = COALESCE($3, notes),
-          platform       = COALESCE($4, platform),
-          target_date    = COALESCE($5::date, target_date),
-          sort_order     = COALESCE($6, sort_order),
-          script         = COALESCE($7, script),
-          hook           = COALESCE($8, hook),
-          linked_post_id = COALESCE($9, linked_post_id),
-          updated_at     = NOW()
-      WHERE id = $10 RETURNING *
+      SET title                = COALESCE($1, title),
+          stage                = COALESCE($2, stage),
+          notes                = COALESCE($3, notes),
+          platform             = COALESCE($4, platform),
+          target_date          = COALESCE($5::date, target_date),
+          sort_order           = COALESCE($6, sort_order),
+          script               = COALESCE($7, script),
+          hook                 = COALESCE($8, hook),
+          linked_post_id       = COALESCE($9, linked_post_id),
+          hook_type            = COALESCE($10, hook_type),
+          publish_checklist    = COALESCE($11::jsonb, publish_checklist),
+          content_type         = COALESCE($12, content_type),
+          thumbnail_concepts   = COALESCE($13::jsonb, thumbnail_concepts),
+          updated_at           = NOW()
+      WHERE id = $14 RETURNING *
     `, [title, stage, notes, platform, target_date || null, sort_order ?? null,
-        script ?? null, hook ?? null, linked_post_id ?? null, req.params.id]);
+        script ?? null, hook ?? null, linked_post_id ?? null,
+        hook_type ?? null, publish_checklist ? JSON.stringify(publish_checklist) : null,
+        content_type ?? null, thumbnail_concepts ? JSON.stringify(thumbnail_concepts) : null,
+        req.params.id]);
     if (!r.rows.length) return res.status(404).json({ error: 'not found' });
     res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -1382,31 +1410,28 @@ app.post('/api/pipeline/:id/ai-research', express.json(), async (req, res) => {
     const topic = req.body.topic || row.rows[0].title;
     const userMsg = `Nils Glenn is making a YouTube video about: "${topic}"
 
-Generate a research brief and video outline for this topic. Format it as:
+Give him a QUICK research brief — fast, punchy, scannable. Under 300 words total.
 
-## What Makes This Interesting
-2-3 sentences on the surprising or counterintuitive angle that would hook an audience.
+## Hook
+One sentence: the most surprising or counterintuitive thing about this topic.
 
-## Key Facts & Background
-The essential context and research a viewer needs — sources, historical details, theological background, key figures, dates, competing interpretations.
+## The Core Question
+What mystery or tension drives the video?
 
-## The Central Question / Mystery
-What is the core question this video answers? What tension or mystery drives it?
+## 5 Key Facts
+Bullet points — the most important things to know. Specific, not generic.
 
-## Potential Angles / Thesis Options
-3 different ways Nils could frame this video — different theses or angles he could take.
+## 3 Angles
+Three ways he could frame this video (1-line each).
 
-## Suggested Video Outline
-A section-by-section outline following the Wendigoon structure (Opening hook, Context, Main Narrative, Analysis, Thematic Synthesis, Closing) — specific to this topic.
+## Rough Outline
+5-7 sections, 1-line each. Follow: Hook → Context → Narrative → Analysis → Why It Matters.
 
-## Thematic Depth
-What does this topic reveal about human nature, faith, or the broader human experience? What's the "why it matters" for the end of the video?
-
-Be specific and substantive — this is actual research, not generic suggestions.`;
+Be specific and sharp. No filler.`;
 
     const msg = await anthropic.messages.create({
       model: 'claude-opus-4-6',
-      max_tokens: 6000,
+      max_tokens: 800,
       system: WENDIGOON_SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMsg }],
     });
@@ -2374,10 +2399,12 @@ app.post('/api/clients', express.json(), async (req, res) => {
 });
 app.put('/api/clients/:id', express.json(), async (req, res) => {
   try {
-    const { name, company, email, status, tags, notes } = req.body;
+    const { name, company, email, status, tags, notes, onboarding_checklist } = req.body;
     const r = await pool.query(
-      `UPDATE clients SET name=$1,company=$2,email=$3,status=$4,tags=$5,notes=$6,updated_at=NOW() WHERE id=$7 RETURNING *`,
-      [name, company, email, status, tags, notes, req.params.id]
+      `UPDATE clients SET name=$1,company=$2,email=$3,status=$4,tags=$5,notes=$6,
+       onboarding_checklist=COALESCE($7::jsonb,onboarding_checklist),updated_at=NOW() WHERE id=$8 RETURNING *`,
+      [name, company, email, status, tags, notes,
+       onboarding_checklist ? JSON.stringify(onboarding_checklist) : null, req.params.id]
     );
     res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -2702,6 +2729,197 @@ app.get('/api/hub/notion', async (req, res) => {
       icon: p.icon?.emoji || (p.object === 'database' ? '🗃️' : '📄'),
     }));
     res.json({ connected: true, pages });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Invoices ──────────────────────────────────────────────────────────────────
+app.get('/api/invoices', async (req, res) => {
+  try {
+    const clientId = req.query.client_id;
+    const q = clientId
+      ? pool.query('SELECT * FROM invoices WHERE client_id=$1 ORDER BY created_at DESC', [clientId])
+      : pool.query('SELECT i.*, c.name AS client_name FROM invoices i LEFT JOIN clients c ON c.id=i.client_id ORDER BY i.created_at DESC');
+    res.json((await q).rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/invoices', express.json(), async (req, res) => {
+  try {
+    const { client_id, title, amount, status='draft', due_date, notes } = req.body;
+    const r = await pool.query(
+      `INSERT INTO invoices (client_id,title,amount,status,due_date,notes) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
+      [client_id||null, title, amount||0, status, due_date||null, notes||null]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.put('/api/invoices/:id', express.json(), async (req, res) => {
+  try {
+    const { title, amount, status, due_date, paid_date, notes } = req.body;
+    const r = await pool.query(
+      `UPDATE invoices SET title=$1,amount=$2,status=$3,due_date=$4,paid_date=$5,notes=$6,updated_at=NOW() WHERE id=$7 RETURNING *`,
+      [title, amount, status, due_date||null, paid_date||null, notes||null, req.params.id]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.delete('/api/invoices/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM invoices WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Revenue summary ────────────────────────────────────────────────────────────
+app.get('/api/revenue-summary', async (req, res) => {
+  try {
+    const r = await pool.query(`
+      SELECT
+        COALESCE(SUM(amount),0)                                          AS total_billed,
+        COALESCE(SUM(CASE WHEN status='paid' THEN amount END),0)         AS total_paid,
+        COALESCE(SUM(CASE WHEN status IN ('sent','overdue') THEN amount END),0) AS outstanding,
+        COALESCE(SUM(CASE WHEN status='draft' THEN amount END),0)        AS draft,
+        COUNT(*)                                                         AS invoice_count,
+        COUNT(CASE WHEN status='overdue' OR (status='sent' AND due_date < CURRENT_DATE) THEN 1 END) AS overdue_count
+      FROM invoices
+    `);
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Posting streak & cadence ──────────────────────────────────────────────────
+app.get('/api/posting-streak', async (req, res) => {
+  try {
+    const chCond = getChannelCond();
+    // Weekly published counts for last 12 weeks
+    const weekly = await pool.query(`
+      SELECT DATE_TRUNC('week', published_at) AS week,
+             COUNT(*) AS published
+      FROM content_analytics
+      WHERE platform='youtube' AND published_at IS NOT NULL ${chCond}
+        AND published_at > NOW() - INTERVAL '12 weeks'
+      GROUP BY week
+      ORDER BY week ASC
+    `);
+    // Pipeline published this month
+    const pipelineMonth = await pool.query(`
+      SELECT COUNT(*) AS cnt FROM pipeline_cards
+      WHERE stage='published'
+        AND updated_at > DATE_TRUNC('month', NOW())
+    `);
+    // Calculate streak: consecutive weeks ending this week with at least 1 publish
+    const weeks = weekly.rows.map(r => Number(r.published));
+    let streak = 0;
+    for (let i = weeks.length - 1; i >= 0; i--) {
+      if (weeks[i] > 0) streak++; else break;
+    }
+    res.json({
+      weekly: weekly.rows.map(r => ({ week: r.week, published: Number(r.published) })),
+      streak,
+      pipeline_published_month: Number(pipelineMonth.rows[0]?.cnt || 0),
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Revenue forecast ──────────────────────────────────────────────────────────
+app.get('/api/revenue-forecast', async (req, res) => {
+  try {
+    // MTD (month to date) paid
+    const mtd = await pool.query(`
+      SELECT COALESCE(SUM(amount),0) AS paid
+      FROM invoices WHERE status='paid'
+        AND paid_date >= DATE_TRUNC('month', CURRENT_DATE)
+    `);
+    // Projected: outstanding invoices (sent/overdue) — likely to come in
+    const outstanding = await pool.query(`
+      SELECT COALESCE(SUM(amount),0) AS total
+      FROM invoices WHERE status IN ('sent','overdue')
+    `);
+    // Draft pipeline value
+    const draft = await pool.query(`
+      SELECT COALESCE(SUM(amount),0) AS total FROM invoices WHERE status='draft'
+    `);
+    // Last 3 months avg monthly revenue
+    const avg = await pool.query(`
+      SELECT COALESCE(AVG(monthly),0) AS avg_monthly FROM (
+        SELECT DATE_TRUNC('month', paid_date) AS mo, SUM(amount) AS monthly
+        FROM invoices WHERE status='paid' AND paid_date >= NOW()-INTERVAL '3 months'
+        GROUP BY mo
+      ) sub
+    `);
+    res.json({
+      mtd_paid:      Number(mtd.rows[0]?.paid || 0),
+      outstanding:   Number(outstanding.rows[0]?.total || 0),
+      draft_pipeline: Number(draft.rows[0]?.total || 0),
+      avg_monthly_3m: Number(avg.rows[0]?.avg_monthly || 0),
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Morning Brief ─────────────────────────────────────────────────────────────
+app.get('/api/morning-brief', async (req, res) => {
+  try {
+    const chCond = getChannelCond();
+    const today = new Date().toISOString().split('T')[0];
+    const [todayCards, overdueInvs, subs, topVideo, newThisWeek, streakData] = await Promise.all([
+      pool.query(`SELECT title, stage FROM pipeline_cards WHERE TO_CHAR(target_date,'YYYY-MM-DD')=$1 ORDER BY sort_order`, [today]),
+      pool.query(`SELECT COUNT(*) AS cnt, COALESCE(SUM(amount),0) AS total FROM invoices WHERE status IN ('sent','overdue') AND due_date < CURRENT_DATE`),
+      pool.query(`SELECT platform, count FROM subscriber_snapshots ORDER BY recorded_at DESC LIMIT 2`),
+      pool.query(`SELECT title, views, engagement_rate FROM content_analytics WHERE platform='youtube' ${chCond} ORDER BY views DESC LIMIT 1`),
+      pool.query(`SELECT COUNT(*) AS cnt FROM pipeline_cards WHERE created_at > NOW()-INTERVAL '7 days'`),
+      pool.query(`SELECT DATE_TRUNC('week', published_at) AS week, COUNT(*) AS cnt FROM content_analytics WHERE platform='youtube' AND published_at IS NOT NULL ${chCond} AND published_at > NOW()-INTERVAL '8 weeks' GROUP BY week ORDER BY week DESC`),
+    ]);
+    const ytSubs = subs.rows.find(r => r.platform === 'youtube');
+    // Calculate streak
+    const weeklyCounts = streakData.rows.map(r => Number(r.cnt));
+    let streak = 0;
+    for (const cnt of weeklyCounts) { if (cnt > 0) streak++; else break; }
+    res.json({
+      today_cards:    todayCards.rows,
+      overdue_count:  Number(overdueInvs.rows[0]?.cnt || 0),
+      overdue_amount: Number(overdueInvs.rows[0]?.total || 0),
+      yt_subs:        ytSubs ? Number(ytSubs.count) : null,
+      top_video:      topVideo.rows[0] || null,
+      new_ideas_week: Number(newThisWeek.rows[0]?.cnt || 0),
+      posting_streak: streak,
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Hook type analytics ────────────────────────────────────────────────────────
+app.get('/api/hook-analytics', async (req, res) => {
+  try {
+    const chCond = getChannelCond();
+    // Join pipeline_cards (hook_type) with content_analytics (views) via linked_post_id
+    const r = await pool.query(`
+      SELECT pc.hook_type,
+             COUNT(*)                          AS videos,
+             ROUND(AVG(ca.views))              AS avg_views,
+             ROUND(AVG(ca.engagement_rate),2)  AS avg_er,
+             ROUND(AVG(ca.avg_view_duration))  AS avg_avd
+      FROM pipeline_cards pc
+      JOIN content_analytics ca ON ca.post_id = pc.linked_post_id
+      WHERE pc.hook_type IS NOT NULL AND ca.platform='youtube' ${chCond}
+      GROUP BY pc.hook_type
+      ORDER BY avg_views DESC
+    `);
+    // Also return breakdown for cards not yet published — just counts by hook_type
+    const draft = await pool.query(`
+      SELECT hook_type, COUNT(*) AS videos
+      FROM pipeline_cards
+      WHERE hook_type IS NOT NULL AND stage != 'published'
+      GROUP BY hook_type
+    `);
+    res.json({ published: r.rows, draft: draft.rows });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Overdue invoice count (for sidebar badge) ──────────────────────────────────
+app.get('/api/invoices/overdue-count', async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT COUNT(*) AS cnt FROM invoices WHERE (status='overdue') OR (status='sent' AND due_date < CURRENT_DATE)`
+    );
+    res.json({ count: Number(r.rows[0]?.cnt || 0) });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

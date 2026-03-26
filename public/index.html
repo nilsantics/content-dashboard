@@ -118,20 +118,20 @@
     .sidebar-nav { display:flex; flex-direction:column; gap:1px; padding:4px 8px; }
     .sidebar-nav-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #2a4868; padding: 8px 6px 4px; display:block; }
     .sidebar-nav-btn {
-      display: flex !important; align-items: center; gap: 9px; width: 100%;
-      background: transparent; border: none; border-radius: 8px;
-      color: #3d5270; font-size: 12px; font-weight: 600; padding: 7px 10px;
+      display: flex !important; align-items: center; gap: 10px; width: 100%;
+      background: transparent; border: none; border-radius: 10px;
+      color: #4a6280; font-size: 13.5px; font-weight: 700; padding: 9px 12px;
       cursor: pointer; transition: all .15s; text-align: left; font-family: inherit;
-      white-space: nowrap;
+      white-space: nowrap; letter-spacing: -.01em;
     }
-    .sidebar-nav-btn:hover { background: rgba(255,255,255,.04); color: #7a90b0; }
-    .sidebar-nav-btn.active { background: rgba(99,102,241,.16); color: #c4c9ff; }
+    .sidebar-nav-btn:hover { background: rgba(255,255,255,.05); color: #8aa8c8; }
+    .sidebar-nav-btn.active { background: rgba(99,102,241,.18); color: #d0d5ff; border-left: 3px solid #818cf8; padding-left: 9px; }
     body.light .sidebar-nav-btn { color: #64748b; }
     body.light .sidebar-nav-btn:hover { background: #f0f4f8; color: #0f172a; }
     body.light .sidebar-nav-btn.active { background: rgba(99,102,241,.1); color: #4f46e5; }
-    .snav-icon { width: 15px; height: 15px; flex-shrink: 0; opacity: .55; }
+    .snav-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: .6; }
     .sidebar-nav-btn.active .snav-icon { opacity: 1; }
-    .sidebar-nav-btn:hover .snav-icon { opacity: .8; }
+    .sidebar-nav-btn:hover .snav-icon { opacity: .85; }
 
     .sidebar-section { padding: 4px 10px; }
     .sidebar-divider { height: 1px; background: #162840; margin: 6px 10px; }
@@ -568,6 +568,10 @@
     .cal-event.stage-published   { background:#34d39922; color:#34d399; border-left:2px solid #34d399; }
     .cal-digest-box { background:#111e2e; border:1px solid #1a2f48; border-radius:12px; padding:18px 20px; white-space:pre-wrap; font-size:13.5px; line-height:1.75; color:#c8d8ea; }
     .cal-digest-box h2 { font-size:14px; font-weight:700; color:#eef2f8; margin:14px 0 4px; }
+    .cal-day { cursor:pointer; }
+    .cal-day:hover { border-color:#2a4868; }
+    .cal-day.drag-over { background:#1a2f48; }
+    @media (max-width:900px) { .cal-two-col { grid-template-columns:1fr !important; } }
     /* ── Clients CRM ── */
     .client-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:12px; }
     .client-card { background:#111e2e; border:1px solid #1a2f48; border-radius:12px; padding:16px; transition:border-color .15s; }
@@ -1179,9 +1183,10 @@
       <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       Calendar
     </button>
-    <button class="sidebar-nav-btn tab-btn" data-tab="clients">
+    <button class="sidebar-nav-btn tab-btn" data-tab="clients" style="position:relative;">
       <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       Clients
+      <span id="overdue-badge" style="display:none;position:absolute;top:5px;right:8px;background:#f87171;color:#fff;border-radius:99px;font-size:9px;font-weight:800;padding:1px 5px;min-width:16px;text-align:center;line-height:16px;">0</span>
     </button>
     <button class="sidebar-nav-btn tab-btn" data-tab="hub">
       <svg class="snav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -1863,7 +1868,7 @@
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:10px;">
       <div>
         <h2 style="font-size:17px;font-weight:700;color:#eef2f8;margin:0;">Content Calendar</h2>
-        <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Pipeline cards plotted by target date.</p>
+        <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Pipeline cards plotted by target date. Click an empty day to add a card. Drag to reschedule.</p>
       </div>
       <button id="digest-btn" onclick="generateWeeklyDigest()" style="background:linear-gradient(135deg,#818cf8,#6366f1);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;">✨ Weekly Digest</button>
     </div>
@@ -1876,15 +1881,35 @@
       <div id="digest-text" class="cal-digest-box"></div>
     </div>
 
-    <div class="card">
-      <div class="cal-header">
-        <button class="cal-nav-btn" onclick="calNav(-1)">‹ Prev</button>
-        <span class="cal-month-label" id="cal-month-label"></span>
-        <button class="cal-nav-btn" onclick="calNav(1)">Next ›</button>
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:16px;align-items:start;" class="cal-two-col">
+      <div class="card">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="calNav(-1)">‹ Prev</button>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="cal-month-label" id="cal-month-label"></span>
+            <button class="cal-nav-btn" onclick="calGoToday()" style="font-size:11px;padding:4px 10px;">Today</button>
+          </div>
+          <button class="cal-nav-btn" onclick="calNav(1)">Next ›</button>
+        </div>
+        <!-- Stage legend -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+          <span style="font-size:10px;color:#3d5270;font-weight:600;align-self:center;">Stages:</span>
+          ${['idea','research','scripting','filming','editing','published'].map(s =>
+            `<span class="cal-event stage-${s}" style="font-size:9.5px;padding:2px 7px;margin:0;cursor:default;">${s}</span>`
+          ).join('')}
+        </div>
+        <div class="cal-grid" id="cal-grid">
+          <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div>
+          <div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+        </div>
       </div>
-      <div class="cal-grid" id="cal-grid">
-        <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div>
-        <div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+
+      <!-- Upcoming sidebar -->
+      <div class="card" style="padding:16px;">
+        <div style="font-size:12px;font-weight:700;color:#7a92b0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Upcoming</div>
+        <div id="cal-upcoming" style="display:flex;flex-direction:column;gap:8px;">
+          <div style="color:#3d5270;font-size:12px;">Loading…</div>
+        </div>
       </div>
     </div>
 
@@ -1895,16 +1920,41 @@
       </div>
       <div id="best-time-grid" style="overflow-x:auto;"></div>
     </div>
+
+    <div class="card">
+      <div style="margin-bottom:14px;">
+        <span class="card-title">Hook Type Performance</span>
+        <p style="font-size:12px;color:#3d5270;margin-top:3px;">Avg views by hook type — tag your pipeline cards to see patterns emerge</p>
+      </div>
+      <div id="hook-analytics-body"><div style="color:#3d5270;font-size:12px;">Loading…</div></div>
+    </div>
   </div><!-- /tab-calendar -->
 
   <!-- ── Clients Tab ─────────────────────────────────────────────────────── -->
   <div class="tab-panel" id="tab-clients">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:10px;">
       <div>
-        <h2 style="font-size:17px;font-weight:700;color:#eef2f8;margin:0;">Clients</h2>
-        <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Track client work, projects, and status at a glance.</p>
+        <h2 style="font-size:17px;font-weight:700;color:#eef2f8;margin:0;">Clients & Revenue</h2>
+        <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Track client work, projects, invoices and revenue.</p>
       </div>
-      <button onclick="openAddClient()" style="background:#818cf8;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;">+ New Client</button>
+      <div style="display:flex;gap:8px;">
+        <button onclick="openAddInvoice()" style="background:#111e2e;border:1px solid #1a2f48;border-radius:8px;color:#7a92b0;font-size:12px;font-weight:700;padding:8px 14px;cursor:pointer;">+ Invoice</button>
+        <button onclick="openAddClient()" style="background:#818cf8;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;">+ New Client</button>
+      </div>
+    </div>
+
+    <!-- Revenue summary -->
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;align-items:start;">
+      <div id="revenue-summary" class="card" style="padding:16px 20px;">
+        <div style="font-size:11px;font-weight:700;color:#3d5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Revenue Overview</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;" id="revenue-stats">
+          <div style="color:#3d5270;font-size:12px;">Loading…</div>
+        </div>
+      </div>
+      <div class="card" style="padding:16px 20px;">
+        <div style="font-size:11px;font-weight:700;color:#3d5270;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Forecast</div>
+        <div id="revenue-forecast-body"><div style="color:#3d5270;font-size:12px;">Loading…</div></div>
+      </div>
     </div>
 
     <div id="client-add-panel" style="display:none;" class="client-add-form card">
@@ -1928,7 +1978,41 @@
       </div>
     </div>
 
+    <!-- Invoice add panel -->
+    <div id="invoice-add-panel" style="display:none;" class="client-add-form card">
+      <div style="font-size:13px;font-weight:700;color:#eef2f8;margin-bottom:12px;" id="inv-form-title">New Invoice</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <select class="client-input" id="inv-client">
+          <option value="">— No client —</option>
+        </select>
+        <select class="client-input" id="inv-status">
+          <option value="draft">Draft</option>
+          <option value="sent">Sent</option>
+          <option value="paid">Paid</option>
+          <option value="overdue">Overdue</option>
+        </select>
+        <input class="client-input" id="inv-title" placeholder="Invoice title *">
+        <input class="client-input" id="inv-amount" placeholder="Amount ($)" type="number" min="0" step="0.01">
+        <input class="client-input" id="inv-due" placeholder="Due date" type="date">
+        <input class="client-input" id="inv-paid" placeholder="Paid date" type="date">
+      </div>
+      <textarea class="client-input" id="inv-notes" placeholder="Notes..." rows="2" style="resize:vertical;margin-bottom:10px;width:100%;box-sizing:border-box;"></textarea>
+      <div style="display:flex;gap:8px;">
+        <button onclick="saveInvoice()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;padding:7px 18px;cursor:pointer;" id="inv-save-btn">Save</button>
+        <button onclick="closeAddInvoice()" style="background:#0f1929;border:1px solid #1a2f48;border-radius:7px;color:#5a7090;font-size:12px;padding:7px 14px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+
     <div class="client-grid" id="clients-grid"><div style="color:#3d5270;font-size:13px;padding:20px;">Loading…</div></div>
+
+    <!-- All invoices list -->
+    <div class="card" style="margin-top:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span class="card-title">All Invoices</span>
+        <button onclick="openAddInvoice()" style="background:none;border:1px solid #1a2f48;border-radius:6px;color:#7a92b0;font-size:11px;padding:4px 10px;cursor:pointer;">+ Add</button>
+      </div>
+      <div id="invoices-list"><div style="color:#3d5270;font-size:12px;">Loading…</div></div>
+    </div>
   </div><!-- /tab-clients -->
 
   <!-- ── Hub Tab ─────────────────────────────────────────────────────────── -->
@@ -1936,6 +2020,20 @@
     <div style="margin-bottom:4px;">
       <h2 style="font-size:17px;font-weight:700;color:#eef2f8;margin:0;">Hub</h2>
       <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Your one-stop dashboard — email, files, pages, links.</p>
+    </div>
+
+    <!-- Morning Brief -->
+    <div class="card" id="morning-brief-card" style="background:linear-gradient(135deg,#0f1929 0%,#111e2e 100%);border-color:#1a2f48;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:#eef2f8;">☀️ Morning Brief</div>
+          <div id="morning-brief-date" style="font-size:11px;color:#3d5270;margin-top:2px;"></div>
+        </div>
+        <button onclick="loadMorningBrief()" style="background:none;border:1px solid #1a2f48;border-radius:6px;color:#5a7090;font-size:11px;padding:4px 10px;cursor:pointer;">Refresh</button>
+      </div>
+      <div id="morning-brief-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
+        <div style="color:#3d5270;font-size:12px;">Loading…</div>
+      </div>
     </div>
 
     <!-- Google setup guide (shown when not connected) -->
@@ -2080,12 +2178,32 @@
         <option value="youtube">YouTube</option>
         <option value="instagram">Instagram</option>
       </select>
+      <select class="cdp-meta-sel" id="cdp-hook-type" title="Hook type — used for correlation analytics">
+        <option value="">Hook type…</option>
+        <option value="question">❓ Question</option>
+        <option value="shocking_stat">📊 Shocking Stat</option>
+        <option value="mystery">🕵️ Mystery/Teaser</option>
+        <option value="story_start">📖 Story Start</option>
+        <option value="controversy">🔥 Controversy</option>
+        <option value="bold_claim">⚡ Bold Claim</option>
+      </select>
+      <select class="cdp-meta-sel" id="cdp-content-type" title="Content format — correlates with AVD">
+        <option value="">Format…</option>
+        <option value="talking_head">🎙 Talking Head</option>
+        <option value="mini_doc">🎞 Mini-Doc</option>
+        <option value="tutorial">📚 Tutorial</option>
+        <option value="story">📖 Story</option>
+        <option value="shorts">⚡ Shorts</option>
+        <option value="livestream">📡 Livestream</option>
+      </select>
       <input class="cdp-date-input" id="cdp-date" type="date" title="Target date" />
     </div>
     <div class="cdp-tab-nav">
       <button class="cdp-tab-btn active" data-cdp-tab="research" onclick="switchCdpTab('research')">📋 Research</button>
       <button class="cdp-tab-btn" data-cdp-tab="script" onclick="switchCdpTab('script')">✍️ Script</button>
       <button class="cdp-tab-btn" data-cdp-tab="hooks" onclick="switchCdpTab('hooks')">🎣 Hooks</button>
+      <button class="cdp-tab-btn" data-cdp-tab="thumbnails" onclick="switchCdpTab('thumbnails')">🖼 Thumbs</button>
+      <button class="cdp-tab-btn" data-cdp-tab="publish" onclick="switchCdpTab('publish')">✅ Publish</button>
     </div>
     <div class="cdp-body">
       <!-- Research tab -->
@@ -2130,6 +2248,20 @@
           <div>Crafting 5 hooks in your style…</div>
         </div>
         <textarea id="cdp-hook" placeholder="Click '✨ Generate Hooks' to get 5 Wendigoon-style opening hooks.&#10;&#10;Each one uses your title and research (or script if you have one) as context, and includes the strategy behind it."></textarea>
+      </div>
+      <!-- Thumbnails tab -->
+      <div class="cdp-tab-panel" id="cdp-panel-thumbnails" style="display:none;padding:20px 24px;overflow-y:auto;flex-direction:column;gap:14px;">
+        <div style="font-size:12px;color:#5a7090;">Track thumbnail concepts. Mark the winner after publishing. The winning thumbnail tells you what works for your audience.</div>
+        <div id="cdp-thumb-concepts" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+          <input id="cdp-thumb-input" class="client-input" placeholder="Describe a thumbnail concept… (e.g. 'close-up shocked face + red text FORBIDDEN')" style="flex:1;">
+          <button onclick="addThumbConcept()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer;white-space:nowrap;">+ Add</button>
+        </div>
+      </div>
+      <!-- Publish checklist tab -->
+      <div class="cdp-tab-panel" id="cdp-panel-publish" style="display:none;padding:20px 24px;overflow-y:auto;">
+        <div style="font-size:12px;color:#5a7090;margin-bottom:16px;">Check off each item before publishing. Progress saves automatically when you hit Save.</div>
+        <div id="cdp-publish-checklist" style="display:flex;flex-direction:column;gap:10px;"></div>
       </div>
     </div>
     <div class="cdp-footer">
@@ -4723,7 +4855,7 @@ function switchCdpTab(tab) {
   _currentCdpTab = tab;
   document.querySelectorAll('.cdp-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.cdpTab === tab));
   document.querySelectorAll('.cdp-tab-panel').forEach(p => p.style.display = 'none');
-  document.getElementById('cdp-panel-' + tab).style.display = 'flex';
+  document.getElementById('cdp-panel-' + tab).style.display = (tab === 'publish' || tab === 'thumbnails') ? 'block' : 'flex';
   if (tab === 'script') updateWordCount();
 }
 
@@ -4737,14 +4869,18 @@ function updateWordCount() {
 function openCardDetail(id, defaultStage) {
   const card = id ? pipelineCards.find(c => c.id == id) : null;
   _detailCardId = id || null;
-  document.getElementById('cdp-title').value    = card?.title       || '';
-  document.getElementById('cdp-stage').value    = card?.stage       || defaultStage || 'idea';
-  document.getElementById('cdp-platform').value = card?.platform    || '';
-  document.getElementById('cdp-date').value     = card?.target_date || '';
-  document.getElementById('cdp-notes').value    = card?.notes       || '';
-  document.getElementById('cdp-script').value   = card?.script      || '';
-  document.getElementById('cdp-hook').value     = card?.hook        || '';
-  document.getElementById('cdp-research-topic').value = card?.title || '';
+  document.getElementById('cdp-title').value     = card?.title       || '';
+  document.getElementById('cdp-stage').value     = card?.stage       || defaultStage || 'idea';
+  document.getElementById('cdp-platform').value  = card?.platform    || '';
+  document.getElementById('cdp-date').value      = card?.target_date || '';
+  document.getElementById('cdp-notes').value     = card?.notes       || '';
+  document.getElementById('cdp-script').value    = card?.script      || '';
+  document.getElementById('cdp-hook').value      = card?.hook        || '';
+  document.getElementById('cdp-hook-type').value    = card?.hook_type    || '';
+  document.getElementById('cdp-content-type').value = card?.content_type || '';
+  document.getElementById('cdp-research-topic').value = card?.title     || '';
+  renderPublishChecklist(card?.publish_checklist || {});
+  renderThumbConcepts(card?.thumbnail_concepts || []);
 
   // Analytics link for published cards
   const analyticsDiv = document.getElementById('cdp-analytics-link');
@@ -4768,13 +4904,17 @@ function closeCardDetail() {
 
 async function saveCardDetail() {
   const payload = {
-    title:       document.getElementById('cdp-title').value.trim(),
-    stage:       document.getElementById('cdp-stage').value,
-    platform:    document.getElementById('cdp-platform').value || null,
-    target_date: document.getElementById('cdp-date').value || null,
-    notes:       document.getElementById('cdp-notes').value.trim() || null,
-    script:      document.getElementById('cdp-script').value.trim() || null,
-    hook:        document.getElementById('cdp-hook').value.trim() || null,
+    title:            document.getElementById('cdp-title').value.trim(),
+    stage:            document.getElementById('cdp-stage').value,
+    platform:         document.getElementById('cdp-platform').value || null,
+    target_date:      document.getElementById('cdp-date').value || null,
+    notes:            document.getElementById('cdp-notes').value.trim() || null,
+    script:           document.getElementById('cdp-script').value.trim() || null,
+    hook:             document.getElementById('cdp-hook').value.trim() || null,
+    hook_type:           document.getElementById('cdp-hook-type').value || null,
+    content_type:        document.getElementById('cdp-content-type').value || null,
+    publish_checklist:   readPublishChecklist(),
+    thumbnail_concepts:  readThumbConcepts(),
   };
   if (!payload.title) { document.getElementById('cdp-title').focus(); return; }
   const cardId = _detailCardId; // capture before closeCardDetail nullifies it
@@ -5747,6 +5887,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   refresh();
   loadPipeline();
   loadGoals();
+  updateOverdueBadge();
 
   // Handle post-upgrade redirect
   if (new URLSearchParams(window.location.search).get('upgraded') === '1') {
@@ -5869,7 +6010,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Tab switching — new tabs
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (btn.dataset.tab === 'calendar' && !_calLoaded) { _calLoaded = true; loadCalendar(); loadBestTime(); }
+      if (btn.dataset.tab === 'calendar' && !_calLoaded) { _calLoaded = true; loadCalendar(); loadBestTime(); loadHookAnalytics(); }
       if (btn.dataset.tab === 'clients'  && !_clientsLoaded) { _clientsLoaded = true; loadClients(); }
       if (btn.dataset.tab === 'hub'      && !_hubLoaded)  { _hubLoaded = true; loadHub(); }
     });
@@ -5892,6 +6033,13 @@ function calNav(dir) {
   renderCal();
 }
 
+function calGoToday() {
+  const now = new Date();
+  _calYear = now.getFullYear();
+  _calMonth = now.getMonth();
+  renderCal();
+}
+
 async function loadCalendar() {
   const r = await fetch('/api/pipeline').catch(() => null);
   if (!r?.ok) return;
@@ -5902,6 +6050,7 @@ async function loadCalendar() {
 function renderCal() {
   const label = document.getElementById('cal-month-label');
   const grid  = document.getElementById('cal-grid');
+  const upcoming = document.getElementById('cal-upcoming');
   if (!label || !grid) return;
   const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   label.textContent = `${monthNames[_calMonth]} ${_calYear}`;
@@ -5934,10 +6083,78 @@ function renderCal() {
 
     const cell = document.createElement('div');
     cell.className = `cal-day${!isThis ? ' other-month' : ''}${isToday ? ' today' : ''}`;
+    cell.setAttribute('data-date', isThis ? `${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}` : '');
     cell.innerHTML = `<div class="cal-day-num">${day}</div>` +
-      dayCards.map(c => `<div class="cal-event stage-${c.stage}" onclick="switchTab('pipeline');openCardDetail(${c.id})">${escHtml(c.title)}</div>`).join('');
+      dayCards.map(c => `<div class="cal-event stage-${c.stage}" draggable="true" data-card-id="${c.id}"
+        onclick="switchTab('pipeline');openCardDetail(${c.id})">${escHtml(c.title)}</div>`).join('');
+
+    // Click empty area of a day cell → create card with that date
+    if (isThis) {
+      cell.addEventListener('click', e => {
+        if (e.target === cell || e.target.classList.contains('cal-day-num')) {
+          const date = cell.getAttribute('data-date');
+          openAddCardWithDate(date);
+        }
+      });
+    }
+
+    // Drag-over / drop to reschedule
+    cell.addEventListener('dragover', e => { e.preventDefault(); cell.style.background = '#1a2f48'; });
+    cell.addEventListener('dragleave', () => { cell.style.background = ''; });
+    cell.addEventListener('drop', async e => {
+      e.preventDefault(); cell.style.background = '';
+      const cardId = e.dataTransfer?.getData('text/plain');
+      if (!cardId || !isThis) return;
+      const newDate = cell.getAttribute('data-date');
+      await fetch(`/api/pipeline/${cardId}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({target_date:newDate}) });
+      await loadCalendar();
+    });
     grid.appendChild(cell);
+
+    // Make events draggable
+    cell.querySelectorAll('.cal-event[draggable]').forEach(ev => {
+      ev.addEventListener('dragstart', e => { e.stopPropagation(); e.dataTransfer.setData('text/plain', ev.dataset.cardId); });
+    });
   }
+
+  // Upcoming sidebar — next 14 days of cards
+  if (upcoming) {
+    const now = new Date(); now.setHours(0,0,0,0);
+    const soon = new Date(now); soon.setDate(soon.getDate() + 14);
+    const upcoming14 = _calCards
+      .filter(c => { if (!c.target_date) return false; const d = new Date(c.target_date); return d >= now && d <= soon; })
+      .sort((a,b) => new Date(a.target_date) - new Date(b.target_date));
+    if (!upcoming14.length) {
+      upcoming.innerHTML = `<div style="color:#3d5270;font-size:12px;">No cards in the next 14 days.</div>`;
+    } else {
+      upcoming.innerHTML = upcoming14.map(c => {
+        const d = new Date(c.target_date);
+        const diff = Math.round((d - now) / 864e5);
+        const whenLabel = diff === 0 ? 'Today' : diff === 1 ? 'Tomorrow' : `${diff}d`;
+        return `<div style="display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px solid #0f1929;cursor:pointer;" onclick="switchTab('pipeline');openCardDetail(${c.id})">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="cal-event stage-${c.stage}" style="font-size:9px;padding:1px 5px;margin:0;cursor:pointer;">${c.stage}</span>
+            <span style="font-size:10px;color:#818cf8;font-weight:700;">${whenLabel}</span>
+          </div>
+          <div style="font-size:12px;color:#c8d8ea;font-weight:600;line-height:1.3;">${escHtml(c.title)}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
+// Open pipeline add-card modal with a pre-filled date
+function openAddCardWithDate(date) {
+  // Switch to pipeline tab and open the add-card form
+  switchTab('pipeline');
+  setTimeout(() => {
+    const titleEl = document.getElementById('new-card-title');
+    const dateEl  = document.getElementById('new-card-date') || document.querySelector('[id*="target_date"]');
+    if (titleEl) titleEl.focus();
+    if (dateEl)  dateEl.value = date;
+    const panel = document.getElementById('add-card-panel') || document.querySelector('.pipeline-add-panel');
+    if (panel) panel.style.display = 'block';
+  }, 150);
 }
 
 // ── Best time to post ─────────────────────────────────────────────────────────
@@ -6004,12 +6221,61 @@ async function generateWeeklyDigest() {
 // ══════════════════════════════════════════════════════════════════════════════
 // CLIENTS CRM
 // ══════════════════════════════════════════════════════════════════════════════
-let _clients = [], _editingClientId = null;
+let _clients = [], _editingClientId = null, _invoices = [], _editingInvoiceId = null;
 
 async function loadClients() {
-  const grid = document.getElementById('clients-grid');
-  _clients = await fetch('/api/clients').then(r => r.json()).catch(() => []);
+  [_clients, _invoices] = await Promise.all([
+    fetch('/api/clients').then(r => r.json()).catch(() => []),
+    fetch('/api/invoices').then(r => r.json()).catch(() => []),
+  ]);
   renderClients();
+  renderInvoices();
+  loadRevenueSummary();
+  loadRevenueForecast();
+}
+
+async function loadRevenueSummary() {
+  const el = document.getElementById('revenue-stats');
+  if (!el) return;
+  const s = await fetch('/api/revenue-summary').then(r => r.json()).catch(() => null);
+  if (!s) { el.innerHTML = `<div style="color:#3d5270;font-size:12px;">Failed to load</div>`; return; }
+  const fmt = v => '$' + Number(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+  el.innerHTML = [
+    { label:'Total Billed',  val:fmt(s.total_billed),  color:'#c8d8ea' },
+    { label:'Paid',          val:fmt(s.total_paid),    color:'#34d399' },
+    { label:'Outstanding',   val:fmt(s.outstanding),   color:'#f59e0b' },
+    { label:'Overdue',       val:fmt(Number(s.overdue_count||0)) + ' inv', color: Number(s.overdue_count) > 0 ? '#f87171' : '#3d5270' },
+  ].map(m => `
+    <div>
+      <div style="font-size:19px;font-weight:800;color:${m.color};letter-spacing:-.5px;">${m.val}</div>
+      <div style="font-size:10.5px;color:#3d5270;margin-top:2px;text-transform:uppercase;letter-spacing:.05em;">${m.label}</div>
+    </div>
+  `).join('');
+}
+
+async function loadRevenueForecast() {
+  const el = document.getElementById('revenue-forecast-body');
+  if (!el) return;
+  const f = await fetch('/api/revenue-forecast').then(r => r.json()).catch(() => null);
+  if (!f) { el.innerHTML = `<div style="color:#3d5270;font-size:12px;">No data yet</div>`; return; }
+  const fmt = v => '$' + Number(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
+  const projected = Number(f.mtd_paid) + Number(f.outstanding);
+  el.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#34d399;">${fmt(f.mtd_paid)}</div>
+        <div style="font-size:10px;color:#3d5270;text-transform:uppercase;margin-top:1px;">Paid MTD</div>
+      </div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#c8d8ea;">${fmt(projected)}</div>
+        <div style="font-size:10px;color:#3d5270;text-transform:uppercase;margin-top:1px;">Projected Month</div>
+      </div>
+      ${f.avg_monthly_3m > 0 ? `<div>
+        <div style="font-size:13px;font-weight:600;color:#7a92b0;">${fmt(f.avg_monthly_3m)}</div>
+        <div style="font-size:10px;color:#3d5270;text-transform:uppercase;margin-top:1px;">3mo Avg</div>
+      </div>` : ''}
+      ${f.draft_pipeline > 0 ? `<div style="font-size:11px;color:#5a7090;border-top:1px solid #1a2f48;padding-top:8px;">${fmt(f.draft_pipeline)} in draft</div>` : ''}
+    </div>`;
 }
 
 function renderClients() {
@@ -6021,9 +6287,14 @@ function renderClients() {
   grid.innerHTML = _clients.map(c => {
     const statusCls = { active:'status-active', lead:'status-lead', paused:'status-paused', done:'status-done' }[c.status] || 'status-active';
     const projects = (c.projects || []);
+    const clientInvs = _invoices.filter(i => i.client_id == c.id);
+    const totalBilled = clientInvs.reduce((s,i) => s + Number(i.amount||0), 0);
+    const totalPaid   = clientInvs.filter(i => i.status === 'paid').reduce((s,i) => s + Number(i.amount||0), 0);
+    const hasPending  = clientInvs.some(i => i.status === 'sent' || i.status === 'overdue');
+    const fmtMoney = v => '$' + Number(v||0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0});
     return `
     <div class="client-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
         <div>
           <div class="client-name">${escHtml(c.name)}</div>
           ${c.company ? `<div class="client-company">${escHtml(c.company)}</div>` : ''}
@@ -6036,6 +6307,13 @@ function renderClients() {
       </div>
       ${c.email ? `<div class="client-email">✉ <a href="mailto:${escHtml(c.email)}" style="color:#5a7090;text-decoration:none;">${escHtml(c.email)}</a></div>` : ''}
       ${c.tags ? `<div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap;">${c.tags.split(',').map(t=>t.trim()).filter(Boolean).map(t=>`<span style="background:#1a2f48;border-radius:4px;padding:1px 6px;font-size:10px;color:#7a92b0;">${escHtml(t)}</span>`).join('')}</div>` : ''}
+      ${totalBilled > 0 ? `
+      <div style="display:flex;gap:14px;margin-top:10px;padding:8px 10px;background:#0a1420;border-radius:8px;">
+        <div><div style="font-size:13px;font-weight:700;color:#c8d8ea;">${fmtMoney(totalBilled)}</div><div style="font-size:9.5px;color:#3d5270;text-transform:uppercase;">Billed</div></div>
+        <div><div style="font-size:13px;font-weight:700;color:#34d399;">${fmtMoney(totalPaid)}</div><div style="font-size:9.5px;color:#3d5270;text-transform:uppercase;">Paid</div></div>
+        ${hasPending ? `<div><div style="font-size:13px;font-weight:700;color:#f59e0b;">${fmtMoney(totalBilled - totalPaid)}</div><div style="font-size:9.5px;color:#3d5270;text-transform:uppercase;">Outstanding</div></div>` : ''}
+        <div style="margin-left:auto;display:flex;align-items:center;"><button onclick="openAddInvoice(${c.id})" style="background:none;border:1px solid #1a2f48;border-radius:5px;color:#818cf8;font-size:10px;padding:3px 8px;cursor:pointer;">+ Invoice</button></div>
+      </div>` : `<div style="margin-top:8px;"><button onclick="openAddInvoice(${c.id})" style="background:none;border:none;color:#818cf8;font-size:11px;cursor:pointer;padding:0;">+ Add invoice</button></div>`}
       ${c.notes ? `<div style="font-size:11.5px;color:#5a7090;margin-top:8px;line-height:1.5;border-top:1px solid #1a2f48;padding-top:8px;">${escHtml(c.notes)}</div>` : ''}
       <div class="client-projects">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
@@ -6053,6 +6331,7 @@ function renderClients() {
         }).join('')}
         ${!projects.length ? `<div style="color:#3d5270;font-size:11px;">No projects yet</div>` : ''}
       </div>
+      ${renderOnboardingChecklist(c.id, c.onboarding_checklist || {})}
     </div>`;
   }).join('');
 }
@@ -6129,6 +6408,105 @@ async function deleteProject(id) {
   await loadClients();
 }
 
+// ── Invoices ──────────────────────────────────────────────────────────────────
+function renderInvoices() {
+  const el = document.getElementById('invoices-list');
+  if (!el) return;
+  if (!_invoices.length) {
+    el.innerHTML = `<div style="color:#3d5270;font-size:12px;padding:8px 0;">No invoices yet.</div>`;
+    return;
+  }
+  const statusColor = { draft:'#5a7090', sent:'#f59e0b', paid:'#34d399', overdue:'#f87171' };
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead><tr style="border-bottom:1px solid #1a2f48;">
+      <th style="text-align:left;padding:5px 8px;color:#3d5270;font-size:10.5px;text-transform:uppercase;">Title</th>
+      <th style="text-align:left;padding:5px 8px;color:#3d5270;font-size:10.5px;text-transform:uppercase;">Client</th>
+      <th style="text-align:right;padding:5px 8px;color:#3d5270;font-size:10.5px;text-transform:uppercase;">Amount</th>
+      <th style="text-align:center;padding:5px 8px;color:#3d5270;font-size:10.5px;text-transform:uppercase;">Status</th>
+      <th style="text-align:left;padding:5px 8px;color:#3d5270;font-size:10.5px;text-transform:uppercase;">Due</th>
+      <th style="width:50px;"></th>
+    </tr></thead>
+    <tbody>
+    ${_invoices.map(i => `<tr style="border-bottom:1px solid #0f1929;">
+      <td style="padding:7px 8px;color:#c8d8ea;">${escHtml(i.title)}</td>
+      <td style="padding:7px 8px;color:#5a7090;">${i.client_name ? escHtml(i.client_name) : '—'}</td>
+      <td style="padding:7px 8px;color:#eef2f8;font-weight:700;text-align:right;">$${Number(i.amount||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="padding:7px 8px;text-align:center;"><span style="background:${statusColor[i.status]||'#5a7090'}22;color:${statusColor[i.status]||'#5a7090'};border-radius:4px;padding:2px 7px;font-size:10.5px;font-weight:700;">${i.status}</span></td>
+      <td style="padding:7px 8px;color:#5a7090;">${i.due_date ? new Date(i.due_date).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '—'}</td>
+      <td style="padding:7px 8px;text-align:right;">
+        <button onclick="editInvoice(${i.id})" style="background:none;border:none;color:#3d5270;cursor:pointer;font-size:11px;padding:2px 4px;" title="Edit">✏</button>
+        <button onclick="deleteInvoice(${i.id})" style="background:none;border:none;color:#3d5270;cursor:pointer;font-size:11px;padding:2px 4px;" title="Delete">✕</button>
+      </td>
+    </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function openAddInvoice(clientId) {
+  _editingInvoiceId = null;
+  document.getElementById('inv-form-title').textContent = 'New Invoice';
+  document.getElementById('inv-title').value = '';
+  document.getElementById('inv-amount').value = '';
+  document.getElementById('inv-status').value = 'draft';
+  document.getElementById('inv-due').value = '';
+  document.getElementById('inv-paid').value = '';
+  document.getElementById('inv-notes').value = '';
+  // Populate client dropdown
+  const sel = document.getElementById('inv-client');
+  sel.innerHTML = `<option value="">— No client —</option>` +
+    _clients.map(c => `<option value="${c.id}" ${c.id == clientId ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('');
+  document.getElementById('invoice-add-panel').style.display = 'block';
+  document.getElementById('inv-title').focus();
+}
+
+function closeAddInvoice() { document.getElementById('invoice-add-panel').style.display = 'none'; }
+
+function editInvoice(id) {
+  const inv = _invoices.find(i => i.id === id);
+  if (!inv) return;
+  _editingInvoiceId = id;
+  document.getElementById('inv-form-title').textContent = 'Edit Invoice';
+  const sel = document.getElementById('inv-client');
+  sel.innerHTML = `<option value="">— No client —</option>` +
+    _clients.map(c => `<option value="${c.id}" ${c.id == inv.client_id ? 'selected' : ''}>${escHtml(c.name)}</option>`).join('');
+  document.getElementById('inv-title').value = inv.title || '';
+  document.getElementById('inv-amount').value = inv.amount || '';
+  document.getElementById('inv-status').value = inv.status || 'draft';
+  document.getElementById('inv-due').value = inv.due_date ? inv.due_date.split('T')[0] : '';
+  document.getElementById('inv-paid').value = inv.paid_date ? inv.paid_date.split('T')[0] : '';
+  document.getElementById('inv-notes').value = inv.notes || '';
+  document.getElementById('invoice-add-panel').style.display = 'block';
+  document.getElementById('inv-title').focus();
+}
+
+async function saveInvoice() {
+  const title = document.getElementById('inv-title').value.trim();
+  if (!title) { showToast('Invoice title is required'); return; }
+  const body = {
+    client_id: document.getElementById('inv-client').value || null,
+    title,
+    amount: parseFloat(document.getElementById('inv-amount').value) || 0,
+    status: document.getElementById('inv-status').value,
+    due_date: document.getElementById('inv-due').value || null,
+    paid_date: document.getElementById('inv-paid').value || null,
+    notes: document.getElementById('inv-notes').value.trim() || null,
+  };
+  const url = _editingInvoiceId ? `/api/invoices/${_editingInvoiceId}` : '/api/invoices';
+  const method = _editingInvoiceId ? 'PUT' : 'POST';
+  const r = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  if (!r.ok) { showToast('Error saving invoice'); return; }
+  closeAddInvoice();
+  await loadClients();
+  showToast(_editingInvoiceId ? 'Invoice updated' : 'Invoice added');
+}
+
+async function deleteInvoice(id) {
+  if (!confirm('Delete this invoice?')) return;
+  await fetch(`/api/invoices/${id}`, { method:'DELETE' });
+  await loadClients();
+  showToast('Invoice deleted');
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // HUB
 // ══════════════════════════════════════════════════════════════════════════════
@@ -6136,6 +6514,280 @@ async function loadHub() {
   loadHubLinks();
   loadHubStatus();
   loadMilestones();
+  loadMorningBrief();
+}
+
+// ── Morning Brief ─────────────────────────────────────────────────────────────
+async function loadMorningBrief() {
+  const body = document.getElementById('morning-brief-body');
+  const dateEl = document.getElementById('morning-brief-date');
+  if (!body) return;
+  if (dateEl) {
+    const now = new Date();
+    dateEl.textContent = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  }
+  const d = await fetch('/api/morning-brief').then(r => r.json()).catch(() => null);
+  if (!d) { body.innerHTML = `<div style="color:#3d5270;font-size:12px;">Failed to load</div>`; return; }
+
+  const fmt = v => Number(v||0).toLocaleString();
+  const items = [];
+
+  // Today's cards
+  if (d.today_cards?.length) {
+    items.push(`<div style="grid-column:1/-1;display:flex;flex-direction:column;gap:6px;">
+      <div style="font-size:10.5px;font-weight:700;color:#3d5270;text-transform:uppercase;letter-spacing:.05em;">Today's Cards</div>
+      ${d.today_cards.map(c => `<div style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:#c8d8ea;">
+        <span class="cal-event stage-${c.stage}" style="font-size:9px;padding:1px 5px;margin:0;">${c.stage}</span>${escHtml(c.title)}
+      </div>`).join('')}
+    </div>`);
+  } else {
+    items.push(`<div style="grid-column:1/-1;font-size:12px;color:#3d5270;">No cards scheduled for today.</div>`);
+  }
+
+  // Subscriber count
+  if (d.yt_subs !== null) {
+    items.push(`<div>
+      <div style="font-size:18px;font-weight:800;color:#eef2f8;">${fmt(d.yt_subs)}</div>
+      <div style="font-size:10px;color:#3d5270;margin-top:2px;text-transform:uppercase;">YT Subscribers</div>
+    </div>`);
+  }
+
+  // Top video
+  if (d.top_video) {
+    items.push(`<div>
+      <div style="font-size:18px;font-weight:800;color:#eef2f8;">${fmt(d.top_video.views)}</div>
+      <div style="font-size:10px;color:#3d5270;margin-top:2px;text-transform:uppercase;">Top Video Views</div>
+      <div style="font-size:10px;color:#5a7090;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;" title="${escHtml(d.top_video.title)}">${escHtml(d.top_video.title)}</div>
+    </div>`);
+  }
+
+  // Overdue invoices
+  if (d.overdue_count > 0) {
+    items.push(`<div style="background:#f8717108;border:1px solid #f8717133;border-radius:8px;padding:10px 12px;">
+      <div style="font-size:18px;font-weight:800;color:#f87171;">${d.overdue_count}</div>
+      <div style="font-size:10px;color:#f87171;margin-top:2px;text-transform:uppercase;">Overdue Invoice${d.overdue_count>1?'s':''}</div>
+      <div style="font-size:10px;color:#5a7090;margin-top:1px;">$${Number(d.overdue_amount).toLocaleString('en-US',{minimumFractionDigits:0})} outstanding</div>
+    </div>`);
+  }
+
+  // New ideas this week
+  if (d.new_ideas_week > 0) {
+    items.push(`<div>
+      <div style="font-size:18px;font-weight:800;color:#818cf8;">${d.new_ideas_week}</div>
+      <div style="font-size:10px;color:#3d5270;margin-top:2px;text-transform:uppercase;">New Ideas This Week</div>
+    </div>`);
+  }
+
+  // Posting streak
+  if (d.posting_streak > 0) {
+    const fire = d.posting_streak >= 4 ? '🔥' : d.posting_streak >= 2 ? '⚡' : '📅';
+    items.push(`<div>
+      <div style="font-size:18px;font-weight:800;color:#f59e0b;">${fire} ${d.posting_streak}w</div>
+      <div style="font-size:10px;color:#3d5270;margin-top:2px;text-transform:uppercase;">Posting Streak</div>
+    </div>`);
+  }
+
+  body.style.display = 'grid';
+  body.innerHTML = items.join('');
+}
+
+// ── Publish checklist ──────────────────────────────────────────────────────────
+const PUBLISH_CHECKLIST_ITEMS = [
+  { key:'title',       label:'Title finalized (3 options tested)' },
+  { key:'thumbnail',   label:'Thumbnail designed & ready' },
+  { key:'description', label:'Description written (incl. timestamps)' },
+  { key:'tags',        label:'Tags added' },
+  { key:'chapters',    label:'Video chapters added' },
+  { key:'end_screen',  label:'End screen & cards set' },
+  { key:'community',   label:'Community post scheduled' },
+  { key:'first_comment', label:'Pinned first comment written' },
+  { key:'shorts_cut',  label:'Shorts cut made (if applicable)' },
+];
+
+function renderPublishChecklist(state) {
+  const el = document.getElementById('cdp-publish-checklist');
+  if (!el) return;
+  const done = PUBLISH_CHECKLIST_ITEMS.filter(i => state[i.key]).length;
+  const pct = Math.round(done / PUBLISH_CHECKLIST_ITEMS.length * 100);
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="flex:1;height:6px;background:#1a2f48;border-radius:99px;">
+        <div style="width:${pct}%;height:6px;background:${pct===100?'#34d399':'#818cf8'};border-radius:99px;transition:width .3s;"></div>
+      </div>
+      <span style="font-size:11px;color:${pct===100?'#34d399':'#7a92b0'};font-weight:700;">${done}/${PUBLISH_CHECKLIST_ITEMS.length}</span>
+    </div>` +
+    PUBLISH_CHECKLIST_ITEMS.map(item => `
+    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:6px 8px;border-radius:7px;transition:background .12s;" onmouseover="this.style.background='#111e2e'" onmouseout="this.style.background=''">
+      <input type="checkbox" data-check-key="${item.key}" ${state[item.key] ? 'checked' : ''} style="accent-color:#818cf8;width:15px;height:15px;cursor:pointer;" onchange="updatePublishChecklistUI()">
+      <span style="font-size:13px;color:${state[item.key]?'#5a7090':'#c8d8ea'};${state[item.key]?'text-decoration:line-through;':''}">${item.label}</span>
+    </label>`).join('');
+}
+
+function updatePublishChecklistUI() {
+  const state = readPublishChecklist();
+  // Re-render to update strikethrough + progress bar without losing checkbox state
+  const el = document.getElementById('cdp-publish-checklist');
+  if (!el) return;
+  const done = PUBLISH_CHECKLIST_ITEMS.filter(i => state[i.key]).length;
+  const pct = Math.round(done / PUBLISH_CHECKLIST_ITEMS.length * 100);
+  const bar = el.querySelector('div > div');
+  const countEl = el.querySelector('span');
+  if (bar) { bar.style.width = pct + '%'; bar.style.background = pct===100?'#34d399':'#818cf8'; }
+  if (countEl) { countEl.textContent = `${done}/${PUBLISH_CHECKLIST_ITEMS.length}`; countEl.style.color = pct===100?'#34d399':'#7a92b0'; }
+  el.querySelectorAll('label span:last-child').forEach((span, i) => {
+    const checked = !!state[PUBLISH_CHECKLIST_ITEMS[i]?.key];
+    span.style.color = checked ? '#5a7090' : '#c8d8ea';
+    span.style.textDecoration = checked ? 'line-through' : '';
+  });
+}
+
+function readPublishChecklist() {
+  const state = {};
+  document.querySelectorAll('#cdp-publish-checklist input[data-check-key]').forEach(cb => {
+    state[cb.dataset.checkKey] = cb.checked;
+  });
+  return state;
+}
+
+// ── Thumbnail concepts ────────────────────────────────────────────────────────
+let _thumbConcepts = [];
+
+function renderThumbConcepts(concepts) {
+  _thumbConcepts = Array.isArray(concepts) ? [...concepts] : [];
+  const el = document.getElementById('cdp-thumb-concepts');
+  if (!el) return;
+  if (!_thumbConcepts.length) {
+    el.innerHTML = `<div style="color:#3d5270;font-size:12px;">No concepts yet — add your first thumbnail idea below.</div>`;
+    return;
+  }
+  el.innerHTML = _thumbConcepts.map((t, i) => `
+    <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#0a1420;border-radius:8px;border:1px solid ${t.winner?'#34d39944':'#1a2f48'};">
+      <button onclick="toggleThumbWinner(${i})" title="Mark as winner" style="background:none;border:none;cursor:pointer;font-size:18px;line-height:1;flex-shrink:0;padding:0;margin-top:1px;">${t.winner?'🏆':'⚪'}</button>
+      <div style="flex:1;">
+        <div style="font-size:12.5px;color:${t.winner?'#34d399':'#c8d8ea'};font-weight:${t.winner?700:400};line-height:1.4;">${escHtml(t.desc)}</div>
+        ${t.winner ? `<div style="font-size:10px;color:#34d399;margin-top:3px;">✓ Winning concept</div>` : ''}
+      </div>
+      <button onclick="removeThumbConcept(${i})" style="background:none;border:none;color:#3d5270;cursor:pointer;font-size:13px;padding:2px;flex-shrink:0;">✕</button>
+    </div>`).join('');
+}
+
+function addThumbConcept() {
+  const input = document.getElementById('cdp-thumb-input');
+  const desc = input.value.trim();
+  if (!desc) return;
+  _thumbConcepts.push({ desc, winner: false });
+  input.value = '';
+  renderThumbConcepts(_thumbConcepts);
+}
+
+function toggleThumbWinner(idx) {
+  const wasWinner = _thumbConcepts[idx].winner;
+  _thumbConcepts.forEach(t => t.winner = false);
+  _thumbConcepts[idx].winner = !wasWinner;
+  renderThumbConcepts(_thumbConcepts);
+}
+
+function removeThumbConcept(idx) {
+  _thumbConcepts.splice(idx, 1);
+  renderThumbConcepts(_thumbConcepts);
+}
+
+function readThumbConcepts() {
+  return _thumbConcepts;
+}
+
+// ── Onboarding checklist per client ──────────────────────────────────────────
+const ONBOARDING_ITEMS = [
+  { key:'contract',  label:'Contract sent & signed' },
+  { key:'deposit',   label:'Deposit / first payment received' },
+  { key:'nda',       label:'NDA signed (if applicable)' },
+  { key:'brief',     label:'Creative brief received' },
+  { key:'assets',    label:'Brand assets delivered (logos, fonts, colors)' },
+  { key:'access',    label:'Platform access granted (YT, IG, etc.)' },
+  { key:'kickoff',   label:'Kickoff call completed' },
+];
+
+function renderOnboardingChecklist(clientId, state) {
+  const done = ONBOARDING_ITEMS.filter(i => state[i.key]).length;
+  const pct = Math.round(done / ONBOARDING_ITEMS.length * 100);
+  return `<details style="margin-top:10px;border-top:1px solid #1a2f48;padding-top:8px;">
+    <summary style="cursor:pointer;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:#3d5270;text-transform:uppercase;letter-spacing:.05em;list-style:none;user-select:none;">
+      Onboarding
+      <div style="flex:1;height:4px;background:#1a2f48;border-radius:99px;max-width:80px;">
+        <div style="width:${pct}%;height:4px;background:${pct===100?'#34d399':'#818cf8'};border-radius:99px;"></div>
+      </div>
+      <span style="color:${pct===100?'#34d399':'#5a7090'};">${done}/${ONBOARDING_ITEMS.length}</span>
+    </summary>
+    <div style="margin-top:8px;display:flex;flex-direction:column;gap:6px;" id="ob-${clientId}">
+      ${ONBOARDING_ITEMS.map(item => `
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" data-ob-client="${clientId}" data-ob-key="${item.key}" ${state[item.key]?'checked':''} style="accent-color:#818cf8;cursor:pointer;" onchange="saveOnboarding(${clientId})">
+        <span style="font-size:12px;color:${state[item.key]?'#5a7090':'#c8d8ea'};${state[item.key]?'text-decoration:line-through;':''}">${item.label}</span>
+      </label>`).join('')}
+    </div>
+  </details>`;
+}
+
+async function saveOnboarding(clientId) {
+  const state = {};
+  document.querySelectorAll(`input[data-ob-client="${clientId}"]`).forEach(cb => {
+    state[cb.dataset.obKey] = cb.checked;
+  });
+  await fetch(`/api/clients/${clientId}`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ onboarding_checklist: state }),
+  }).catch(() => {});
+  // Reload clients silently so the progress bar updates
+  _clients = await fetch('/api/clients').then(r => r.json()).catch(() => _clients);
+}
+
+// ── Hook analytics ─────────────────────────────────────────────────────────────
+async function loadHookAnalytics() {
+  const el = document.getElementById('hook-analytics-body');
+  if (!el) return;
+  const data = await fetch('/api/hook-analytics').then(r => r.json()).catch(() => null);
+  if (!data) { el.innerHTML = `<div style="color:#3d5270;font-size:12px;">Failed to load</div>`; return; }
+  const { published, draft } = data;
+
+  const hookLabels = { question:'❓ Question', shocking_stat:'📊 Shocking Stat', mystery:'🕵️ Mystery/Teaser', story_start:'📖 Story Start', controversy:'🔥 Controversy', bold_claim:'⚡ Bold Claim' };
+
+  if (!published.length) {
+    const draftCounts = draft.map(d => `<span style="background:#1a2f48;border-radius:5px;padding:2px 8px;font-size:11px;color:#7a92b0;">${hookLabels[d.hook_type]||d.hook_type} <strong>${d.videos}</strong></span>`).join('');
+    el.innerHTML = `<div style="color:#3d5270;font-size:12px;line-height:1.6;">
+      Tag your pipeline cards with a hook type, then link published videos to see which hook performs best.<br>
+      ${draft.length ? `<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">${draftCounts}</div>` : ''}
+    </div>`;
+    return;
+  }
+
+  const maxViews = Math.max(...published.map(r => Number(r.avg_views||0)));
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px;">` +
+    published.map(r => {
+      const pct = maxViews > 0 ? Number(r.avg_views) / maxViews * 100 : 0;
+      return `<div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:12.5px;color:#c8d8ea;font-weight:600;">${hookLabels[r.hook_type]||r.hook_type}</span>
+          <span style="font-size:11px;color:#7a92b0;">${Number(r.avg_views||0).toLocaleString()} avg views · ${r.videos} videos</span>
+        </div>
+        <div style="height:8px;background:#1a2f48;border-radius:99px;">
+          <div style="width:${pct}%;height:8px;background:#818cf8;border-radius:99px;"></div>
+        </div>
+      </div>`;
+    }).join('') + `</div>`;
+}
+
+// ── Overdue invoice badge ──────────────────────────────────────────────────────
+async function updateOverdueBadge() {
+  const badge = document.getElementById('overdue-badge');
+  if (!badge) return;
+  const d = await fetch('/api/invoices/overdue-count').then(r => r.json()).catch(() => null);
+  const count = d?.count || 0;
+  if (count > 0) {
+    badge.textContent = count > 99 ? '99+' : count;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
 // ── Quick Links ───────────────────────────────────────────────────────────────
