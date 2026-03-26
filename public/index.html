@@ -899,8 +899,8 @@
 
     /* ── Tab nav (hidden — tabs live in sidebar now) ── */
     .tab-nav { display: none !important; }
-    /* tab-btn still used for active state toggling by JS, keep base style */
-    .tab-btn { display:none; }
+    /* tab-btn class used by JS for active-state; hide only when NOT in sidebar */
+    .tab-btn:not(.sidebar-nav-btn) { display:none; }
     .tab-panel { display:none; flex-direction:column; gap:14px; }
     .tab-panel.active { display:flex; }
     .analytics-controls { transition:opacity .2s; }
