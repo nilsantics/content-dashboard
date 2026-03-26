@@ -2567,10 +2567,22 @@ const HUB_GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/calendar.readonly',
 ].join(' ');
 
+function getHubRedirectUri(req) {
+  // Prefer explicitly set APP_URL, then Vercel production URL, then request host
+  if (process.env.APP_URL) return `${process.env.APP_URL}/api/hub/callback/google`;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}/api/hub/callback/google`;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}/api/hub/callback/google`;
+  return `${req.protocol}://${req.get('host')}/api/hub/callback/google`;
+}
+
+app.get('/api/hub/redirect-uri', (req, res) => {
+  res.json({ uri: getHubRedirectUri(req) });
+});
+
 app.get('/api/hub/connect/google', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) return res.status(400).send('GOOGLE_CLIENT_ID not set');
-  const redirect = `${req.protocol}://${req.get('host')}/api/hub/callback/google`;
+  const redirect = getHubRedirectUri(req);
   const url = `https://accounts.google.com/o/oauth2/v2/auth?` +
     `client_id=${clientId}&redirect_uri=${encodeURIComponent(redirect)}` +
     `&response_type=code&scope=${encodeURIComponent(HUB_GOOGLE_SCOPES)}&access_type=offline&prompt=consent`;
@@ -2579,7 +2591,7 @@ app.get('/api/hub/connect/google', (req, res) => {
 
 app.get('/api/hub/callback/google', async (req, res) => {
   const { code } = req.query;
-  const redirect = `${req.protocol}://${req.get('host')}/api/hub/callback/google`;
+  const redirect = getHubRedirectUri(req);
   try {
     const data = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',

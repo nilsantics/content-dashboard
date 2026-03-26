@@ -604,11 +604,14 @@
     .hub-item-sub { font-size:11px; color:#3d5270; margin-top:1px; }
     .hub-connect-btn { width:100%; background:linear-gradient(135deg,#1a2f48,#162840); border:1px dashed #2a4868; border-radius:8px; color:#7a92b0; font-size:12px; font-weight:600; padding:12px; cursor:pointer; transition:all .15s; }
     .hub-connect-btn:hover { border-color:#818cf8; color:#c4c9ff; }
-    .hub-links-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
-    .hub-link-chip { background:#0f1929; border:1px solid #1a2f48; border-radius:8px; padding:10px 12px; text-align:center; text-decoration:none; cursor:pointer; transition:border-color .15s; }
-    .hub-link-chip:hover { border-color:#354e68; }
-    .hub-link-emoji { font-size:20px; display:block; margin-bottom:4px; }
-    .hub-link-label { font-size:11px; color:#8aa0bc; font-weight:600; }
+    .hub-links-grid { display:flex; flex-wrap:wrap; gap:8px; }
+    .hub-link-wrap { position:relative; }
+    .hub-link-chip { display:flex; align-items:center; gap:8px; background:#0f1929; border:1px solid #1a2f48; border-radius:10px; padding:9px 14px; text-decoration:none; cursor:pointer; transition:all .15s; white-space:nowrap; }
+    .hub-link-chip:hover { border-color:#354e68; background:#162840; }
+    .hub-link-emoji { font-size:16px; line-height:1; flex-shrink:0; }
+    .hub-link-label { font-size:12.5px; color:#c8d8ea; font-weight:600; }
+    .hub-link-del { position:absolute; top:-5px; right:-5px; background:#0f1929; border:1px solid #2a4868; border-radius:50%; width:16px; height:16px; font-size:9px; color:#f87171; cursor:pointer; display:none; line-height:16px; padding:0; text-align:center; }
+    .hub-link-wrap:hover .hub-link-del { display:block; }
     .milestone-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #1a2f4840; }
     .milestone-row:last-child { border-bottom:none; }
     .milestone-label { font-size:13px; color:#c8d8ea; flex:1; }
@@ -1935,20 +1938,50 @@
       <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Your one-stop dashboard — email, files, pages, links.</p>
     </div>
 
+    <!-- Google setup guide (shown when not connected) -->
+    <div id="google-setup-guide" class="card" style="display:none;border-color:#f59e0b44;background:#111e2e;">
+      <div style="display:flex;gap:12px;align-items:flex-start;">
+        <div style="font-size:22px;">⚙️</div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:700;color:#f59e0b;margin-bottom:6px;">One-time Google setup required</div>
+          <div style="font-size:12px;color:#8aa0bc;line-height:1.7;">
+            To connect Gmail &amp; Google Drive, you need to register this callback URL in your Google Cloud Console:<br>
+            <code id="hub-redirect-uri-display" style="background:#0a1420;border:1px solid #2a4868;border-radius:5px;padding:3px 8px;font-size:11px;color:#818cf8;display:inline-block;margin:6px 0;word-break:break-all;">Loading…</code><br>
+            <strong style="color:#c8d8ea;">Steps:</strong>
+            <span style="color:#8aa0bc;"> Go to </span>
+            <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#818cf8;">console.cloud.google.com/apis/credentials</a>
+            <span style="color:#8aa0bc;"> → click your OAuth 2.0 client → add the URL above to <em>Authorized redirect URIs</em> → Save → then click Connect below.</span>
+          </div>
+          <button onclick="document.getElementById('google-setup-guide').style.display='none'" style="background:none;border:none;color:#3d5270;font-size:11px;cursor:pointer;margin-top:4px;">Dismiss</button>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <span class="card-title">Quick Links</span>
-        <button onclick="toggleAddLink()" style="background:#111e2e;border:1px solid #1a2f48;border-radius:6px;color:#7a92b0;font-size:11px;padding:4px 10px;cursor:pointer;">+ Add</button>
+        <button onclick="toggleAddLink()" id="link-add-toggle" style="background:#111e2e;border:1px solid #1a2f48;border-radius:6px;color:#7a92b0;font-size:11px;padding:4px 10px;cursor:pointer;">+ Add</button>
       </div>
-      <div id="add-link-form" style="display:none;margin-bottom:12px;">
-        <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <input id="lf-emoji" class="client-input" placeholder="🔗" style="width:48px;">
-          <input id="lf-title" class="client-input" placeholder="Label" style="flex:1;min-width:100px;">
+      <div id="add-link-form" style="display:none;margin-bottom:14px;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <input id="lf-emoji" class="client-input" placeholder="🔗" style="width:46px;text-align:center;" maxlength="4">
+          <input id="lf-title" class="client-input" placeholder="Label (e.g. YouTube Studio)" style="flex:1;min-width:120px;">
           <input id="lf-url" class="client-input" placeholder="https://..." style="flex:2;min-width:160px;" type="url">
-          <button onclick="saveLink()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;padding:6px 14px;cursor:pointer;white-space:nowrap;">Add Link</button>
+          <button onclick="saveLink()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:600;padding:7px 16px;cursor:pointer;white-space:nowrap;">Add</button>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#3d5270;">Quick add:</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;">
+          ${[
+            ['🎬','YT Studio','https://studio.youtube.com'],
+            ['📊','Analytics','https://analytics.youtube.com'],
+            ['📅','Google Cal','https://calendar.google.com'],
+            ['📧','Gmail','https://mail.google.com'],
+            ['📁','Drive','https://drive.google.com'],
+            ['📓','Notion','https://notion.so'],
+          ].map(([e,t,u])=>`<button onclick="quickAddLink('${e}','${t}','${u}')" style="background:#0f1929;border:1px solid #1a2f48;border-radius:6px;color:#7a92b0;font-size:11px;padding:4px 8px;cursor:pointer;">${e} ${t}</button>`).join('')}
         </div>
       </div>
-      <div class="hub-links-grid" id="hub-links-grid"><div style="color:#3d5270;font-size:12px;">Loading…</div></div>
+      <div class="hub-links-grid" id="hub-links-grid"><div style="color:#3d5270;font-size:12px;padding:4px;">Loading…</div></div>
     </div>
 
     <div class="hub-grid">
@@ -6110,28 +6143,28 @@ async function loadHubLinks() {
   const grid = document.getElementById('hub-links-grid');
   const links = await fetch('/api/hub/links').then(r => r.json()).catch(() => []);
   if (!links.length) {
-    grid.innerHTML = `<div style="color:#3d5270;font-size:12px;">No links yet — add your first one above.</div>`;
+    grid.innerHTML = `<div style="color:#3d5270;font-size:12px;padding:4px;">No links yet — click <strong style="color:#7a92b0;">+ Add</strong> to add your first bookmark.</div>`;
     return;
   }
   grid.innerHTML = links.map(l => `
-    <div style="position:relative;display:inline-block;">
+    <div class="hub-link-wrap">
       <a href="${escHtml(l.url)}" target="_blank" rel="noopener" class="hub-link-chip">
         <span class="hub-link-emoji">${escHtml(l.emoji || '🔗')}</span>
         <span class="hub-link-label">${escHtml(l.title)}</span>
       </a>
-      <button onclick="deleteLink(${l.id})" style="position:absolute;top:-4px;right:-4px;background:#0f1929;border:1px solid #1a2f48;border-radius:50%;width:16px;height:16px;font-size:9px;color:#5a7090;cursor:pointer;display:none;line-height:1;padding:0;" class="link-del-btn">✕</button>
+      <button class="hub-link-del" onclick="deleteLink(${l.id})">✕</button>
     </div>`).join('');
-  // Show delete buttons on hover
-  grid.querySelectorAll('[style*="position:relative"]').forEach(wrap => {
-    const btn = wrap.querySelector('.link-del-btn');
-    wrap.addEventListener('mouseenter', () => btn.style.display = 'block');
-    wrap.addEventListener('mouseleave', () => btn.style.display = 'none');
-  });
 }
 
 function toggleAddLink() {
   const f = document.getElementById('add-link-form');
   f.style.display = f.style.display === 'none' ? 'block' : 'none';
+}
+
+async function quickAddLink(emoji, title, url) {
+  await fetch('/api/hub/links', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({emoji,title,url}) });
+  loadHubLinks();
+  showToast(`${emoji} ${title} added`);
 }
 
 async function saveLink() {
@@ -6145,6 +6178,7 @@ async function saveLink() {
   document.getElementById('lf-url').value = '';
   document.getElementById('add-link-form').style.display = 'none';
   loadHubLinks();
+  showToast('Link added');
 }
 
 async function deleteLink(id) {
@@ -6154,14 +6188,24 @@ async function deleteLink(id) {
 
 // ── Hub status + integrations ─────────────────────────────────────────────────
 async function loadHubStatus() {
-  const status = await fetch('/api/hub/status').then(r => r.json()).catch(() => ({}));
+  const [status, uriData] = await Promise.all([
+    fetch('/api/hub/status').then(r => r.json()).catch(() => ({})),
+    fetch('/api/hub/redirect-uri').then(r => r.json()).catch(() => ({})),
+  ]);
+  // Show the redirect URI in the setup guide
+  const uriEl = document.getElementById('hub-redirect-uri-display');
+  if (uriEl && uriData.uri) uriEl.textContent = uriData.uri;
+
   if (status.google) {
     document.getElementById('gmail-connect-btn').style.display = 'none';
     document.getElementById('drive-connect-btn').style.display = 'none';
     document.getElementById('gmail-status-sub').textContent = 'Connected';
     document.getElementById('drive-status-sub').textContent = 'Connected';
+    document.getElementById('google-setup-guide').style.display = 'none';
     loadGmail();
     loadDrive();
+  } else {
+    document.getElementById('google-setup-guide').style.display = 'block';
   }
   if (status.notion) {
     document.getElementById('notion-status-sub').textContent = 'Connected';
