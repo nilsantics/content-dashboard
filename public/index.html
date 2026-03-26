@@ -118,7 +118,7 @@
     .sidebar-nav { display:flex; flex-direction:column; gap:1px; padding:4px 8px; }
     .sidebar-nav-label { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #1e3554; padding: 8px 6px 4px; display:block; }
     .sidebar-nav-btn {
-      display: flex; align-items: center; gap: 9px; width: 100%;
+      display: flex !important; align-items: center; gap: 9px; width: 100%;
       background: transparent; border: none; border-radius: 8px;
       color: #3d5270; font-size: 12px; font-weight: 600; padding: 7px 10px;
       cursor: pointer; transition: all .15s; text-align: left; font-family: inherit;
@@ -899,8 +899,7 @@
 
     /* ── Tab nav (hidden — tabs live in sidebar now) ── */
     .tab-nav { display: none !important; }
-    /* tab-btn class used by JS for active-state; hide only when NOT in sidebar */
-    .tab-btn:not(.sidebar-nav-btn) { display:none; }
+    /* tab-panel visibility — sidebar-nav-btn.tab-btn handled by sidebar-nav-btn styles */
     .tab-panel { display:none; flex-direction:column; gap:14px; }
     .tab-panel.active { display:flex; }
     .analytics-controls { transition:opacity .2s; }
