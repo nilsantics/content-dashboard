@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { margin:0; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#0d1623; color:#c8d8ea; font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; min-height:100vh; transition:background .25s,color .25s; font-feature-settings:'ss01','cv01'; }
+    body { margin:0; font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:#0d1623; color:#c8d8ea; font-size:13.5px; line-height:1.55; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; min-height:100vh; transition:background .25s,color .25s; font-feature-settings:'ss01','cv01'; }
     ::-webkit-scrollbar { width:5px; height:5px; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:#1a2a40; border-radius:10px; }
@@ -471,16 +471,16 @@
 
     /* ── Pipeline Kanban ── */
     .pipeline-board { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; align-items:start; }
-    .pipeline-col { background:#111e2e; border:1px solid #1a2f48; border-radius:12px; padding:10px; min-height:160px; transition:border-color .15s,background .15s; }
-    .pipeline-col-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 2px; }
-    .pipeline-col-title { font-size:9.5px; font-weight:800; text-transform:uppercase; letter-spacing:.1em; }
-    .pipeline-count { font-size:10px; color:#3d5270; background:#0f1929; padding:1px 7px; border-radius:10px; border:1px solid #1a2f48; }
-    .pipeline-card { background:#0f1929; border:1px solid #112035; border-radius:9px; padding:10px; margin-bottom:7px; cursor:grab; user-select:none; transition:border-color .15s,transform .1s,box-shadow .15s; position:relative; }
+    .pipeline-col { background:#111e2e; border:1px solid #1a2f48; border-radius:12px; padding:12px; min-height:180px; transition:border-color .15s,background .15s; }
+    .pipeline-col-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; padding:0 2px; }
+    .pipeline-col-title { font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.07em; }
+    .pipeline-count { font-size:11px; color:#3d5270; background:#0f1929; padding:2px 8px; border-radius:10px; border:1px solid #1a2f48; font-weight:700; }
+    .pipeline-card { background:#0f1929; border:1px solid #1a2f48; border-radius:10px; padding:13px; margin-bottom:8px; cursor:grab; user-select:none; transition:border-color .15s,transform .1s,box-shadow .15s; position:relative; }
     .pipeline-card:hover { border-color:#2a4868; box-shadow:0 3px 12px rgba(0,0,0,.3); }
     .pipeline-card:active { cursor:grabbing; transform:scale(1.02); }
     .pipeline-card.drag-over-card { border-color:#818cf8; }
     .pipeline-col.drag-over { border-color:#818cf8; background:#0f1929cc; }
-    .pipeline-card-title { font-size:12px; font-weight:600; color:#c8d8ea; line-height:1.35; margin-bottom:5px; }
+    .pipeline-card-title { font-size:13.5px; font-weight:700; color:#eef2f8; line-height:1.4; margin-bottom:7px; }
     .pipeline-card-meta { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
     .pipeline-badge { font-size:9px; font-weight:700; padding:1px 6px; border-radius:8px; text-transform:uppercase; }
     .badge-youtube { background:#818cf818; color:#818cf8; border:1px solid #818cf833; }
@@ -1273,7 +1273,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
           <div>
             <span class="card-title">Channel Trajectory</span>
-            <p style="font-size:11px;color:#334155;margin-top:3px;">Views per post over time — is the channel growing?</p>
+            <p style="font-size:12px;color:#3d5270;margin-top:3px;">Views per post over time — is the channel growing?</p>
           </div>
           <div id="traj-legend" style="display:flex;gap:12px;"></div>
         </div>
@@ -1282,7 +1282,7 @@
       <div class="card">
         <div style="margin-bottom:18px;">
           <span class="card-title">Best Day to Post</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views per video by day published</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Avg views per video by day published</p>
         </div>
         <div style="position:relative;height:260px;"><canvas id="chart-bestday"></canvas></div>
       </div>
@@ -1293,14 +1293,14 @@
       <div class="card">
         <div style="margin-bottom:16px;">
           <span class="card-title">Posting Cadence</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Last 16 weeks — darker = more posts</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Last 16 weeks — darker = more posts</p>
         </div>
         <div id="cal-container"></div>
       </div>
       <div class="card" id="keywords-section">
         <div style="margin-bottom:18px;">
           <span class="card-title">Title Keywords</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Words that appear in 2+ videos, ranked by avg views</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Words that appear in 2+ videos, ranked by avg views</p>
         </div>
         <div style="position:relative;height:260px;"><canvas id="chart-keywords"></canvas></div>
       </div>
@@ -1311,14 +1311,14 @@
       <div class="card" id="heatmap-section">
         <div style="margin-bottom:16px;">
           <span class="card-title">Best Hour to Post</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views by day &amp; hour — darker = better performance</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Avg views by day &amp; hour — darker = better performance</p>
         </div>
         <div class="heatmap-wrap"><div id="heatmap-grid"></div></div>
       </div>
       <div class="card" id="title-length-section">
         <div style="margin-bottom:16px;">
           <span class="card-title">Title Length vs Performance</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views by title word count — what length works best?</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Avg views by title word count — what length works best?</p>
         </div>
         <div id="title-length-inner"></div>
       </div>
@@ -1328,7 +1328,7 @@
     <div class="card" id="patterns-section">
       <div style="margin-bottom:16px;">
         <span class="card-title">What Makes Your Top Videos Win</span>
-        <p style="font-size:11px;color:#334155;margin-top:3px;">Patterns from your top 20% of videos vs the rest</p>
+        <p style="font-size:12px;color:#3d5270;margin-top:3px;">Patterns from your top 20% of videos vs the rest</p>
       </div>
       <div id="patterns-inner"><p style="color:#475569;font-size:13px;">Loading patterns…</p></div>
     </div>
@@ -1338,14 +1338,14 @@
       <div class="card">
         <div style="margin-bottom:16px;">
           <span class="card-title">Keyword Gap — Try These Next</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Words in your top-performing videos, missing from your recent 10 titles</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Words in your top-performing videos, missing from your recent 10 titles</p>
         </div>
         <div id="kw-gap-list"></div>
       </div>
       <div class="card">
         <div style="margin-bottom:16px;">
           <span class="card-title">Low-Performing Keywords</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Words you use often but underperform channel average</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Words you use often but underperform channel average</p>
         </div>
         <div id="kw-used-list"></div>
       </div>
@@ -1365,7 +1365,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div>
             <span class="card-title">Revenue Estimator</span>
-            <p style="font-size:11px;color:#334155;margin-top:3px;">YouTube ad revenue estimate — adjust CPM for your audience</p>
+            <p style="font-size:12px;color:#3d5270;margin-top:3px;">YouTube ad revenue estimate — adjust CPM for your audience</p>
           </div>
           <div class="tip-wrap" style="cursor:help;">
             <span class="tip-icon">?</span>
@@ -1377,7 +1377,7 @@
       <div class="card">
         <div style="margin-bottom:16px;">
           <span class="card-title">Milestones</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Progress to your next goals — ETA based on recent growth rate</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Progress to your next goals — ETA based on recent growth rate</p>
         </div>
         <div id="milestones-inner"></div>
       </div>
@@ -1387,7 +1387,7 @@
     <div class="card" id="goals-section">
       <div style="margin-bottom:16px;">
         <span class="card-title">Goals</span>
-        <p style="font-size:11px;color:#334155;margin-top:3px;">Track custom targets with live pace &amp; ETA</p>
+        <p style="font-size:12px;color:#3d5270;margin-top:3px;">Track custom targets with live pace &amp; ETA</p>
       </div>
       <div id="goals-inner"></div>
       <div class="goal-add-row">
@@ -1407,9 +1407,17 @@
 
     <!-- Subscriber Growth -->
     <div class="card" id="sub-growth-section">
-      <div style="margin-bottom:18px;">
-        <span class="card-title">Subscriber &amp; Follower Growth</span>
-        <p style="font-size:11px;color:#334155;margin-top:3px;">Tracked every 6 hours</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <span class="card-title">Subscriber &amp; Follower Growth</span>
+          <p style="font-size:11px;color:#3d5270;margin-top:3px;">Tracked every 6 hours</p>
+        </div>
+        <div style="display:flex;gap:4px;" id="sub-growth-range-btns">
+          <button class="score-filter-btn active" data-sgrange="30" onclick="setSubGrowthRange(30)">1M</button>
+          <button class="score-filter-btn" data-sgrange="90" onclick="setSubGrowthRange(90)">3M</button>
+          <button class="score-filter-btn" data-sgrange="180" onclick="setSubGrowthRange(180)">6M</button>
+          <button class="score-filter-btn" data-sgrange="365" onclick="setSubGrowthRange(365)">1Y</button>
+        </div>
       </div>
       <div id="sub-growth-inner"></div>
     </div>
@@ -1419,7 +1427,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div>
           <span class="card-title">Title Change History</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Detected changes to video titles during sync — with view velocity before/after</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Detected changes to video titles during sync — with view velocity before/after</p>
         </div>
       </div>
       <div id="title-changes-inner"><div class="empty-state" style="padding:24px;"><p>No title changes detected yet — changes are logged automatically during your next YouTube sync.</p></div></div>
@@ -1434,7 +1442,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
         <div>
           <span class="card-title">Content Pipeline</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Drag cards between stages to track your content from idea to published</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Drag cards between stages to track your content from idea to published</p>
         </div>
         <button id="pipeline-new-btn" style="background:#818cf8;border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:700;padding:7px 14px;cursor:pointer;">+ New Idea</button>
       </div>
@@ -1446,7 +1454,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
         <div>
           <span class="card-title">Upload Checklist</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Run through this before every publish — check off as you go, resets each session</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Run through this before every publish — check off as you go, resets each session</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <span id="checklist-progress" style="font-size:11px;color:#475569;"></span>
@@ -1484,7 +1492,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
         <div>
           <span class="card-title">Comments Explorer</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Latest comments across your YouTube channel</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Latest comments across your YouTube channel</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <input id="comments-search" type="text" placeholder="Search comments…"
@@ -1525,7 +1533,7 @@
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;">
         <div>
           <span class="card-title">AI Idea Generator</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Claude analyses your top performers & keywords to generate ranked video ideas</p>
+          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Claude analyses your top performers & keywords to generate ranked video ideas</p>
         </div>
         <div id="ideas-api-warning" style="display:none;background:#f8717114;border:1px solid #f8717144;border-radius:8px;padding:8px 12px;font-size:11px;color:#f87171;max-width:320px;">
           Add your <strong>ANTHROPIC_API_KEY</strong> to <code>.env</code> to enable this feature.
@@ -1555,7 +1563,7 @@
       <div id="ideas-empty" style="text-align:center;padding:48px 20px;color:#334155;">
         <div style="font-size:40px;margin-bottom:12px;">🤖</div>
         <div style="font-size:13px;font-weight:600;color:#475569;margin-bottom:6px;">Ready to generate ideas</div>
-        <div style="font-size:11px;color:#334155;">Claude will analyse your top videos and suggest ideas tailored to your channel</div>
+        <div style="font-size:12px;color:#3d5270;">Claude will analyse your top videos and suggest ideas tailored to your channel</div>
       </div>
     </div>
   </div><!-- /tab-ideas -->
@@ -1566,7 +1574,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
         <div>
           <span class="card-title">Thumbnail Gallery</span>
-          <p style="font-size:11px;color:#334155;margin-top:3px;">Visual patterns in what's working — spot trends in style, color & composition</p>
+          <p style="font-size:12px;color:#6a84a0;margin-top:4px;">Visual patterns in what's working — spot trends in style, color &amp; composition</p>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <select id="thumb-sort" style="background:#080d14;border:1px solid #1a2740;border-radius:7px;color:#e2e8f0;font-size:12px;padding:7px 10px;">
@@ -1591,7 +1599,7 @@
     <div class="card">
       <div style="margin-bottom:18px;">
         <span class="card-title">Competitor Tracking</span>
-        <p style="font-size:11px;color:#334155;margin-top:3px;">Add YouTube channels to benchmark against your performance</p>
+        <p style="font-size:12px;color:#3d5270;margin-top:3px;">Add YouTube channels to benchmark against your performance</p>
       </div>
       <div class="add-competitor-row">
         <input class="add-competitor-input" id="competitor-input" placeholder="Paste a YouTube URL, @handle, or channel ID…" />
@@ -1604,7 +1612,7 @@
     <div class="card" id="compete-compare-section" style="display:none;">
       <div style="margin-bottom:18px;">
         <span class="card-title">Head-to-Head Comparison</span>
-        <p style="font-size:11px;color:#334155;margin-top:3px;">You vs competitors — all public channel data</p>
+        <p style="font-size:12px;color:#3d5270;margin-top:3px;">You vs competitors — all public channel data</p>
       </div>
       <div class="compare-bar-wrap" id="compete-compare"></div>
     </div>
@@ -1615,7 +1623,7 @@
     <div class="card">
       <div style="margin-bottom:20px;">
         <span class="card-title">Thumbnail A/B Lab</span>
-        <p style="font-size:11px;color:#334155;margin-top:3px;">Upload two thumbnails and see how they look in the YouTube feed</p>
+        <p style="font-size:12px;color:#3d5270;margin-top:3px;">Upload two thumbnails and see how they look in the YouTube feed</p>
       </div>
 
       <!-- Upload row -->
@@ -1687,7 +1695,7 @@
       <!-- YouTube grid preview -->
       <div style="margin-bottom:14px;display:flex;align-items:center;gap:12px;">
         <span class="card-title" style="font-size:14px;">YouTube Feed Preview</span>
-        <p style="font-size:11px;color:#334155;margin:0;">How your thumbnails look among real videos in the feed</p>
+        <p style="font-size:12px;color:#3d5270;margin:0;">How your thumbnails look among real videos in the feed</p>
       </div>
       <div class="yt-grid-preview" id="yt-preview-grid">
         <div style="grid-column:1/-1;color:#334155;font-size:13px;text-align:center;padding:30px;">Upload thumbnails above to see the preview</div>
@@ -1814,7 +1822,7 @@
         <div id="cdp-research-loading" style="display:none;padding:40px 24px;text-align:center;color:#475569;font-size:13px;">
           <div style="font-size:24px;margin-bottom:12px;animation:spin 1.5s linear infinite;display:inline-block;">⏳</div>
           <div>Researching your topic and building an outline…</div>
-          <div style="font-size:11px;color:#334155;margin-top:6px;">This takes 15–30 seconds.</div>
+          <div style="font-size:12px;color:#3d5270;margin-top:6px;">This takes 15–30 seconds.</div>
         </div>
         <textarea id="cdp-notes" placeholder="Your research brief and outline will appear here after you click Generate Research.&#10;&#10;You can also write your own notes here — sources, angles, key facts, what makes this interesting..."></textarea>
       </div>
@@ -1824,13 +1832,13 @@
           <span id="cdp-wordcount" style="font-size:11px;color:#475569;"></span>
           <button class="cdp-ai-btn" id="cdp-gen-script-btn" onclick="generateScript()">✨ Generate Script</button>
         </div>
-        <div id="cdp-script-hint" style="padding:0 24px 8px;font-size:11px;color:#334155;line-height:1.5;">
+        <div id="cdp-script-hint" style="padding:0 24px 8px;font-size:12px;color:#3d5270;line-height:1.5;">
           Generates from your <strong style="color:#64748b;">title</strong> + <strong style="color:#64748b;">Research notes</strong>. Fill those in first, then click Generate.
         </div>
         <div id="cdp-script-loading" style="display:none;padding:40px 24px;text-align:center;color:#475569;font-size:13px;">
           <div style="font-size:24px;margin-bottom:12px;animation:spin 1.5s linear infinite;display:inline-block;">⏳</div>
           <div>Writing your script in the Wendigoon style…</div>
-          <div style="font-size:11px;color:#334155;margin-top:6px;">This takes 30–60 seconds — Claude is doing real work here.</div>
+          <div style="font-size:12px;color:#3d5270;margin-top:6px;">This takes 30–60 seconds — Claude is doing real work here.</div>
         </div>
         <textarea id="cdp-script" placeholder="Your full script lives here.&#10;&#10;Click '✨ Generate Script' and Claude will write it in your Wendigoon style using your title and research notes.&#10;&#10;Or write it yourself — opening hook, context, main narrative, analysis, thematic synthesis, closing."></textarea>
       </div>
@@ -2299,7 +2307,7 @@ function renderLatestVideo(v) {
           <span style="font-size:10px;background:#1a2740;color:#64748b;padding:1px 7px;border-radius:20px;font-weight:600;">${age}</span>
         </div>
         <a href="${ytLink}" target="_blank" style="font-size:13px;font-weight:700;color:#f1f5f9;text-decoration:none;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35;margin-bottom:2px;">${escHtml(v.title || 'Untitled')}</a>
-        <div style="font-size:11px;color:#334155;">${fmtDateLong(v.published_at)}</div>
+        <div style="font-size:12px;color:#3d5270;">${fmtDateLong(v.published_at)}</div>
       </div>
       <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
         <div style="text-align:center;padding:0 12px;border-right:1px solid #1e2d45;">
@@ -2787,7 +2795,17 @@ async function loadTitleChanges() {
 }
 
 // ── Subscriber Growth ─────────────────────────────────────────────────────
+let _subGrowthFull = [];
+let _subGrowthDays = 30;
+
+function setSubGrowthRange(days) {
+  _subGrowthDays = days;
+  document.querySelectorAll('[data-sgrange]').forEach(b => b.classList.toggle('active', Number(b.dataset.sgrange) === days));
+  renderSubGrowth(_subGrowthFull);
+}
+
 function renderSubGrowth(history) {
+  _subGrowthFull = history || [];
   const inner = document.getElementById('sub-growth-inner');
 
   if (!history || history.length < 2) {
@@ -2802,42 +2820,70 @@ function renderSubGrowth(history) {
     return;
   }
 
+  // Filter to selected range
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - _subGrowthDays);
+  const filtered = history.filter(d => new Date(d.date) >= cutoff);
+  const data = filtered.length >= 2 ? filtered : history.slice(-Math.min(history.length, 30));
+
   destroyChart('subgrowth');
-  inner.innerHTML = '<div style="position:relative;height:200px;"><canvas id="chart-subgrowth"></canvas></div>';
+  inner.innerHTML = '<div style="position:relative;height:260px;"><canvas id="chart-subgrowth"></canvas></div>';
   const ctx = document.getElementById('chart-subgrowth').getContext('2d');
 
-  const labels = history.map(d => fmtDate(d.date));
-  const gYT = ctx.createLinearGradient(0,0,0,200);
-  gYT.addColorStop(0,'rgba(129,140,248,.2)'); gYT.addColorStop(1,'rgba(129,140,248,.0)');
-  const gIG = ctx.createLinearGradient(0,0,0,200);
-  gIG.addColorStop(0,'rgba(244,114,182,.2)'); gIG.addColorStop(1,'rgba(244,114,182,.0)');
+  const labels = data.map(d => fmtDate(d.date));
+  const gYT = ctx.createLinearGradient(0,0,0,260);
+  gYT.addColorStop(0,'rgba(129,140,248,.25)'); gYT.addColorStop(1,'rgba(129,140,248,.0)');
+  const gIG = ctx.createLinearGradient(0,0,0,260);
+  gIG.addColorStop(0,'rgba(244,114,182,.22)'); gIG.addColorStop(1,'rgba(244,114,182,.0)');
+
+  // Compute net change for title annotation
+  const ytStart = data.find(d => d.youtube)?.youtube;
+  const ytEnd   = [...data].reverse().find(d => d.youtube)?.youtube;
+  const ytDelta = (ytStart && ytEnd) ? ytEnd - ytStart : null;
 
   charts['subgrowth'] = new Chart(ctx, {
     type: 'line',
     data: {
       labels,
       datasets: [
-        { label:'YouTube Subscribers', data:history.map(d=>d.youtube||null),
-          borderColor:'#818cf8', backgroundColor:gYT, fill:true, tension:.3, pointRadius:3, borderWidth:2 },
-        { label:'Instagram Followers', data:history.map(d=>d.instagram||null),
-          borderColor:'#f472b6', backgroundColor:gIG, fill:true, tension:.3, pointRadius:3, borderWidth:2 },
+        { label:'YouTube Subscribers', data:data.map(d=>d.youtube||null),
+          borderColor:'#818cf8', backgroundColor:gYT, fill:true, tension:.4, pointRadius:2, pointHoverRadius:5, borderWidth:2.5 },
+        { label:'Instagram Followers', data:data.map(d=>d.instagram||null),
+          borderColor:'#f472b6', backgroundColor:gIG, fill:true, tension:.4, pointRadius:2, pointHoverRadius:5, borderWidth:2.5 },
       ]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
       interaction:{ mode:'index', intersect:false },
       plugins:{
-        legend:{ display:true, position:'top', labels:{color:'#64748b',font:{size:11},boxWidth:10,padding:14} },
-        tooltip:{ backgroundColor:'#0a1220', borderColor:'#1e2d45', borderWidth:1,
-          titleColor:'#64748b', bodyColor:'#e2e8f0', padding:12,
-          callbacks:{ label: c => ` ${c.dataset.label}: ${fmtNum(c.raw)}` } }
+        legend:{ display:true, position:'top', labels:{color:'#8aa0bc',font:{size:12,weight:'600'},boxWidth:10,padding:16} },
+        tooltip:{ backgroundColor:'#111e2e', borderColor:'#1a2f48', borderWidth:1,
+          titleColor:'#8aa0bc', bodyColor:'#eef2f8', padding:12,
+          callbacks:{
+            label: c => ` ${c.dataset.label}: ${fmtNum(c.raw)}`,
+            afterBody: (items) => {
+              if (items.length >= 2 && items[0].raw && items[1].raw) return '';
+              return '';
+            }
+          }
+        }
       },
       scales:{
-        x:{ grid:{color:'rgba(30,45,69,.6)'}, ticks:{color:'#475569',font:{size:11},maxTicksLimit:8} },
-        y:{ grid:{color:'rgba(30,45,69,.6)'}, ticks:{color:'#475569',font:{size:11},callback:fmtNum} }
+        x:{ grid:{color:'rgba(26,47,72,.5)'}, ticks:{color:'#3d5270',font:{size:11},maxTicksLimit:8} },
+        y:{ grid:{color:'rgba(26,47,72,.5)'}, ticks:{color:'#3d5270',font:{size:11},callback:v => fmtNum(v)} }
       }
     }
   });
+
+  // Show net change below chart
+  if (ytDelta !== null) {
+    const sign = ytDelta >= 0 ? '+' : '';
+    const col  = ytDelta >= 0 ? '#4ade80' : '#f87171';
+    inner.insertAdjacentHTML('beforeend', `
+      <div style="display:flex;gap:20px;margin-top:12px;padding-top:12px;border-top:1px solid #1a2f48;">
+        <span style="font-size:12px;color:#3d5270;">YT change (${_subGrowthDays}d): <strong style="color:${col};">${sign}${fmtNum(ytDelta)}</strong></span>
+      </div>`);
+  }
 }
 
 // ── Posts table ───────────────────────────────────────────────────────────
@@ -4998,12 +5044,19 @@ function renderThumbnails() {
   if (!grid) return;
   grid.className = `thumb-grid size-${_thumbSize}`;
 
-  if (!_thumbData.length) {
-    grid.innerHTML = `<div style="text-align:center;padding:48px;color:#334155;font-size:13px;">No thumbnails found.</div>`;
+  // Filter out Shorts (duration ≤ 60s or title/url contains "shorts")
+  const filtered = _thumbData.filter(v => {
+    if (v.duration_secs != null && v.duration_secs <= 62) return false;
+    if (/shorts/i.test(v.title || '') || /shorts/i.test(v.post_id || '')) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="text-align:center;padding:48px;color:#3d5270;font-size:13px;">No thumbnails found.</div>`;
     return;
   }
 
-  grid.innerHTML = _thumbData.map((v, i) => {
+  grid.innerHTML = filtered.map((v, i) => {
     const dotColor = v.platform === 'youtube' ? '#818cf8' : '#f472b6';
     const rank     = i + 1;
     return `
@@ -5121,18 +5174,18 @@ async function scoreThumbInModal(postId, url, title, views, er) {
 
 // ── AI Idea Generator ─────────────────────────────────────────────────────
 function parseIdeas(text) {
-  // Parse numbered ideas from the streamed text
   const ideas = [];
   const blocks = text.split(/\n(?=\d+\. )/).filter(b => b.trim());
   for (const block of blocks) {
     const lines = block.trim().split('\n');
     const titleLine = lines[0].replace(/^\d+\.\s*/, '').trim();
-    let hook = '', angle = '';
+    let hook = '', angle = '', thumbnail = '';
     for (const line of lines.slice(1)) {
       if (/^hook:/i.test(line)) hook = line.replace(/^hook:\s*/i, '').trim();
       else if (/^angle:/i.test(line)) angle = line.replace(/^angle:\s*/i, '').trim();
+      else if (/^thumbnail:/i.test(line)) thumbnail = line.replace(/^thumbnail:\s*/i, '').trim();
     }
-    if (titleLine) ideas.push({ title: titleLine, hook, angle });
+    if (titleLine) ideas.push({ title: titleLine, hook, angle, thumbnail });
   }
   return ideas;
 }
@@ -5141,14 +5194,23 @@ function renderIdeaCards(ideas) {
   const container = document.getElementById('ideas-cards');
   container.innerHTML = ideas.map((idea, i) => `
     <div class="idea-card">
-      <div class="idea-num">Idea ${i + 1}</div>
+      <div class="idea-num">Idea ${i + 1} of ${ideas.length}</div>
       <div class="idea-title">${escHtml(idea.title)}</div>
-      ${idea.hook ? `<div class="idea-label">Why it'll perform</div><div class="idea-text">${escHtml(idea.hook)}</div>` : ''}
-      ${idea.angle ? `<div class="idea-label">Storytelling angle</div><div class="idea-text">${escHtml(idea.angle)}</div>` : ''}
+      ${idea.hook ? `
+        <div class="idea-label">Why it'll perform</div>
+        <div class="idea-text">${escHtml(idea.hook)}</div>` : ''}
+      ${idea.angle ? `
+        <div class="idea-label">Storytelling angle</div>
+        <div class="idea-text">${escHtml(idea.angle)}</div>` : ''}
+      ${idea.thumbnail ? `
+        <div class="idea-label">Thumbnail concept</div>
+        <div style="background:#0d1826;border:1px solid #1a2f48;border-radius:8px;padding:10px 12px;font-size:12px;color:#8aa0bc;line-height:1.55;margin-bottom:10px;">
+          🖼 ${escHtml(idea.thumbnail)}
+        </div>` : ''}
       <div class="idea-actions">
         <button class="idea-action-btn idea-add-btn" id="idea-save-${i}" onclick="quickSaveIdea(${i}, this)">⚡ Save to Pipeline</button>
         <button class="idea-action-btn idea-copy-btn" onclick="ideaCopy(${i})">Copy title</button>
-        <button class="idea-action-btn" style="background:#1a2740;color:#64748b;" onclick="ideaAddToPipeline(${i})">Open & Edit</button>
+        <button class="idea-action-btn" style="background:#162840;color:#6a84a0;border:1px solid #1a2f48;" onclick="ideaAddToPipeline(${i})">Open &amp; Edit</button>
       </div>
     </div>`).join('');
 }

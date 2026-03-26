@@ -981,38 +981,44 @@ You are doing a deep channel analysis — look at what IS working (the top perfo
 - Include at least 2 ideas that are sequels/expansions of the highest-performing existing videos.
 ` : (angle ? `USER'S FOCUS/ANGLE: ${angle}\n` : '');
 
-    const prompt = `You are a YouTube content strategist specializing in biblical history and historical analysis channels.
+    const prompt = `You are an elite YouTube growth strategist specializing in biblical history and educational documentary channels.
 
 CHANNEL CONTEXT:
 - Channel: Nils Glenn — biblical history, ancient civilizations, historical deep-dives
-- Audience: Christians, history enthusiasts, people interested in archaeology and ancient world
-- Style: Educational, documentary-style, narrative-driven (Wendigoon-influenced)
+- Audience: Christians, history enthusiasts, archaeology buffs, people drawn to mystery and revelation
+- Style: Educational, documentary-style, narrative-driven (think Wendigoon meets Bible Project)
+- Best performing title structures: mystery/revelation format, "The [Forgotten/Hidden/Real] X", "Why X Did Y", counter-intuitive hooks
 
-TOP PERFORMING VIDEOS (by views):
+TOP PERFORMING VIDEOS (by views, engagement, and watch time):
 ${topTitles}
 
-HIGH-PERFORMING KEYWORDS: ${topKw}
+HIGH-PERFORMING KEYWORDS (avg views per use): ${topKw}
 
-RECENT UPLOADS (avoid direct repeats):
+RECENT UPLOADS (do NOT repeat these topics):
 ${recentTitles}
 
 ${channelAnalysisInstructions}
 
-Generate exactly ${count} original, high-potential YouTube video ideas for this channel. Each idea should:
-- Have a compelling, curiosity-driven title (not clickbait, but genuinely interesting)
-- Use proven keywords where natural
-- Be distinct from recent uploads
-- Include a 1-2 sentence hook explaining why it'll perform well
+TITLE PSYCHOLOGY RULES (apply to every title):
+- Lead with curiosity gap or counter-intuitive claim
+- 6-10 words is the sweet spot — longer titles underperform
+- Use power words: "secret", "real reason", "mysterious", "forgotten", "actually", "never told"
+- Avoid generic: "The History of X", "Everything About X"
+- Best structures: "Why [topic] [surprising outcome]", "The [adjective] [topic] That [result]", "The Real Reason [historical figure] [action]"
 
-Format each idea EXACTLY like this (no markdown headers, just numbered):
+Generate exactly ${count} original, high-potential YouTube video ideas for this channel.
 
-1. [TITLE]
-Hook: [why this will resonate and perform well — specific to the channel's audience]
-Angle: [unique storytelling angle or framing]
+Format each idea EXACTLY like this (no markdown, just numbered):
+
+1. [TITLE — 6-10 words, curiosity-driven]
+Hook: [1-2 sentences: why THIS audience will click and watch to the end — be specific about the emotional/intellectual payoff]
+Angle: [unique narrative framing or storytelling structure that makes this different from anything on the channel already]
+Thumbnail: [brief concept: what the thumbnail should show — text overlay, key visual element, color mood, e.g. "Split image: ancient mosaic vs modern satellite photo. Text: 'WE GOT IT WRONG'. Dark red tones."]
 
 2. [TITLE]
 Hook: [...]
 Angle: [...]
+Thumbnail: [...]
 
 (continue for all ${count} ideas)`;
 
