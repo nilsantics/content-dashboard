@@ -1,5 +1,7 @@
 require('dotenv').config();
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+const Anthropic = require('@anthropic-ai/sdk');
+const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 const express = require('express');
@@ -120,6 +122,25 @@ pool.query(`ALTER TABLE content_analytics ADD COLUMN IF NOT EXISTS channel_id TE
     }
   })
   .catch(() => {});
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS title_changes (
+    id         BIGSERIAL PRIMARY KEY,
+    post_id    TEXT NOT NULL,
+    old_title  TEXT,
+    new_title  TEXT,
+    changed_at TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('title_changes init:', err.message));
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS video_view_snapshots (
+    id          BIGSERIAL PRIMARY KEY,
+    post_id     TEXT NOT NULL,
+    views       BIGINT NOT NULL,
+    recorded_at TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('video_view_snapshots init:', err.message));
 
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
@@ -346,6 +367,318 @@ app.get('/api/latest-video', async (req, res) => {
   }
 });
 
+// ── Latest Video AI Analysis ──────────────────────────────────────────────
+app.post('/api/latest-video/analyze', async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: 'ANTHROPIC_API_KEY not set' });
+  try {
+    const chCond = getChannelCond();
+    const [vidR, channelR] = await Promise.all([
+      pool.query(`
+        SELECT ca.post_id, ca.title, ca.published_at,
+               COALESCE(ca.views, 0) AS views,
+               COALESCE(ca.likes, 0) AS likes,
+               COALESCE(ca.comments, 0) AS comments,
+               ca.avg_view_duration, ca.watch_time_minutes,
+               COALESCE(ca.engagement_rate, 0) AS engagement_rate
+        FROM content_analytics ca
+        WHERE ca.platform = 'youtube' ${chCond}
+        ORDER BY ca.published_at DESC NULLS LAST LIMIT 1
+      `),
+      pool.query(`
+        SELECT
+          ROUND(AVG(NULLIF(views, 0)))::bigint              AS avg_views,
+          ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(views,0)))::bigint AS median_views,
+          ROUND(AVG(NULLIF(engagement_rate,0))::numeric,2)  AS avg_er,
+          COUNT(*)::int                                      AS total_videos,
+          ROUND(AVG(NULLIF(avg_view_duration,0)))::int       AS avg_avd,
+          MAX(views)::bigint                                 AS best_views
+        FROM content_analytics
+        WHERE platform = 'youtube' ${chCond}
+      `),
+    ]);
+
+    if (!vidR.rows.length) return res.status(404).json({ error: 'No video found' });
+    const v = vidR.rows[0];
+    const ch = channelR.rows[0];
+
+    const diffDays = Math.floor((Date.now() - new Date(v.published_at)) / 86400000);
+    const vsAvg    = ch.avg_views > 0 ? Math.round((v.views / ch.avg_views) * 100) : null;
+    const vsMedian = ch.median_views > 0 ? Math.round((v.views / ch.median_views) * 100) : null;
+
+    const prompt = `You are an expert YouTube growth strategist. Analyze this video for Nils Glenn's biblical history channel. Be brief and direct.
+
+VIDEO: "${v.title}"
+Age: ${diffDays === 0 ? 'Today' : diffDays === 1 ? '1 day ago' : `${diffDays} days ago`} | Views: ${Number(v.views).toLocaleString()} | vs Channel Median: ${vsMedian !== null ? vsMedian + '%' : 'N/A'}
+Likes: ${Number(v.likes).toLocaleString()} | Comments: ${Number(v.comments).toLocaleString()} | ER: ${v.engagement_rate}% (channel avg: ${ch.avg_er}%)
+Avg View Duration: ${v.avg_view_duration ? `${Math.floor(v.avg_view_duration/60)}m ${v.avg_view_duration%60}s` : 'N/A'} (channel avg: ${ch.avg_avd ? `${Math.floor(ch.avg_avd/60)}m ${ch.avg_avd%60}s` : 'N/A'})
+
+Respond in EXACTLY this format — short, punchy, no fluff:
+
+VERDICT: [One sentence. Over/under/on-track vs channel median and why it matters given video age.]
+
+WHY:
+• [Reason 1 — specific to title/topic/search]
+• [Reason 2 — specific to engagement rate data]
+• [Reason 3 — specific to view duration signal]
+
+DO THIS NOW: [One specific action to take today — thumbnail test, pinned comment, community post, clip for Shorts, etc.]
+
+NEXT TIME:
+• [Concrete change for next video]
+• [Concrete change for next video]`;
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    res.setHeader('Cache-Control', 'no-cache');
+
+    const stream = await anthropic.messages.stream({
+      model: 'claude-opus-4-6',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
+        res.write(chunk.delta.text);
+      }
+    }
+    res.end();
+  } catch (err) {
+    if (!res.headersSent) res.status(500).json({ error: err.message });
+    else res.end();
+  }
+});
+
+// ── Title Change History ──────────────────────────────────────────────────
+app.get('/api/title-changes', async (req, res) => {
+  try {
+    const chCond = getChannelCond();
+    const r = await pool.query(`
+      SELECT tc.post_id, tc.old_title, tc.new_title, tc.changed_at,
+             ca.thumbnail_url, ca.views AS current_views, ca.published_at
+      FROM title_changes tc
+      LEFT JOIN content_analytics ca ON ca.post_id = tc.post_id
+      WHERE ca.platform = 'youtube' ${chCond}
+      ORDER BY tc.changed_at DESC
+      LIMIT 20
+    `);
+    res.json(r.rows);
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Video View Velocity (for title change graph) ──────────────────────────
+app.get('/api/video-velocity/:postId', async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const [snapsR, changesR] = await Promise.all([
+      pool.query(`
+        SELECT TO_CHAR(DATE(recorded_at),'YYYY-MM-DD') AS date, MAX(views) AS views
+        FROM video_view_snapshots WHERE post_id=$1
+        GROUP BY DATE(recorded_at) ORDER BY DATE(recorded_at)
+      `, [postId]),
+      pool.query(`
+        SELECT old_title, new_title, TO_CHAR(DATE(changed_at),'YYYY-MM-DD') AS date
+        FROM title_changes WHERE post_id=$1 ORDER BY changed_at
+      `, [postId]),
+    ]);
+    res.json({ snapshots: snapsR.rows, changes: changesR.rows });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Per-Video AI Analysis ─────────────────────────────────────────────────
+app.post('/api/video/:postId/analyze', async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: 'ANTHROPIC_API_KEY not set' });
+  try {
+    const chCond = getChannelCond();
+    const [vidR, channelR] = await Promise.all([
+      pool.query(`
+        SELECT post_id, title, published_at,
+               COALESCE(views,0) AS views, COALESCE(likes,0) AS likes,
+               COALESCE(comments,0) AS comments, avg_view_duration, watch_time_minutes,
+               COALESCE(engagement_rate,0) AS engagement_rate
+        FROM content_analytics WHERE post_id=$1
+      `, [req.params.postId]),
+      pool.query(`
+        SELECT ROUND(AVG(NULLIF(views,0)))::bigint AS avg_views,
+               ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY NULLIF(views,0)))::bigint AS median_views,
+               ROUND(AVG(NULLIF(engagement_rate,0))::numeric,2) AS avg_er,
+               ROUND(AVG(NULLIF(avg_view_duration,0)))::int AS avg_avd
+        FROM content_analytics WHERE platform='youtube' ${chCond}
+      `),
+    ]);
+    if (!vidR.rows.length) return res.status(404).json({ error: 'Video not found' });
+    const v = vidR.rows[0];
+    const ch = channelR.rows[0];
+    const diffDays = Math.floor((Date.now() - new Date(v.published_at)) / 86400000);
+    const vsMedian = ch.median_views > 0 ? Math.round((v.views / ch.median_views) * 100) : null;
+
+    const prompt = `You are an expert YouTube growth strategist. Analyze this video's performance for Nils Glenn's channel (biblical history, ancient civilizations, Wendigoon-style).
+
+VIDEO: "${v.title}"
+Published: ${diffDays} days ago
+Views: ${Number(v.views).toLocaleString()} (${vsMedian !== null ? vsMedian + '% of channel median' : 'vs median N/A'})
+Likes: ${Number(v.likes).toLocaleString()} | Comments: ${Number(v.comments).toLocaleString()}
+Engagement Rate: ${v.engagement_rate}% (channel avg: ${ch.avg_er}%)
+Avg View Duration: ${v.avg_view_duration ? `${Math.floor(v.avg_view_duration/60)}m ${v.avg_view_duration%60}s` : 'N/A'} (channel avg: ${ch.avg_avd ? `${Math.floor(ch.avg_avd/60)}m ${ch.avg_avd%60}s` : 'N/A'})
+Watch Time: ${v.watch_time_minutes ? Number(v.watch_time_minutes).toLocaleString() + ' min' : 'N/A'}
+
+Write a sharp, specific analysis:
+
+**Verdict** — one sentence on how this video is performing vs channel norms.
+
+**Why** — 3 specific data-driven reasons (title, topic, engagement, retention signals).
+
+**Best Move Right Now** — one concrete action to boost this specific video today.
+
+**Lesson For Next Time** — 2 things to do differently based on what this video reveals.
+
+Be direct. Be specific. No fluff.`;
+
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
+    const stream = await anthropic.messages.stream({
+      model: 'claude-opus-4-6', max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    for await (const chunk of stream) {
+      if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') res.write(chunk.delta.text);
+    }
+    res.end();
+  } catch(err) { if (!res.headersSent) res.status(500).json({ error: err.message }); else res.end(); }
+});
+
+// ── Thumbnail AI Score ────────────────────────────────────────────────────
+app.post('/api/thumbnail/score', express.json(), async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: 'ANTHROPIC_API_KEY not set' });
+  const { url, base64: b64Input, mimeType: mimeInput, title, views, engagementRate } = req.body;
+  if (!url && !b64Input) return res.status(400).json({ error: 'url or base64 required' });
+  try {
+    let base64, mimeType;
+    if (b64Input) {
+      base64 = b64Input;
+      mimeType = mimeInput || 'image/jpeg';
+    } else {
+      const imgResp = await fetch(url);
+      if (!imgResp.ok) return res.status(400).json({ error: 'Could not fetch image' });
+      const buffer = await imgResp.arrayBuffer();
+      base64 = Buffer.from(buffer).toString('base64');
+      mimeType = imgResp.headers.get('content-type') || 'image/jpeg';
+    }
+
+    const prompt = `You are a YouTube thumbnail expert. Analyze this thumbnail for Nils Glenn's biblical history channel.
+
+Video title: "${title || 'Unknown'}"
+${views ? `Views: ${Number(views).toLocaleString()}` : ''}
+${engagementRate ? `Engagement rate: ${engagementRate}%` : ''}
+
+Score this thumbnail on each dimension (1-10) and give brief specific feedback:
+
+**Clarity** (X/10) — can you instantly tell what this is about at 50px?
+**Curiosity Gap** (X/10) — does it make you NEED to click?
+**Text** (X/10) — is the text readable, well-sized, high contrast? (N/A if no text)
+**Faces/Emotion** (X/10) — if faces present, are they expressive and well-composed?
+**Color/Contrast** (X/10) — does it pop against YouTube's white/dark backgrounds?
+
+**Overall Score: X/10**
+
+**The One Thing To Change** — the single highest-impact improvement for this specific thumbnail.
+
+Be specific to what's actually in the image. No generic advice.`;
+
+    const msg = await anthropic.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: 600,
+      messages: [{
+        role: 'user',
+        content: [{
+          type: 'image',
+          source: { type: 'base64', media_type: mimeType, data: base64 },
+        }, {
+          type: 'text', text: prompt,
+        }],
+      }],
+    });
+    res.json({ analysis: msg.content[0].text });
+  } catch(err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Comment Theme Analysis ────────────────────────────────────────────────
+app.post('/api/comments/themes', express.json(), async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: 'ANTHROPIC_API_KEY not set' });
+  const { comments } = req.body;
+  if (!comments?.length) return res.status(400).json({ error: 'No comments provided' });
+
+  const commentText = comments.slice(0, 100).map((c, i) => `${i+1}. "${c.text}"`).join('\n');
+
+  const prompt = `You are analyzing YouTube comments for Nils Glenn's biblical history channel. Here are ${Math.min(comments.length, 100)} comments:
+
+${commentText}
+
+Identify 5-7 distinct themes or patterns in these comments. For each theme:
+
+**Theme Name** — X comments
+What people are saying: [1-2 sentence summary]
+Example: "[quote from an actual comment above]"
+Action: [what this tells Nils he should do more/less of]
+
+End with:
+
+**Biggest Opportunity**: [one sentence — the clearest signal in these comments about what the audience wants]
+**Content Request Pattern**: [the most requested topic or video type]`;
+
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.setHeader('Transfer-Encoding', 'chunked');
+  try {
+    const stream = await anthropic.messages.stream({
+      model: 'claude-opus-4-6', max_tokens: 1200,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    for await (const chunk of stream) {
+      if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') res.write(chunk.delta.text);
+    }
+    res.end();
+  } catch(err) { if (!res.headersSent) res.status(500).json({ error: err.message }); else res.end(); }
+});
+
+// ── Lab Filler Thumbnails (other creators via YouTube Search) ─────────────
+app.get('/api/lab-fillers', async (req, res) => {
+  try {
+    const apiKey = process.env.YOUTUBE_API_KEY;
+    const channelId = (process.env.YOUTUBE_CHANNEL_ID || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!apiKey) return res.json([]);
+    // Search for videos from popular creators doing well on YouTube
+    const queries = ['MrBeast', 'Ryan Trahan', 'Wendigoon', 'Oompaville', 'Mark Rober', 'Veritasium'];
+    const q = queries[Math.floor(Math.random() * queries.length)];
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(q)}&type=video&maxResults=20&order=viewCount&videoDuration=medium&key=${apiKey}`;
+    const data = await fetch(url).then(r => r.json());
+    if (data.error) return res.json([]);
+    const candidates = (data.items || [])
+      .filter(item => item.snippet.channelId !== channelId)
+      .filter(item => item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url);
+
+    // Fetch view counts via Videos API (Search API doesn't return statistics)
+    const videoIds = candidates.map(i => i.id.videoId).filter(Boolean).join(',');
+    let statsMap = {};
+    if (videoIds) {
+      const statsData = await fetch(
+        `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${videoIds}&key=${apiKey}`
+      ).then(r => r.json()).catch(() => ({}));
+      for (const v of statsData.items || []) {
+        statsMap[v.id] = parseInt(v.statistics?.viewCount || 0, 10);
+      }
+    }
+
+    const fillers = candidates.map(item => ({
+      thumbnail_url: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url,
+      title: item.snippet.title,
+      channelName: item.snippet.channelTitle,
+      videoId: item.id.videoId,
+      views: statsMap[item.id.videoId] || null,
+    }));
+    res.json(fillers);
+  } catch(err) { res.json([]); }
+});
+
 app.get('/api/followers', async (req, res) => {
   try {
     const platform  = req.query.platform || 'all';
@@ -360,6 +693,19 @@ app.get('/api/followers', async (req, res) => {
     const ytN = parseInt(yt.items?.[0]?.statistics?.subscriberCount || 0);
     const value = platform === 'instagram' ? igN : platform === 'youtube' ? ytN : igN + ytN;
     res.json({ value, instagram: igN, youtube: ytN });
+
+    // Auto-save a daily snapshot for growth tracking (at most once per day)
+    const today = new Date().toISOString().split('T')[0];
+    pool.query(
+      `SELECT 1 FROM subscriber_snapshots WHERE DATE(recorded_at) = $1 LIMIT 1`, [today]
+    ).then(r => {
+      if (!r.rows.length && (ytN > 0 || igN > 0)) {
+        pool.query(
+          `INSERT INTO subscriber_snapshots (platform, count) VALUES ('youtube',$1),('instagram',$2)`,
+          [ytN, igN]
+        ).catch(() => {});
+      }
+    }).catch(() => {});
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -571,7 +917,6 @@ app.get('/api/thumbnails', async (req, res) => {
 });
 
 // ── AI Idea Generator ─────────────────────────────────────────────────────
-const Anthropic = require('@anthropic-ai/sdk');
 
 app.post('/api/ideas/generate', express.json(), async (req, res) => {
   try {
@@ -579,15 +924,15 @@ app.post('/api/ideas/generate', express.json(), async (req, res) => {
       return res.status(400).json({ error: 'ANTHROPIC_API_KEY not set in .env' });
     }
 
-    const { angle = '', count = 8 } = req.body;
+    const { angle = '', count = 8, channelAnalysis = false } = req.body;
 
     // Pull context from DB
     const [topR, kwR, recentR] = await Promise.all([
       pool.query(`
-        SELECT title, views, likes, engagement_rate, platform, published_at
+        SELECT title, views, likes, engagement_rate, avg_view_duration, watch_time_minutes, published_at
         FROM content_analytics
         WHERE platform = 'youtube' AND title IS NOT NULL
-        ORDER BY views DESC LIMIT 20
+        ORDER BY views DESC LIMIT 30
       `),
       pool.query(`
         SELECT title, views FROM content_analytics
@@ -602,7 +947,8 @@ app.post('/api/ideas/generate', express.json(), async (req, res) => {
     ]);
 
     const topTitles = topR.rows.map(r =>
-      `"${r.title}" — ${Number(r.views).toLocaleString()} views, ${r.engagement_rate}% ER`
+      `"${r.title}" — ${Number(r.views).toLocaleString()} views, ${r.engagement_rate}% ER` +
+      (r.avg_view_duration ? `, ${Math.round(r.avg_view_duration/60)}m avg view` : '')
     ).join('\n');
 
     const recentTitles = recentR.rows.map(r => `"${r.title}"`).join('\n');
@@ -625,12 +971,22 @@ app.post('/api/ideas/generate', express.json(), async (req, res) => {
       .map(([w,v]) => `${w} (avg ${Math.round(v.total/v.count).toLocaleString()} views)`)
       .join(', ');
 
+    // Channel analysis mode: deeper pattern analysis
+    const channelAnalysisInstructions = channelAnalysis ? `
+You are doing a deep channel analysis — look at what IS working (the top performers) and identify the PATTERNS:
+- What title structures perform best? (e.g. "The X That Y", "Why X Did Y", mystery/revelation format)
+- What topics consistently get high view duration vs just views?
+- What's the biggest gap — what topics are clearly in the channel's lane but haven't been done yet?
+- Generate ideas that are DIRECT extensions of proven winners, not just generic biblical history topics.
+- Include at least 2 ideas that are sequels/expansions of the highest-performing existing videos.
+` : (angle ? `USER'S FOCUS/ANGLE: ${angle}\n` : '');
+
     const prompt = `You are a YouTube content strategist specializing in biblical history and historical analysis channels.
 
 CHANNEL CONTEXT:
 - Channel: Nils Glenn — biblical history, ancient civilizations, historical deep-dives
 - Audience: Christians, history enthusiasts, people interested in archaeology and ancient world
-- Style: Educational, documentary-style, narrative-driven
+- Style: Educational, documentary-style, narrative-driven (Wendigoon-influenced)
 
 TOP PERFORMING VIDEOS (by views):
 ${topTitles}
@@ -640,7 +996,7 @@ HIGH-PERFORMING KEYWORDS: ${topKw}
 RECENT UPLOADS (avoid direct repeats):
 ${recentTitles}
 
-${angle ? `USER'S FOCUS/ANGLE: ${angle}\n` : ''}
+${channelAnalysisInstructions}
 
 Generate exactly ${count} original, high-potential YouTube video ideas for this channel. Each idea should:
 - Have a compelling, curiosity-driven title (not clickbait, but genuinely interesting)
@@ -765,15 +1121,21 @@ app.get('/api/comments', async (req, res) => {
     const maxResults = Math.min(parseInt(req.query.limit) || 100, 100);
     const order      = ['time', 'relevance'].includes(req.query.order) ? req.query.order : 'time';
     const videoId    = req.query.videoId || null;
+    const pageToken  = req.query.pageToken || null;
+    // For most-liked: fetch multiple pages then sort client-side via relevance order
+    const pages      = Math.min(parseInt(req.query.pages) || 1, 5); // up to 5 pages = 500 comments
 
-    let url;
-    if (videoId) {
-      url = `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=${maxResults}&order=${order}&key=${apiKey}`;
-    } else {
-      url = `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&allThreadsRelatedToChannelId=${channelId}&maxResults=${maxResults}&order=${order}&key=${apiKey}`;
-    }
+    const fetchPage = async (token) => {
+      // Note: YouTube API does NOT support `order` for allThreadsRelatedToChannelId — only for videoId
+      const base = videoId
+        ? `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=${maxResults}&order=${order}&key=${apiKey}`
+        : `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&allThreadsRelatedToChannelId=${channelId}&maxResults=${maxResults}&key=${apiKey}`;
+      const url = token ? `${base}&pageToken=${encodeURIComponent(token)}` : base;
+      return fetch(url).then(r => r.json());
+    };
 
-    const data = await fetch(url).then(r => r.json());
+    // Fetch first page (or specific page if pageToken given)
+    const data = await fetchPage(pageToken);
     if (data.error) return res.status(400).json({ error: data.error.message });
 
     const stripYTHtml = s => (s || '').replace(/<[^>]*>/g, ' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&apos;/g,"'").replace(/&nbsp;/g,' ').replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n))).replace(/\s+/g,' ').trim();
@@ -810,10 +1172,15 @@ pool.query(`
   )
 `).catch(err => console.warn('pipeline_cards init:', err.message));
 
+// Add script/hook columns if not present
+pool.query(`ALTER TABLE pipeline_cards ADD COLUMN IF NOT EXISTS script TEXT`).catch(() => {});
+pool.query(`ALTER TABLE pipeline_cards ADD COLUMN IF NOT EXISTS hook TEXT`).catch(() => {});
+pool.query(`ALTER TABLE pipeline_cards ADD COLUMN IF NOT EXISTS linked_post_id TEXT`).catch(() => {});
+
 app.get('/api/pipeline', async (req, res) => {
   try {
     const r = await pool.query(`
-      SELECT id, stage, title, notes, platform,
+      SELECT id, stage, title, notes, script, hook, linked_post_id, platform,
              TO_CHAR(target_date, 'YYYY-MM-DD') AS target_date,
              sort_order, created_at
       FROM pipeline_cards
@@ -837,18 +1204,22 @@ app.post('/api/pipeline', express.json(), async (req, res) => {
 
 app.put('/api/pipeline/:id', express.json(), async (req, res) => {
   try {
-    const { title, stage, notes, platform, target_date, sort_order } = req.body;
+    const { title, stage, notes, script, hook, linked_post_id, platform, target_date, sort_order } = req.body;
     const r = await pool.query(`
       UPDATE pipeline_cards
-      SET title       = COALESCE($1, title),
-          stage       = COALESCE($2, stage),
-          notes       = COALESCE($3, notes),
-          platform    = COALESCE($4, platform),
-          target_date = COALESCE($5::date, target_date),
-          sort_order  = COALESCE($6, sort_order),
-          updated_at  = NOW()
-      WHERE id = $7 RETURNING *
-    `, [title, stage, notes, platform, target_date || null, sort_order ?? null, req.params.id]);
+      SET title          = COALESCE($1, title),
+          stage          = COALESCE($2, stage),
+          notes          = COALESCE($3, notes),
+          platform       = COALESCE($4, platform),
+          target_date    = COALESCE($5::date, target_date),
+          sort_order     = COALESCE($6, sort_order),
+          script         = COALESCE($7, script),
+          hook           = COALESCE($8, hook),
+          linked_post_id = COALESCE($9, linked_post_id),
+          updated_at     = NOW()
+      WHERE id = $10 RETURNING *
+    `, [title, stage, notes, platform, target_date || null, sort_order ?? null,
+        script ?? null, hook ?? null, linked_post_id ?? null, req.params.id]);
     if (!r.rows.length) return res.status(404).json({ error: 'not found' });
     res.json(r.rows[0]);
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -858,6 +1229,154 @@ app.delete('/api/pipeline/:id', async (req, res) => {
   try {
     await pool.query('DELETE FROM pipeline_cards WHERE id = $1', [req.params.id]);
     res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── AI Script & Hook Generation ───────────────────────────────────────────
+const WENDIGOON_SYSTEM_PROMPT = `You are writing scripts for Nils Glenn, a YouTube creator who makes long-form educational videos about theology, church history, and biblical topics. You are NOT Wendigoon — Wendigoon is a different creator whose storytelling style Nils uses as a framework. Write in Nils's first-person voice, as if Nils is speaking to his audience about his own genuine curiosity and research into these topics.
+
+The Wendigoon framework below describes the STYLE and STRUCTURE to use — the conversational delivery, narrative pacing, research-as-storytelling approach, strategic information control, and thematic depth. Apply all of it, but the voice, perspective, and "I" in the script is Nils Glenn, not Wendigoon.
+
+STYLE FRAMEWORK (apply to Nils's voice):
+
+CORE PRINCIPLES:
+- CONVERSATIONAL INTIMACY: Write as if speaking to a friend, not lecturing. Use contractions, self-corrections, tangents. Include phrases like "Think about it," "Here's the thing," "And look..." Never sound like a textbook.
+- RESEARCH AS STORYTELLING: Show detective work. Use "Now, if we look at..." or "According to..." Acknowledge uncertainty. Present competing theories fairly.
+- STRATEGIC INFORMATION CONTROL: Plant seeds early ("Keep this in mind for later..."). Withhold key info to build anticipation. Circle back with new significance.
+- DEPTH OVER BREADTH: Connect to broader cultural, literary, or philosophical concepts. Ask "what does this reveal about human nature?" End with meaning, not just information.
+
+STRUCTURAL TEMPLATE:
+OPENING (1-2 min): Hook with a question or mystery. Personal connection. Stakes. Roadmap.
+CONTEXT (10-20%): "So, to understand [subject], we first need to talk about [background]."
+MAIN NARRATIVE (50-60%): Begin chronologically or in medias res. Build through careful information control.
+ANALYSIS (15-25%): "So, when you put it all together, here's what we know:" Review evidence. Give your conclusion.
+THEMATIC SYNTHESIS (5-10%): "But what makes this [adjective] is [deeper theme]." Connect to universal human themes.
+CLOSING (30-60s): Brief summary. Personal reflection. Call to action.
+
+LANGUAGE PATTERNS:
+- Conversational connectors: "And look..." / "Here's the thing..." / "Now, you might be thinking..." / "I mean..." / "Right?"
+- Self-interruption: "The scientist takes him to the cave and—and this is important—he's been planning this."
+- Building anticipation: "Keep that in mind..." / "We'll come back to this..." / "Hold that thought..."
+- Delivering payoff: "Remember when I mentioned...?" / "This is where it all comes together..."
+
+WRITING RULES:
+- Write in complete paragraphs as if speaking—never bullet points in the spoken script
+- Vary sentence length: short for impact, long for explanation
+- Include self-aware asides: "I know this is getting complicated" / "Stay with me here"
+- Show genuine emotional reactions to the material
+- Use specific concrete details, not generalizations
+- End major sections with forward momentum toward what's coming next
+- Final line should be WHY IT MATTERS, not just WHAT HAPPENED
+
+REPLACE formal with conversational: never use "subsequently," "therefore," "it is evident that"—use "and then," "so," "you can see that"`;
+
+// Generate research + outline from a topic
+app.post('/api/pipeline/:id/ai-research', express.json(), async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: 'ANTHROPIC_API_KEY not set' });
+  const cardId = parseInt(req.params.id, 10);
+  if (!cardId || isNaN(cardId)) return res.status(400).json({ error: 'Invalid card ID — add a title to your card first.' });
+  try {
+    const row = await pool.query('SELECT title FROM pipeline_cards WHERE id = $1', [cardId]);
+    if (!row.rows.length) return res.status(404).json({ error: 'not found' });
+    const topic = req.body.topic || row.rows[0].title;
+    const userMsg = `Nils Glenn is making a YouTube video about: "${topic}"
+
+Generate a research brief and video outline for this topic. Format it as:
+
+## What Makes This Interesting
+2-3 sentences on the surprising or counterintuitive angle that would hook an audience.
+
+## Key Facts & Background
+The essential context and research a viewer needs — sources, historical details, theological background, key figures, dates, competing interpretations.
+
+## The Central Question / Mystery
+What is the core question this video answers? What tension or mystery drives it?
+
+## Potential Angles / Thesis Options
+3 different ways Nils could frame this video — different theses or angles he could take.
+
+## Suggested Video Outline
+A section-by-section outline following the Wendigoon structure (Opening hook, Context, Main Narrative, Analysis, Thematic Synthesis, Closing) — specific to this topic.
+
+## Thematic Depth
+What does this topic reveal about human nature, faith, or the broader human experience? What's the "why it matters" for the end of the video?
+
+Be specific and substantive — this is actual research, not generic suggestions.`;
+
+    const msg = await anthropic.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: 6000,
+      system: WENDIGOON_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userMsg }],
+    });
+    const notes = msg.content[0].text;
+    await pool.query('UPDATE pipeline_cards SET notes = $1, title = $2, updated_at = NOW() WHERE id = $3',
+      [notes, topic, cardId]);
+    res.json({ notes, topic });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Generate full script from research/outline
+app.post('/api/pipeline/:id/ai-script', express.json(), async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: 'ANTHROPIC_API_KEY not set' });
+  const cardId = parseInt(req.params.id, 10);
+  if (!cardId || isNaN(cardId)) return res.status(400).json({ error: 'Invalid card ID — add a title to your card first.' });
+  try {
+    const row = await pool.query('SELECT title, notes FROM pipeline_cards WHERE id = $1', [cardId]);
+    if (!row.rows.length) return res.status(404).json({ error: 'not found' });
+    const { title, notes } = row.rows[0];
+    const userMsg = `Write a complete YouTube script for Nils Glenn's video titled: "${title}"${notes ? `\n\nResearch brief and outline:\n${notes}` : ''}
+
+Write the FULL script in Nils's first-person voice — every word he will say, from the opening hook all the way through to the closing call to action. Follow the Wendigoon structural template: opening hook (1-2 min), context section, main narrative, analysis, thematic synthesis, closing. Write it as a spoken monologue — conversational, curious, research-driven, theologically grounded. Do not summarize or outline — write every sentence of the actual script. Do not stop until the script is complete.`;
+
+    const msg = await anthropic.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: 8000,
+      system: WENDIGOON_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userMsg }],
+    });
+    const script = msg.content[0].text;
+    await pool.query('UPDATE pipeline_cards SET script = $1, updated_at = NOW() WHERE id = $2', [script, req.params.id]);
+    res.json({ script });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// Generate 3 viral intro options
+app.post('/api/pipeline/:id/ai-hooks', express.json(), async (req, res) => {
+  if (!anthropic) return res.status(503).json({ error: 'ANTHROPIC_API_KEY not set' });
+  const cardId = parseInt(req.params.id, 10);
+  if (!cardId || isNaN(cardId)) return res.status(400).json({ error: 'Invalid card ID — add a title to your card first.' });
+  try {
+    const row = await pool.query('SELECT title, notes, script FROM pipeline_cards WHERE id = $1', [cardId]);
+    if (!row.rows.length) return res.status(404).json({ error: 'not found' });
+    const { title, notes, script } = row.rows[0];
+    const context = script ? `Full script (first 2000 chars):\n${script.slice(0, 2000)}` : notes ? `Research brief:\n${notes.slice(0, 1500)}` : '';
+    const userMsg = `Write 3 different viral YouTube video intros for Nils Glenn's video: "${title}"${context ? `\n\n${context}` : ''}
+
+Each intro is a complete, spoken opening — everything Nils says in the first 60-90 seconds before getting into the main content. These are full paragraphs of actual script, not just a hook sentence.
+
+Format each one as:
+
+---
+**INTRO 1: [Name the strategy, e.g. "The Counterintuitive Claim"]**
+
+[Full spoken intro — 150-250 words, written as Nils would actually say it. Conversational, curious, builds intrigue. Ends with a clear transition into the video.]
+
+**Why this works:** [1-2 sentences on the psychological/retention strategy]
+
+---
+
+Make each intro meaningfully different — different opening strategies, different emotional tones, different ways into the topic. All three should be genuinely strong options Nils could use.`;
+
+    const msg = await anthropic.messages.create({
+      model: 'claude-opus-4-6',
+      max_tokens: 2500,
+      system: WENDIGOON_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userMsg }],
+    });
+    const hook = msg.content[0].text;
+    await pool.query('UPDATE pipeline_cards SET hook = $1, updated_at = NOW() WHERE id = $2', [hook, req.params.id]);
+    res.json({ hook });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -885,8 +1404,17 @@ async function syncYouTube(log, userChannelId, userRefreshToken) {
   const channelId = userChannelId || process.env.YOUTUBE_CHANNEL_ID;
   if (!apiKey || !channelId) throw new Error('Missing YOUTUBE_API_KEY or YOUTUBE_CHANNEL_ID');
 
-  log('Getting YouTube access token…');
-  const accessToken = await getYTAccessToken(userRefreshToken || null);
+  // OAuth is optional — only needed for YouTube Analytics (impressions, CTR, watch time)
+  const hasOAuth = GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET &&
+                   (userRefreshToken || process.env.GOOGLE_REFRESH_TOKEN);
+  let accessToken = null;
+  if (hasOAuth) {
+    log('Getting YouTube access token…');
+    try { accessToken = await getYTAccessToken(userRefreshToken || null); }
+    catch(e) { log('OAuth token failed, proceeding without Analytics: ' + e.message); }
+  } else {
+    log('No OAuth credentials — syncing basic stats only (views/likes/comments).');
+  }
 
   // 1. Get uploads playlist ID
   log('Fetching channel uploads playlist…');
@@ -919,26 +1447,27 @@ async function syncYouTube(log, userChannelId, userRefreshToken) {
   }
   log(`Fetched details for ${Object.keys(videoDetails).length} videos.`);
 
-  // 4. Fetch YouTube Analytics (per-video metrics, all time)
-  const today  = new Date().toISOString().split('T')[0];
-  const analyticsUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DMINE&dimensions=video&metrics=views,estimatedMinutesWatched,averageViewDuration,impressions,impressionClickThroughRate&startDate=2020-01-01&endDate=${today}&maxResults=200&sort=-views`;
-  const anR = await fetch(analyticsUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
-  const anData = await anR.json();
-
+  // 4. Fetch YouTube Analytics (per-video: impressions, CTR, watch time) — requires OAuth
   const analyticsMap = {};
-  if (anData.rows) {
-    anData.rows.forEach(row => {
-      // columns: video, views, estimatedMinutesWatched, averageViewDuration, impressions, impressionClickThroughRate
-      analyticsMap[row[0]] = {
-        views:               Number(row[1]),
-        watch_time_minutes:  Number(row[2]),
-        avg_view_duration:   Math.round(Number(row[3])),
-        yt_impressions:      Number(row[4]),
-        ctr:                 Number((row[5] * 100).toFixed(3)),
-      };
-    });
+  if (accessToken) {
+    const today  = new Date().toISOString().split('T')[0];
+    const analyticsUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DMINE&dimensions=video&metrics=views,estimatedMinutesWatched,averageViewDuration&startDate=2020-01-01&endDate=${today}&maxResults=200&sort=-views`;
+    const anR = await fetch(analyticsUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const anData = await anR.json();
+    if (anData.rows) {
+      anData.rows.forEach(row => {
+        // columns: video, views, estimatedMinutesWatched, averageViewDuration
+        analyticsMap[row[0]] = {
+          views:              Number(row[1]),
+          watch_time_minutes: Number(row[2]),
+          avg_view_duration:  Math.round(Number(row[3])),
+        };
+      });
+    }
+    log(`Got analytics for ${Object.keys(analyticsMap).length} videos.`);
+  } else {
+    log('Skipping YouTube Analytics API (no OAuth) — impressions/CTR/watch-time will be empty.');
   }
-  log(`Got analytics for ${Object.keys(analyticsMap).length} videos.`);
 
   // 5. Upsert into content_analytics
   let upserted = 0;
@@ -952,6 +1481,23 @@ async function syncYouTube(log, userChannelId, userRefreshToken) {
     const likes   = Number(stat.likeCount    || 0);
     const comments = Number(stat.commentCount || 0);
     const er = views > 0 ? Number(((likes + comments) / views * 100).toFixed(2)) : 0;
+
+    // Detect title/thumbnail changes and save view snapshot
+    try {
+      const existing = await pool.query('SELECT title, thumbnail_url, views FROM content_analytics WHERE post_id = $1', [vid]);
+      if (existing.rows.length) {
+        const ex = existing.rows[0];
+        if (ex.title && ex.title !== snip.title) {
+          await pool.query('INSERT INTO title_changes (post_id, old_title, new_title) VALUES ($1,$2,$3)', [vid, ex.title, snip.title]);
+        }
+        // Save view snapshot (once per day max)
+        const today = new Date().toISOString().split('T')[0];
+        const snapExists = await pool.query('SELECT 1 FROM video_view_snapshots WHERE post_id=$1 AND DATE(recorded_at)=$2', [vid, today]);
+        if (!snapExists.rows.length) {
+          await pool.query('INSERT INTO video_view_snapshots (post_id, views) VALUES ($1,$2)', [vid, views]);
+        }
+      }
+    } catch(e) { /* non-fatal */ }
 
     await pool.query(`
       INSERT INTO content_analytics
@@ -973,21 +1519,24 @@ async function syncYouTube(log, userChannelId, userRefreshToken) {
     upserted++;
   }
 
-  // 6. Fetch daily analytics (last 90 days)
-  const d90 = new Date(); d90.setDate(d90.getDate() - 90);
-  const startDate = d90.toISOString().split('T')[0];
-  const dailyUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DMINE&dimensions=day&metrics=views,likes,comments,estimatedMinutesWatched&startDate=${startDate}&endDate=${today}`;
-  const dailyR = await fetch(dailyUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
-  const dailyData = await dailyR.json();
-  if (dailyData.rows) {
-    for (const row of dailyData.rows) {
-      await pool.query(`
-        INSERT INTO daily_analytics (platform, date, views, likes, comments, watch_minutes)
-        VALUES ('youtube',$1,$2,$3,$4,$5)
-        ON CONFLICT (platform, date) DO UPDATE SET
-          views=EXCLUDED.views, likes=EXCLUDED.likes,
-          comments=EXCLUDED.comments, watch_minutes=EXCLUDED.watch_minutes, updated_at=NOW()
-      `, [row[0], row[1], row[2], row[3], row[4]]);
+  // 6. Fetch daily analytics (last 90 days) — requires OAuth
+  if (accessToken) {
+    const d90 = new Date(); d90.setDate(d90.getDate() - 90);
+    const startDate = d90.toISOString().split('T')[0];
+    const today2 = new Date().toISOString().split('T')[0];
+    const dailyUrl = `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel%3D%3DMINE&dimensions=day&metrics=views,likes,comments,estimatedMinutesWatched&startDate=${startDate}&endDate=${today2}`;
+    const dailyR = await fetch(dailyUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const dailyData = await dailyR.json();
+    if (dailyData.rows) {
+      for (const row of dailyData.rows) {
+        await pool.query(`
+          INSERT INTO daily_analytics (platform, date, views, likes, comments, watch_minutes)
+          VALUES ('youtube',$1,$2,$3,$4,$5)
+          ON CONFLICT (platform, date) DO UPDATE SET
+            views=EXCLUDED.views, likes=EXCLUDED.likes,
+            comments=EXCLUDED.comments, watch_minutes=EXCLUDED.watch_minutes, updated_at=NOW()
+        `, [row[0], row[1], row[2], row[3], row[4]]);
+      }
     }
   }
 

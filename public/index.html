@@ -8,9 +8,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: #080d14; color: #e2e8f0; min-height: 100vh; transition: background .25s, color .25s; }
-    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: #0d1524; }
-    ::-webkit-scrollbar-thumb { background: #2d3f5c; border-radius: 3px; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif; background:#05080f; color:#e2e8f0; font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased; min-height:100vh; transition:background .25s,color .25s; }
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:#1e2d45; border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:#334155; }
 
     /* ── Global Light Mode ── */
     body.light { background: #f1f5f9; color: #0f172a; }
@@ -204,17 +206,11 @@
     main { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
 
     /* ── KPI Grid ── */
-    #kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+    #kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; margin-bottom:16px; }
 
     /* ── KPI Card ── */
-    .kpi-card {
-      background: #0d1524; border: 1px solid #1a2740;
-      border-radius: 14px; padding: 18px 18px 14px;
-      display: flex; flex-direction: column; gap: 10px;
-      position: relative; overflow: hidden;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    .kpi-card:hover { border-color: #2d3f5c; box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+    .kpi-card { background:linear-gradient(135deg,#0d1524 0%,#080d14 100%); border:1px solid #1e2d45; border-radius:14px; padding:18px 20px; position:relative; overflow:hidden; transition:border-color .2s,transform .15s; cursor:default; display:flex; flex-direction:column; gap:10px; }
+    .kpi-card:hover { border-color:#334155; transform:translateY(-1px); }
     .kpi-accent { position:absolute; top:0; left:0; right:0; height:2px; border-radius:14px 14px 0 0; }
     .kpi-header { display:flex; align-items:center; justify-content:space-between; }
     .kpi-label-row { display:flex; align-items:center; gap:5px; }
@@ -254,8 +250,12 @@
     }
 
     /* ── Section cards ── */
-    .card { background:#0d1524; border:1px solid #1a2740; border-radius:14px; padding:20px; }
-    .card-title { font-size:11px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.07em; }
+    .card { background:#080d14; border:1px solid #1a2740; border-radius:16px; padding:22px 24px; margin-bottom:0; }
+    .card-title { font-size:14px; font-weight:700; color:#f1f5f9; letter-spacing:-.01em; }
+    .btn-primary { background:linear-gradient(135deg,#6366f1,#4f46e5); border:none; border-radius:8px; color:#fff; font-size:12px; font-weight:700; padding:8px 18px; cursor:pointer; transition:opacity .15s,transform .1s; letter-spacing:.01em; }
+    .btn-primary:hover { opacity:.9; transform:translateY(-1px); }
+    .btn-secondary { background:#0f1a2e; border:1px solid #1e2d45; border-radius:8px; color:#64748b; font-size:12px; font-weight:600; padding:8px 18px; cursor:pointer; transition:all .15s; }
+    .btn-secondary:hover { border-color:#334155; color:#94a3b8; }
 
     /* ── Charts rows ── */
     .charts-grid { display:grid; grid-template-columns:2fr 1fr; gap:14px; }
@@ -425,7 +425,7 @@
     .pattern-dot { width:6px; height:6px; border-radius:50%; background:#818cf8; margin-top:6px; flex-shrink:0; }
 
     /* ── Pipeline Kanban ── */
-    .pipeline-board { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; align-items:start; }
+    .pipeline-board { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; align-items:start; }
     .pipeline-col { background:#080d14; border:1px solid #1a2740; border-radius:10px; padding:10px; min-height:160px; }
     .pipeline-col-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding:0 2px; }
     .pipeline-col-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
@@ -450,7 +450,7 @@
     .pipeline-act-btn:hover { color:#e2e8f0; border-color:#334155; }
     /* Card Detail Panel (Notion-style) */
     #card-detail-overlay { display:none; position:fixed; inset:0; background:#00000060; z-index:990; }
-    #card-detail-panel { position:fixed; right:0; top:0; bottom:0; width:620px; max-width:100vw; background:#0d1524; border-left:1px solid #1a2740; z-index:1000; display:none; flex-direction:column; box-shadow:-12px 0 48px rgba(0,0,0,.5); }
+    #card-detail-panel { position:fixed; right:0; top:0; bottom:0; width:780px; max-width:100vw; background:#0d1524; border-left:1px solid #1a2740; z-index:1000; display:none; flex-direction:column; box-shadow:-12px 0 48px rgba(0,0,0,.5); }
     #card-detail-panel.open { display:flex; }
     .cdp-header { padding:18px 24px 14px; border-bottom:1px solid #1a2740; display:flex; gap:10px; align-items:flex-start; }
     .cdp-title-input { background:none; border:none; font-size:17px; font-weight:700; color:#e2e8f0; flex:1; outline:none; font-family:inherit; line-height:1.35; padding:0; }
@@ -461,17 +461,24 @@
     .cdp-meta-sel:focus { outline:none; border-color:#818cf8; }
     .cdp-date-input { background:#080d14; border:1px solid #1a2740; border-radius:6px; color:#94a3b8; font-size:11px; padding:4px 7px; font-family:inherit; }
     .cdp-date-input:focus { outline:none; border-color:#818cf8; }
+    .cdp-tab-nav { display:flex; gap:0; border-bottom:1px solid #1a2740; padding:0 24px; }
+    .cdp-tab-btn { background:none; border:none; border-bottom:2px solid transparent; color:#475569; font-size:11px; font-weight:600; padding:8px 14px; cursor:pointer; font-family:inherit; transition:color .15s,border-color .15s; margin-bottom:-1px; }
+    .cdp-tab-btn:hover { color:#94a3b8; }
+    .cdp-tab-btn.active { color:#818cf8; border-bottom-color:#818cf8; }
     .cdp-body { flex:1; overflow-y:auto; display:flex; flex-direction:column; }
-    #cdp-notes { flex:1; min-height:480px; width:100%; background:none; border:none; color:#cbd5e1; font-size:13.5px; font-family:inherit; line-height:1.75; resize:none; outline:none; padding:20px 24px; box-sizing:border-box; }
-    #cdp-notes::placeholder { color:#1e2d45; }
-    .cdp-preview { flex:1; min-height:480px; padding:20px 24px; color:#cbd5e1; font-size:13.5px; line-height:1.75; }
-    .cdp-footer { padding:12px 24px; border-top:1px solid #1a2740; display:flex; gap:8px; justify-content:flex-end; }
+    .cdp-tab-panel { display:flex; flex-direction:column; flex:1; }
+    .cdp-ai-toolbar { display:flex; align-items:center; justify-content:space-between; padding:10px 24px 0; }
+    .cdp-ai-btn { background:linear-gradient(135deg,#818cf8,#6366f1); border:none; border-radius:7px; color:#fff; font-size:11px; font-weight:700; padding:6px 14px; cursor:pointer; font-family:inherit; transition:opacity .15s; }
+    .cdp-ai-btn:hover { opacity:.85; }
+    .cdp-ai-btn:disabled { opacity:.4; cursor:not-allowed; }
+    @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+    #cdp-notes, #cdp-script, #cdp-hook { flex:1; min-height:400px; width:100%; background:none; border:none; color:#cbd5e1; font-size:13.5px; font-family:inherit; line-height:1.75; resize:none; outline:none; padding:16px 24px 20px; box-sizing:border-box; }
+    #cdp-notes::placeholder, #cdp-script::placeholder, #cdp-hook::placeholder { color:#1e2d45; }
+    .cdp-footer { padding:12px 24px; border-top:1px solid #1a2740; display:flex; gap:8px; align-items:center; }
     .cdp-btn-primary { background:#818cf8; border:none; border-radius:7px; color:#fff; font-size:12px; font-weight:700; padding:8px 20px; cursor:pointer; font-family:inherit; }
     .cdp-btn-primary:hover { background:#6366f1; }
     .cdp-btn-secondary { background:#0f1a2e; border:1px solid #1a2740; border-radius:7px; color:#64748b; font-size:12px; padding:8px 14px; cursor:pointer; font-family:inherit; }
     .cdp-btn-secondary:hover { color:#e2e8f0; }
-    .cdp-preview-toggle { background:#0f1a2e; border:1px solid #1a2740; border-radius:6px; color:#64748b; font-size:11px; padding:3px 10px; cursor:pointer; font-family:inherit; }
-    .cdp-preview-toggle:hover { color:#818cf8; border-color:#818cf8; }
     /* Markdown preview */
     .cdp-preview h1 { font-size:18px; font-weight:700; color:#e2e8f0; margin:0 0 10px; }
     .cdp-preview h2 { font-size:15px; font-weight:700; color:#e2e8f0; margin:16px 0 6px; }
@@ -570,6 +577,29 @@
     .kw-badge { font-size:9px; font-weight:700; padding:1px 5px; border-radius:6px; margin-left:6px; }
     .kw-gap-badge { background:#4ade8022; color:#4ade80; border:1px solid #4ade8044; }
     .kw-low-badge { background:#f8717122; color:#f87171; border:1px solid #f8717144; }
+    /* ── Analysis Renderer ── */
+    .ra-verdict { background:linear-gradient(135deg,#1e293b,#0f172a); border-left:3px solid #818cf8; padding:10px 14px; border-radius:0 8px 8px 0; font-size:13px; color:#e2e8f0; font-weight:500; margin-bottom:10px; line-height:1.5; }
+    .ra-label { font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#475569; margin:10px 0 4px; }
+    .ra-bullet { font-size:12px; color:#94a3b8; padding:4px 0 4px 14px; border-left:2px solid #1e2d45; margin-bottom:4px; line-height:1.5; }
+    .ra-action { display:flex; gap:8px; align-items:flex-start; background:#1a2740; border:1px solid #f59e0b33; border-radius:8px; padding:10px 12px; font-size:12px; color:#fbbf24; font-weight:600; margin:10px 0 4px; line-height:1.5; }
+    .ra-action-icon { flex-shrink:0; font-size:14px; }
+    body.light .ra-verdict { background:#f1f5f9; border-left-color:#6366f1; color:#0f172a; }
+    body.light .ra-label { color:#94a3b8; }
+    body.light .ra-bullet { color:#475569; border-left-color:#cbd5e1; }
+    body.light .ra-action { background:#fefce8; border-color:#f59e0b66; color:#92400e; }
+    body.light #top-commenters-wrap { background:#f8fafc; border-color:#e2e8f0; }
+    body.light #top-commenters-wrap > div:first-child { color:#94a3b8; }
+    body.light #top-commenters-inner > div { background:#ffffff; border-color:#e2e8f0; }
+    body.light #top-commenters-inner span { color:#334155 !important; }
+    body.light #upload-cadence strong { color:#334155 !important; }
+    body.light #title-length-inner [style*="background:#0f1a2e"] { background:#f1f5f9 !important; }
+    body.light .goal-pace { color:#94a3b8 !important; }
+    body.light #lv-analysis-wrap { border-top-color:#e2e8f0 !important; }
+    body.light #lv-analysis-text { color:#334155 !important; }
+    body.light #latest-video-card { color:#0f172a; }
+    body.light #latest-video-card a[target="_blank"] { color:#0f172a !important; }
+    body.light #latest-video-card .card-title { color:#0f172a; }
+
     /* ── Comments Explorer ── */
     .comments-filter-btn { background:#080d14; border:1px solid #1a2740; border-radius:20px; color:#475569; font-size:11px; font-weight:600; padding:5px 12px; cursor:pointer; transition:all .15s; }
     .comments-filter-btn:hover { border-color:#818cf8; color:#818cf8; }
@@ -820,11 +850,11 @@
     .lab-zoom-overlay img { max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 0 60px rgba(0,0,0,.6); }
 
     /* ── Tab nav ── */
-    .tab-nav { display:flex; gap:0; background:#080d14; border-bottom:1px solid #1a2740; padding:0 28px; position:sticky; top:0; z-index:50; overflow-x:auto; }
+    .tab-nav { display:flex; gap:2px; background:#060b12; border-bottom:1px solid #1a2740; padding:8px 24px 0; overflow-x:auto; position:sticky; top:0; z-index:50; }
     body.light .tab-nav { background:#ffffff; border-bottom-color:#e2e8f0; }
-    .tab-btn { background:none; border:none; border-bottom:2px solid transparent; color:#475569; font-size:11px; font-weight:700; padding:14px 18px; cursor:pointer; transition:color .15s,border-color .15s; text-transform:uppercase; letter-spacing:.07em; white-space:nowrap; }
-    .tab-btn:hover:not(.active) { color:#94a3b8; }
-    .tab-btn.active { color:#e2e8f0; border-bottom-color:#818cf8; }
+    .tab-btn { background:none; border:none; border-bottom:2px solid transparent; color:#475569; font-size:12px; font-weight:600; padding:8px 14px 10px; cursor:pointer; white-space:nowrap; transition:color .15s,border-color .15s; letter-spacing:.01em; border-radius:0; }
+    .tab-btn:hover { color:#94a3b8; }
+    .tab-btn.active { color:#818cf8; border-bottom-color:#818cf8; }
     .tab-btn .tab-icon { margin-right:6px; opacity:.7; }
     .tab-panel { display:none; flex-direction:column; gap:20px; }
     .tab-panel.active { display:flex; }
@@ -1067,17 +1097,12 @@
   <!-- ══ Analytics Tab ══ -->
   <div class="tab-panel active" id="tab-analytics">
 
-    <!-- YouTube callout -->
-    <div id="yt-callout" style="display:none;" class="callout">
-      <svg width="18" height="18" fill="none" stroke="#f87171" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
-      <span><strong>CTR</strong> is not available for this channel — it requires YouTube Studio impression data which isn't exposed via the Analytics API for all channel types.</span>
-    </div>
 
     <!-- KPI Cards -->
     <div id="kpi-grid"></div>
 
     <!-- Latest Video Widget -->
-    <div id="latest-video-wrap" style="display:none;margin-bottom:4px;">
+    <div id="latest-video-wrap" style="display:none;margin-bottom:4px;max-width:620px;">
       <div class="card" id="latest-video-card"></div>
     </div>
 
@@ -1099,7 +1124,10 @@
     <!-- Top Posts -->
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-        <span class="card-title">Top Performing Posts</span>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="card-title">Top Performing Posts</span>
+          <span id="upload-cadence" style="font-size:11px;color:#475569;"></span>
+        </div>
         <select id="sort-select">
           <option value="views">Sort: Views</option>
           <option value="likes">Sort: Likes</option>
@@ -1162,6 +1190,15 @@
         <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views by day &amp; hour — darker = better performance</p>
       </div>
       <div class="heatmap-wrap"><div id="heatmap-grid"></div></div>
+    </div>
+
+    <!-- Title Length Performance -->
+    <div class="card" id="title-length-section">
+      <div style="margin-bottom:16px;">
+        <span class="card-title">Title Length vs Performance</span>
+        <p style="font-size:11px;color:#334155;margin-top:3px;">Avg views by title word count — what length works best for you?</p>
+      </div>
+      <div id="title-length-inner"></div>
     </div>
 
     <!-- Content Patterns -->
@@ -1254,6 +1291,17 @@
       <div id="sub-growth-inner"></div>
     </div>
 
+    <!-- Title Change Tracker -->
+    <div class="card" id="title-changes-card" style="margin-top:4px;display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <span class="card-title">Title Change History</span>
+          <p style="font-size:11px;color:#334155;margin-top:3px;">Detected changes to video titles during sync — with view velocity before/after</p>
+        </div>
+      </div>
+      <div id="title-changes-inner"><div class="empty-state" style="padding:24px;"><p>No title changes detected yet — changes are logged automatically during your next YouTube sync.</p></div></div>
+    </div>
+
   </div><!-- /tab-growth -->
 
   <!-- ══ Pipeline Tab ══ -->
@@ -1323,15 +1371,24 @@
             <option value="relevance">Top Comments</option>
           </select>
           <button id="comments-load-btn" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;padding:7px 14px;cursor:pointer;">Load</button>
+          <button id="comments-themes-btn" onclick="analyzeCommentThemes()" style="background:linear-gradient(135deg,#818cf8,#6366f1);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;padding:7px 14px;cursor:pointer;white-space:nowrap;">🔍 Themes</button>
         </div>
       </div>
-      <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+      <div id="comments-themes-loading" style="display:none;text-align:center;padding:16px;color:#475569;font-size:13px;"><div style="animation:spin 1.5s linear infinite;display:inline-block;font-size:18px;margin-right:8px;">⏳</div>Clustering themes…</div>
+      <div id="comments-themes-output" style="display:none;font-size:12px;color:#cbd5e1;line-height:1.7;white-space:pre-wrap;background:#080d14;border:1px solid #1a2740;border-radius:8px;padding:14px;margin-bottom:12px;"></div>
+      <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
         <button class="comments-filter-btn active" data-sentiment="all">All</button>
         <button class="comments-filter-btn" data-sentiment="positive">👍 Positive</button>
         <button class="comments-filter-btn" data-sentiment="question">❓ Questions</button>
         <button class="comments-filter-btn" data-sentiment="critical">👎 Critical</button>
+        <div style="flex:1"></div>
+        <button id="comments-most-liked-btn" onclick="loadMostLiked()" style="background:#0f1a2e;border:1px solid #f59e0b44;border-radius:20px;color:#f59e0b;font-size:11px;font-weight:600;padding:5px 14px;cursor:pointer;">🏆 Most Liked</button>
       </div>
-      <div id="comments-stats" style="display:flex;gap:16px;margin-bottom:14px;"></div>
+      <div id="comments-stats" style="display:flex;gap:16px;margin-bottom:14px;flex-wrap:wrap;align-items:center;"></div>
+      <div id="top-commenters-wrap" style="display:none;margin-bottom:16px;padding:12px 14px;background:#080d14;border:1px solid #1a2740;border-radius:10px;">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#475569;margin-bottom:10px;">⭐ Top Commenters</div>
+        <div id="top-commenters-inner" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
       <div id="comments-list"></div>
       <div id="comments-more" style="text-align:center;margin-top:14px;display:none;">
         <button id="comments-load-more" style="background:#0f1a2e;border:1px solid #1a2740;border-radius:7px;color:#64748b;font-size:11px;padding:8px 20px;cursor:pointer;">Load more</button>
@@ -1362,6 +1419,9 @@
         </select>
         <button id="ideas-generate-btn" style="background:linear-gradient(135deg,#818cf8,#6366f1);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:9px 20px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;">
           <span id="ideas-btn-icon">✨</span> Generate Ideas
+        </button>
+        <button id="ideas-channel-btn" onclick="generateFromChannel()" style="background:linear-gradient(135deg,#f59e0b,#d97706);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:700;padding:9px 20px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;" title="Analyzes your top-performing videos and generates ideas that match your channel's winning patterns">
+          <span id="channel-btn-icon">🔍</span> From My Channel
         </button>
       </div>
 
@@ -1465,7 +1525,9 @@
           <input class="thumb-label-input" id="title-a" placeholder="Video title A…" />
           <div class="lab-title-counter" id="counter-a">0 / 60</div>
           <button class="lab-filter-btn" id="suggest-a" onclick="suggestTitles('a')" style="display:none;width:100%;margin-top:2px;">✨ Suggest titles</button>
+          <button class="lab-filter-btn" id="score-a" onclick="scoreLabThumb('a')" style="display:none;width:100%;margin-top:2px;border-color:#f59e0b44;color:#f59e0b;">🎨 AI Score</button>
           <div class="lab-suggestions" id="suggestions-a"></div>
+          <div id="lab-score-a" style="display:none;margin-top:8px;background:#0f1a2e;border:1px solid #1e2d45;border-radius:8px;padding:12px;font-size:12px;color:#94a3b8;line-height:1.6;"></div>
         </div>
         <div class="thumb-lab-slot" id="slot-wrap-b">
           <div style="font-size:11px;font-weight:700;color:#f472b6;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Option B</div>
@@ -1478,7 +1540,9 @@
           <input class="thumb-label-input" id="title-b" placeholder="Video title B…" />
           <div class="lab-title-counter" id="counter-b">0 / 60</div>
           <button class="lab-filter-btn" id="suggest-b" onclick="suggestTitles('b')" style="display:none;width:100%;margin-top:2px;">✨ Suggest titles</button>
+          <button class="lab-filter-btn" id="score-b" onclick="scoreLabThumb('b')" style="display:none;width:100%;margin-top:2px;border-color:#f59e0b44;color:#f59e0b;">🎨 AI Score</button>
           <div class="lab-suggestions" id="suggestions-b"></div>
+          <div id="lab-score-b" style="display:none;margin-top:8px;background:#0f1a2e;border:1px solid #1e2d45;border-radius:8px;padding:12px;font-size:12px;color:#94a3b8;line-height:1.6;"></div>
         </div>
         <div class="thumb-lab-slot" id="slot-wrap-c">
           <div style="font-size:11px;font-weight:700;color:#34d399;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;">Option C</div>
@@ -1491,7 +1555,9 @@
           <input class="thumb-label-input" id="title-c" placeholder="Video title C…" />
           <div class="lab-title-counter" id="counter-c">0 / 60</div>
           <button class="lab-filter-btn" id="suggest-c" onclick="suggestTitles('c')" style="display:none;width:100%;margin-top:2px;">✨ Suggest titles</button>
+          <button class="lab-filter-btn" id="score-c" onclick="scoreLabThumb('c')" style="display:none;width:100%;margin-top:2px;border-color:#f59e0b44;color:#f59e0b;">🎨 AI Score</button>
           <div class="lab-suggestions" id="suggestions-c"></div>
+          <div id="lab-score-c" style="display:none;margin-top:8px;background:#0f1a2e;border:1px solid #1e2d45;border-radius:8px;padding:12px;font-size:12px;color:#94a3b8;line-height:1.6;"></div>
         </div>
       </div>
 
@@ -1589,30 +1655,77 @@
     <div class="cdp-header">
       <input class="cdp-title-input" id="cdp-title" type="text" placeholder="Untitled idea…" />
       <div class="cdp-header-btns">
-        <button class="cdp-preview-toggle" id="cdp-preview-btn" onclick="toggleDetailPreview()">Preview</button>
         <button class="cdp-btn-secondary" style="padding:3px 9px;font-size:14px;" onclick="closeCardDetail()">✕</button>
       </div>
     </div>
     <div class="cdp-meta-bar">
       <select class="cdp-meta-sel" id="cdp-stage">
         <option value="idea">💡 Idea</option>
-        <option value="scripting">✍️ Scripting</option>
+        <option value="research">🔍 Research</option>
+        <option value="scripting">✍️ Script</option>
         <option value="filming">🎬 Filming</option>
         <option value="editing">✂️ Editing</option>
         <option value="published">✅ Published</option>
       </select>
       <select class="cdp-meta-sel" id="cdp-platform">
-        <option value="">Both platforms</option>
+        <option value="">Both</option>
         <option value="youtube">YouTube</option>
         <option value="instagram">Instagram</option>
       </select>
       <input class="cdp-date-input" id="cdp-date" type="date" title="Target date" />
     </div>
+    <div class="cdp-tab-nav">
+      <button class="cdp-tab-btn active" data-cdp-tab="research" onclick="switchCdpTab('research')">📋 Research</button>
+      <button class="cdp-tab-btn" data-cdp-tab="script" onclick="switchCdpTab('script')">✍️ Script</button>
+      <button class="cdp-tab-btn" data-cdp-tab="hooks" onclick="switchCdpTab('hooks')">🎣 Hooks</button>
+    </div>
     <div class="cdp-body">
-      <textarea id="cdp-notes" placeholder="Write your notes here — supports markdown&#10;&#10;## Headings, **bold**, *italic*&#10;- bullet lists&#10;- [ ] to-do items&#10;- [x] done items"></textarea>
-      <div id="cdp-preview" class="cdp-preview" style="display:none;"></div>
+      <!-- Research tab -->
+      <div class="cdp-tab-panel" id="cdp-panel-research">
+        <div class="cdp-ai-toolbar" style="align-items:flex-start;flex-direction:column;gap:8px;padding:12px 24px 0;">
+          <div style="display:flex;gap:8px;width:100%;align-items:center;">
+            <input id="cdp-research-topic" type="text" placeholder="Enter a topic to research (e.g. 'The Jonestown Massacre')" style="flex:1;padding:8px 12px;border:1px solid #334155;border-radius:6px;background:#1e293b;color:#e2e8f0;font-size:13px;outline:none;" />
+            <button class="cdp-ai-btn" id="cdp-gen-research-btn" onclick="generateResearch()">🔍 Generate Research</button>
+          </div>
+        </div>
+        <div id="cdp-research-loading" style="display:none;padding:40px 24px;text-align:center;color:#475569;font-size:13px;">
+          <div style="font-size:24px;margin-bottom:12px;animation:spin 1.5s linear infinite;display:inline-block;">⏳</div>
+          <div>Researching your topic and building an outline…</div>
+          <div style="font-size:11px;color:#334155;margin-top:6px;">This takes 15–30 seconds.</div>
+        </div>
+        <textarea id="cdp-notes" placeholder="Your research brief and outline will appear here after you click Generate Research.&#10;&#10;You can also write your own notes here — sources, angles, key facts, what makes this interesting..."></textarea>
+      </div>
+      <!-- Script tab -->
+      <div class="cdp-tab-panel" id="cdp-panel-script" style="display:none">
+        <div class="cdp-ai-toolbar">
+          <span id="cdp-wordcount" style="font-size:11px;color:#475569;"></span>
+          <button class="cdp-ai-btn" id="cdp-gen-script-btn" onclick="generateScript()">✨ Generate Script</button>
+        </div>
+        <div id="cdp-script-hint" style="padding:0 24px 8px;font-size:11px;color:#334155;line-height:1.5;">
+          Generates from your <strong style="color:#64748b;">title</strong> + <strong style="color:#64748b;">Research notes</strong>. Fill those in first, then click Generate.
+        </div>
+        <div id="cdp-script-loading" style="display:none;padding:40px 24px;text-align:center;color:#475569;font-size:13px;">
+          <div style="font-size:24px;margin-bottom:12px;animation:spin 1.5s linear infinite;display:inline-block;">⏳</div>
+          <div>Writing your script in the Wendigoon style…</div>
+          <div style="font-size:11px;color:#334155;margin-top:6px;">This takes 30–60 seconds — Claude is doing real work here.</div>
+        </div>
+        <textarea id="cdp-script" placeholder="Your full script lives here.&#10;&#10;Click '✨ Generate Script' and Claude will write it in your Wendigoon style using your title and research notes.&#10;&#10;Or write it yourself — opening hook, context, main narrative, analysis, thematic synthesis, closing."></textarea>
+      </div>
+      <!-- Hooks tab -->
+      <div class="cdp-tab-panel" id="cdp-panel-hooks" style="display:none">
+        <div class="cdp-ai-toolbar">
+          <span style="font-size:11px;color:#475569;">5 hook options — uses your title + script/research</span>
+          <button class="cdp-ai-btn" id="cdp-gen-hooks-btn" onclick="generateHooks()">✨ Generate Hooks</button>
+        </div>
+        <div id="cdp-hooks-loading" style="display:none;padding:40px 24px;text-align:center;color:#475569;font-size:13px;">
+          <div style="font-size:24px;margin-bottom:12px;animation:spin 1.5s linear infinite;display:inline-block;">⏳</div>
+          <div>Crafting 5 hooks in your style…</div>
+        </div>
+        <textarea id="cdp-hook" placeholder="Click '✨ Generate Hooks' to get 5 Wendigoon-style opening hooks.&#10;&#10;Each one uses your title and research (or script if you have one) as context, and includes the strategy behind it."></textarea>
+      </div>
     </div>
     <div class="cdp-footer">
+      <div id="cdp-analytics-link" style="flex:1;font-size:11px;color:#475569;"></div>
       <button class="cdp-btn-secondary" onclick="closeCardDetail()">Cancel</button>
       <button class="cdp-btn-primary" onclick="saveCardDetail()">Save</button>
     </div>
@@ -1759,8 +1872,6 @@ const CARDS_YT = [
     tip:'Total view count across your YouTube videos in the selected period.' },
   { key:'watch_time_minutes', label:'Watch Time',        sparkKey:null,      color:'#a78bfa', bg:'rgba(139,92,246,.12)',  fmt:fmtWatchTime,  icon:SVG.film,
     tip:'Total minutes watched across all your videos in this period (YouTube Analytics).' },
-  { key:'ctr',                label:'Click-Through Rate',sparkKey:null,      color:'#fb7185', bg:'rgba(251,113,133,.12)', fmt:fmtCtr,       icon:SVG.cursor,
-    tip:'Avg % of people who clicked your video after seeing the thumbnail. Not available for this channel type.' },
   { key:'followers',          label:'Subscribers',       sparkKey:null,      color:'#34d399', bg:'rgba(52,211,153,.12)',  fmt:fmtNum,       icon:SVG.users,
     tip:'Your current YouTube subscriber count.' },
   { key:'avg_view_duration',  label:'Avg View Duration', sparkKey:null,      color:'#fbbf24', bg:'rgba(251,191,36,.12)',  fmt:fmtDuration,  icon:SVG.clock,
@@ -1987,6 +2098,54 @@ function platformBreakdown(key, byPlatform, follYT, follIG) {
   return '';
 }
 
+function renderAnalysis(text) {
+  // Render compact analysis format into styled HTML
+  return text
+    .replace(/^VERDICT:\s*(.+)$/m, '<div class="ra-verdict">$1</div>')
+    .replace(/^WHY:$/m, '<div class="ra-label">Why</div>')
+    .replace(/^DO THIS NOW:\s*(.+)$/m, '<div class="ra-action"><span class="ra-action-icon">⚡</span>$1</div>')
+    .replace(/^NEXT TIME:$/m, '<div class="ra-label">Next Time</div>')
+    .replace(/^• (.+)$/gm, '<div class="ra-bullet">$1</div>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/\n{2,}/g, '')
+    .replace(/\n/g, '');
+}
+
+// ── Latest Video Analysis ─────────────────────────────────────────────────
+async function analyzeLatestVideo() {
+  const btn  = document.getElementById('lv-analyze-btn');
+  const wrap = document.getElementById('lv-analysis-wrap');
+  const text = document.getElementById('lv-analysis-text');
+  if (!btn || !wrap || !text) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Analyzing…';
+  wrap.style.display = 'block';
+  text.textContent = '';
+  try {
+    const resp = await fetch('/api/latest-video/analyze', { method: 'POST' });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      text.textContent = 'Error: ' + (err.error || resp.statusText);
+      return;
+    }
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let raw = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      raw += decoder.decode(value, { stream: true });
+      text.innerHTML = renderAnalysis(raw);
+    }
+  } catch (e) {
+    text.textContent = 'Error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🧠 Re-Analyze';
+  }
+}
+
 // ── Latest Video Widget ────────────────────────────────────────────────────
 function renderLatestVideo(v) {
   const wrap = document.getElementById('latest-video-wrap');
@@ -2005,7 +2164,6 @@ function renderLatestVideo(v) {
   const scoreColor = sc >= 80 ? '#4ade80' : sc >= 50 ? '#fbbf24' : sc >= 30 ? '#94a3b8' : '#f87171';
   const avd  = v.avg_view_duration  ? `<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtDuration(v.avg_view_duration)}</div><div style="font-size:10px;color:#475569;">Avg View</div></div>` : '';
   const wt   = v.watch_time_minutes ? `<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtWatchTime(v.watch_time_minutes)}</div><div style="font-size:10px;color:#475569;">Watch Time</div></div>` : '';
-  const ctr  = v.ctr != null        ? `<div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtCtr(v.ctr)}</div><div style="font-size:10px;color:#475569;">CTR</div></div>` : '';
   const ytLink = `https://youtube.com/watch?v=${v.post_id}`;
   card.innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
@@ -2029,15 +2187,19 @@ function renderLatestVideo(v) {
             <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtNum(v.views)}</div><div style="font-size:10px;color:#475569;">Views</div></div>
             <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtNum(v.likes)}</div><div style="font-size:10px;color:#475569;">Likes</div></div>
             <div style="text-align:center;"><div style="font-size:16px;font-weight:700;color:#cbd5e1;">${fmtNum(v.comments)}</div><div style="font-size:10px;color:#475569;">Comments</div></div>
-            ${avd}${wt}${ctr}
+            ${avd}${wt}
           </div>
+          <button id="lv-analyze-btn" onclick="analyzeLatestVideo()" style="margin-left:auto;background:linear-gradient(135deg,#818cf8,#6366f1);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;padding:7px 14px;cursor:pointer;white-space:nowrap;">🧠 Analyze Performance</button>
         </div>
       </div>
+    </div>
+    <div id="lv-analysis-wrap" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #1e2d45;">
+      <div id="lv-analysis-text" style="font-size:13px;color:#cbd5e1;line-height:1.6;"></div>
     </div>`;
 }
 
 // ── Render KPIs ───────────────────────────────────────────────────────────
-function renderKPIs(kpis, daily, followersVal, byPlatform, follYT, follIG) {
+function renderKPIs(kpis, daily, followersVal, byPlatform, follYT, follIG, followerChange) {
   const filled = fillDates(daily, state.range);
   const grid   = document.getElementById('kpi-grid');
   grid.innerHTML = '';
@@ -2046,7 +2208,7 @@ function renderKPIs(kpis, daily, followersVal, byPlatform, follYT, follIG) {
   cards.forEach((card, i) => {
     const kpi    = kpis[card.key] || {};
     const value  = card.key === 'followers' ? followersVal : kpi.value;
-    const change = card.key === 'followers' ? null : kpi.change;
+    const change = card.key === 'followers' ? followerChange : kpi.change;
     const sparkData = card.sparkKey ? filled.map(d => Number(d[card.sparkKey]) || 0) : [];
     const breakdown = platformBreakdown(card.key, byPlatform, follYT, follIG);
 
@@ -2471,6 +2633,37 @@ function renderKeywords(keywords) {
   });
 }
 
+// ── Title Change Tracker ──────────────────────────────────────────────────
+async function loadTitleChanges() {
+  const card = document.getElementById('title-changes-card');
+  const inner = document.getElementById('title-changes-inner');
+  if (!card || !inner) return;
+  try {
+    const data = await fetch('/api/title-changes').then(r => r.json());
+    if (!data.length) { card.style.display = 'none'; return; }
+    card.style.display = '';
+    inner.innerHTML = data.map(tc => {
+      const ago = (() => {
+        const d = Math.floor((Date.now() - new Date(tc.changed_at)) / 86400000);
+        return d === 0 ? 'Today' : d === 1 ? '1 day ago' : `${d} days ago`;
+      })();
+      return `
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #1a2740;">
+          ${tc.thumbnail_url ? `<img src="${tc.thumbnail_url}" style="width:80px;height:45px;object-fit:cover;border-radius:6px;flex-shrink:0;border:1px solid #1e2d45;" onerror="this.style.display='none'">` : ''}
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:10px;color:#475569;margin-bottom:4px;">📝 Title changed ${ago}</div>
+            <div style="font-size:11px;color:#64748b;margin-bottom:2px;text-decoration:line-through;">${escHtml(tc.old_title || '')}</div>
+            <div style="font-size:12px;color:#e2e8f0;font-weight:600;">${escHtml(tc.new_title || '')}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:13px;font-weight:700;color:#cbd5e1;">${fmtNum(tc.current_views)}</div>
+            <div style="font-size:10px;color:#475569;">views now</div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { card.style.display = 'none'; }
+}
+
 // ── Subscriber Growth ─────────────────────────────────────────────────────
 function renderSubGrowth(history) {
   const inner = document.getElementById('sub-growth-inner');
@@ -2590,6 +2783,7 @@ function renderHeatmap(heatmapData) {
 // ── Goals ─────────────────────────────────────────────────────────────────
 let _goalsData = [];
 let _goalsCurrents = {};  // metric → current value, populated at refresh
+let _dailyGrowthRates = {};  // metric → subs/day, for ETA calculations
 
 async function loadGoals() {
   try {
@@ -2638,6 +2832,11 @@ function renderGoals() {
     const dateStr = g.target_date
       ? `<span class="goal-meta">By ${new Date(g.target_date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>`
       : '';
+    const dailyRate = _dailyGrowthRates[g.metric] || 0;
+    const rateEtaDays = dailyRate > 0 && current < target ? Math.ceil((target - current) / dailyRate) : null;
+    const rateEtaStr = rateEtaDays != null
+      ? `<span class="goal-pace" style="color:#818cf8;">📈 ~${rateEtaDays > 365 ? Math.round(rateEtaDays/365)+'y' : rateEtaDays+'d'} at current rate</span>`
+      : '';
     const paceStr = pace != null && !done
       ? `<span class="goal-pace">Need ${pace < 1 ? pace.toFixed(2) : Math.round(pace).toLocaleString()}/day · ${daysLeft} days left</span>`
       : done ? `<span style="color:#4ade80;font-size:11px;font-weight:700;">✓ Achieved!</span>` : '';
@@ -2655,7 +2854,7 @@ function renderGoals() {
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
         <span style="font-size:10px;color:#334155;font-weight:600;">${pct}% complete</span>
-        <div style="display:flex;gap:12px;align-items:center;">${dateStr}${paceStr}</div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">${dateStr}${paceStr}${rateEtaStr}</div>
       </div>
     </div>`;
   }).join('');
@@ -2727,6 +2926,30 @@ function renderPosts(posts) {
     container.innerHTML = '<p style="text-align:center;color:#475569;padding:40px;">No posts in this period.</p>';
     return;
   }
+
+  // Calculate avg views for vs-avg badge
+  const withViews = posts.filter(p => p.views > 0);
+  const avgViews = withViews.length ? withViews.reduce((s,p) => s + Number(p.views), 0) / withViews.length : 0;
+
+  // Upload cadence: average days between posts
+  const cadenceEl = document.getElementById('upload-cadence');
+  if (cadenceEl && posts.length >= 2) {
+    const sorted = [...posts].sort((a,b) => new Date(a.published_at) - new Date(b.published_at));
+    let totalGap = 0;
+    for (let i = 1; i < sorted.length; i++) totalGap += (new Date(sorted[i].published_at) - new Date(sorted[i-1].published_at)) / 86400000;
+    const avgDays = Math.round(totalGap / (sorted.length - 1));
+    cadenceEl.innerHTML = `📅 posts every <strong style="color:#cbd5e1;">~${avgDays} day${avgDays===1?'':'s'}</strong>`;
+  }
+
+  function vsAvgBadge(views) {
+    if (!avgViews || !views) return '';
+    const pct = Math.round(((views - avgViews) / avgViews) * 100);
+    if (Math.abs(pct) < 5) return '';
+    const col = pct > 0 ? '#4ade80' : '#f87171';
+    const bg  = pct > 0 ? 'rgba(74,222,128,.12)' : 'rgba(248,113,113,.12)';
+    return `<span style="font-size:10px;font-weight:700;color:${col};background:${bg};border-radius:4px;padding:1px 5px;margin-left:4px;">${pct>0?'+':''}${pct}%</span>`;
+  }
+
   const table = document.createElement('table');
   table.className = 'posts-table';
   const isYT = state.platform === 'youtube';
@@ -2771,7 +2994,7 @@ function renderPosts(posts) {
       <td>${badge}</td>
       <td style="font-size:12px;color:#64748b;white-space:nowrap;">${fmtDateLong(p.published_at)}</td>
       <td style="text-align:right;">${scoreBadge(p.score)}</td>
-      <td style="text-align:right;font-size:13px;font-weight:700;">${fmtNum(p.views)}</td>
+      <td style="text-align:right;white-space:nowrap;"><span style="font-size:13px;font-weight:700;">${fmtNum(p.views)}</span>${vsAvgBadge(p.views)}</td>
       <td style="text-align:right;font-size:13px;color:#94a3b8;">${fmtNum(p.likes)}</td>
       ${showYT
         ? `<td style="text-align:right;font-size:13px;color:#94a3b8;">${isThisYT && p.avg_view_duration != null ? fmtDuration(p.avg_view_duration) : '—'}</td>
@@ -3069,9 +3292,49 @@ function shuffleLabFillers() {
   renderLabGrid();
 }
 
+async function scoreLabThumb(slot) {
+  const img = labImages[slot];
+  if (!img) return;
+  const btn    = document.getElementById(`score-${slot}`);
+  const output = document.getElementById(`lab-score-${slot}`);
+  if (!btn || !output) return;
+  btn.disabled = true; btn.textContent = '⏳ Scoring…';
+  output.style.display = 'block';
+  output.textContent = 'Analyzing thumbnail…';
+  try {
+    // Resize image to max 800px wide via canvas to stay under Vercel's body limit
+    const resizedDataUrl = await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => {
+        const MAX_W = 800;
+        const scale = image.width > MAX_W ? MAX_W / image.width : 1;
+        const w = Math.round(image.width * scale);
+        const h = Math.round(image.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(image, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      image.onerror = reject;
+      image.src = img;
+    });
+    const [header, b64] = resizedDataUrl.split(',');
+    const mimeType = 'image/jpeg';
+    const title = labTitles[slot] || document.getElementById(`title-${slot}`)?.value || '';
+    const r = await fetch('/api/thumbnail/score', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base64: b64, mimeType, title }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    output.innerHTML = renderAnalysis(data.analysis);
+  } catch(e) { output.textContent = 'Error: ' + e.message; }
+  finally { btn.disabled = false; btn.textContent = '🎨 AI Score'; }
+}
+
 async function loadLabFillers() {
   try {
-    const rows = await fetch('/api/thumbnails?platform=youtube&sort=views').then(r => r.json());
+    const rows = await fetch('/api/lab-fillers').then(r => r.json());
     _labFillers = (rows || []).filter(v => v.thumbnail_url).slice(0, 20);
     shuffleArray(_labFillers);
   } catch(e) { _labFillers = []; }
@@ -3142,6 +3405,7 @@ function restoreLabSession() {
         if (wrap) wrap.classList.add('has-upload');
         const sugBtn = document.getElementById(`suggest-${slot}`);
         if (sugBtn) sugBtn.style.display = '';
+        document.getElementById(`score-${slot}`).style.display = '';
       }
     });
     if (Object.keys(labImages).length) renderLabGrid();
@@ -3176,6 +3440,7 @@ function setupLabUpload(slot) {
       wrap.classList.add('has-upload');
       const sugBtn = document.getElementById(`suggest-${slot}`);
       if (sugBtn) sugBtn.style.display = '';
+      document.getElementById(`score-${slot}`).style.display = '';
       saveLabSession();
       renderLabGrid();
     };
@@ -3225,7 +3490,7 @@ function renderLabGrid() {
     return `${Math.floor(d/365)}y ago`;
   }
 
-  function videoCard(img, title, dur, views, ago, candidateSlot, fillerIdx) {
+  function videoCard(img, title, dur, views, ago, candidateSlot, fillerIdx, overrideChannelName) {
     const isCandidate = !!candidateSlot;
     const thumbHtml = img
       ? `<img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover;" onclick="event.stopPropagation();openLabZoom('${img.length < 500 ? img : '#'}')">`
@@ -3241,13 +3506,13 @@ function renderLabGrid() {
       avatarHtml = `<img class="yt-channel-avatar" src="data:image/svg+xml;base64,${btoa(svg)}" alt="">`;
     } else {
       const color = FILLER_AVATAR_COLORS[(fillerIdx||0) % FILLER_AVATAR_COLORS.length];
-      const name  = FILLER_CHANNELS[(fillerIdx||0) % FILLER_CHANNELS.length] || 'Channel';
+      const name  = overrideChannelName || FILLER_CHANNELS[(fillerIdx||0) % FILLER_CHANNELS.length] || 'Channel';
       const svg   = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36"><circle cx="18" cy="18" r="18" fill="${color}"/><text x="18" y="23" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="700" fill="#fff">${name[0]}</text></svg>`;
       avatarHtml  = `<img class="yt-channel-avatar" src="data:image/svg+xml;base64,${btoa(svg)}" alt="">`;
     }
     const chanName = isCandidate
       ? (myName || 'Your Channel')
-      : (FILLER_CHANNELS[(fillerIdx||0) % FILLER_CHANNELS.length] || 'Channel');
+      : (overrideChannelName || FILLER_CHANNELS[(fillerIdx||0) % FILLER_CHANNELS.length] || 'Channel');
 
     const labelColors = { a:'#818cf8', b:'#f472b6', c:'#34d399' };
     const badge = isCandidate
@@ -3276,7 +3541,7 @@ function renderLabGrid() {
     const idx = fi++;
     if (idx < _labFillers.length) {
       const v = _labFillers[idx];
-      return videoCard(v.thumbnail_url, v.title || 'Video', '—', fmtViewsShort(v.views), timeAgo(v.published_at), null, idx);
+      return videoCard(v.thumbnail_url, v.title || 'Video', '—', v.views ? fmtViewsShort(v.views) : randFakeViews(), v.published_at ? timeAgo(v.published_at) : randFakeAgo(), null, idx, v.channelName);
     }
     const si = (idx - _labFillers.length) % STATIC_FILLERS.length;
     const f  = STATIC_FILLERS[si];
@@ -3606,8 +3871,6 @@ function showLoading() {
 // ── Refresh ───────────────────────────────────────────────────────────────
 async function refresh() {
   showLoading();
-  document.getElementById('yt-callout').style.display = 'none';
-
   try {
     const [dash, fol, alltime, insights, subHistory, kwGap, latestVid] = await Promise.all([
       fetch(`/api/dashboard?platform=${state.platform}&range=${state.range}&sort=${state.sort}`).then(r=>r.json()),
@@ -3620,9 +3883,6 @@ async function refresh() {
     ]);
     if (dash.error) throw new Error(dash.error);
 
-    if (state.platform === 'youtube') {
-      document.getElementById('yt-callout').style.display = 'flex';
-    }
 
     const byPlatform = dash.by_platform || null;
     const dailyByPlatform = dash.daily_by_platform || null;
@@ -3631,7 +3891,24 @@ async function refresh() {
     renderAlltimeBanner(alltime);
     renderRevenue(alltime, dash.kpis);
     renderMilestones(alltime, dash.kpis, fol.youtube, fol.instagram);
-    renderKPIs(dash.kpis, dash.daily, fol.value, byPlatform, fol.youtube, fol.instagram);
+    // Compute sub growth % from snapshot history over the selected range
+    let followerChange = null;
+    if (subHistory && subHistory.length >= 2) {
+      const hist = subHistory.filter(d => {
+        if (state.platform === 'youtube') return d.youtube != null;
+        if (state.platform === 'instagram') return d.instagram != null;
+        return (d.youtube || d.instagram) != null;
+      });
+      if (hist.length >= 2) {
+        const getVal = d => state.platform === 'youtube' ? (d.youtube || 0)
+                          : state.platform === 'instagram' ? (d.instagram || 0)
+                          : (d.youtube || 0) + (d.instagram || 0);
+        const oldest = getVal(hist[0]);
+        const newest = getVal(hist[hist.length - 1]);
+        followerChange = oldest > 0 ? Math.round(((newest - oldest) / oldest) * 10000) / 100 : null;
+      }
+    }
+    renderKPIs(dash.kpis, dash.daily, fol.value, byPlatform, fol.youtube, fol.instagram, followerChange);
     renderLatestVideo(latestVid);
     renderVRChart(dash.daily, dailyByPlatform);
     renderEngChart(dash.daily);
@@ -3641,7 +3918,9 @@ async function refresh() {
     renderCalendar(insights.trajectory || []);
     renderKeywords(insights.keywords || []);
     renderKeywordGap(kwGap);
+    renderTitleLength(dash.posts || []);
     renderSubGrowth(subHistory || []);
+    loadTitleChanges();
     renderPosts(dash.posts);
     loadPatterns();
 
@@ -3653,6 +3932,19 @@ async function refresh() {
       views_monthly:  Number(dash.kpis?.views?.value) || 0,
       likes_monthly:  Number(dash.kpis?.likes?.value) || 0,
     };
+    // Calculate daily growth rates for goal ETA
+    if (subHistory && subHistory.length >= 2) {
+      const ytH = subHistory.filter(d => d.youtube != null);
+      const igH = subHistory.filter(d => d.instagram != null);
+      if (ytH.length >= 2) {
+        const days = Math.max(1, (new Date(ytH[ytH.length-1].date) - new Date(ytH[0].date)) / 86400000);
+        _dailyGrowthRates.subscribers_yt = (ytH[ytH.length-1].youtube - ytH[0].youtube) / days;
+      }
+      if (igH.length >= 2) {
+        const days = Math.max(1, (new Date(igH[igH.length-1].date) - new Date(igH[0].date)) / 86400000);
+        _dailyGrowthRates.subscribers_ig = (igH[igH.length-1].instagram - igH[0].instagram) / days;
+      }
+    }
     renderGoals();
 
   } catch(err) {
@@ -3791,11 +4083,12 @@ function setupControls() {
 
 // ── Content Pipeline ──────────────────────────────────────────────────────
 const STAGES = [
-  { key: 'idea',      label: 'Idea',      color: '#64748b' },
-  { key: 'scripting', label: 'Scripting', color: '#fbbf24' },
-  { key: 'filming',   label: 'Filming',   color: '#f97316' },
-  { key: 'editing',   label: 'Editing',   color: '#818cf8' },
-  { key: 'published', label: 'Published', color: '#4ade80' },
+  { key: 'idea',      label: '💡 Idea',      color: '#64748b' },
+  { key: 'research',  label: '🔍 Research',  color: '#38bdf8' },
+  { key: 'scripting', label: '✍️ Script',    color: '#fbbf24' },
+  { key: 'filming',   label: '🎬 Filming',   color: '#f97316' },
+  { key: 'editing',   label: '✂️ Editing',   color: '#818cf8' },
+  { key: 'published', label: '✅ Published', color: '#4ade80' },
 ];
 
 let pipelineCards = [];
@@ -3963,6 +4256,23 @@ function renderMarkdown(text) {
   return html;
 }
 
+let _currentCdpTab = 'research';
+
+function switchCdpTab(tab) {
+  _currentCdpTab = tab;
+  document.querySelectorAll('.cdp-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.cdpTab === tab));
+  document.querySelectorAll('.cdp-tab-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('cdp-panel-' + tab).style.display = 'flex';
+  if (tab === 'script') updateWordCount();
+}
+
+function updateWordCount() {
+  const text = document.getElementById('cdp-script').value;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const mins = Math.round(words / 130); // ~130 words/min spoken
+  document.getElementById('cdp-wordcount').textContent = words > 0 ? `${words.toLocaleString()} words · ~${mins} min spoken` : '';
+}
+
 function openCardDetail(id, defaultStage) {
   const card = id ? pipelineCards.find(c => c.id == id) : null;
   _detailCardId = id || null;
@@ -3971,12 +4281,21 @@ function openCardDetail(id, defaultStage) {
   document.getElementById('cdp-platform').value = card?.platform    || '';
   document.getElementById('cdp-date').value     = card?.target_date || '';
   document.getElementById('cdp-notes').value    = card?.notes       || '';
-  // Reset to edit mode
-  document.getElementById('cdp-notes').style.display   = '';
-  document.getElementById('cdp-preview').style.display = 'none';
-  document.getElementById('cdp-preview-btn').textContent = 'Preview';
+  document.getElementById('cdp-script').value   = card?.script      || '';
+  document.getElementById('cdp-hook').value     = card?.hook        || '';
+  document.getElementById('cdp-research-topic').value = card?.title || '';
+
+  // Analytics link for published cards
+  const analyticsDiv = document.getElementById('cdp-analytics-link');
+  if (card?.stage === 'published' && card?.linked_post_id) {
+    analyticsDiv.innerHTML = `<a href="#" onclick="switchTab('analytics');closeCardDetail();return false;" style="color:#818cf8;">View analytics →</a>`;
+  } else { analyticsDiv.innerHTML = ''; }
+
+  // Start on research tab
+  switchCdpTab('research');
   document.getElementById('card-detail-panel').classList.add('open');
   document.getElementById('card-detail-overlay').style.display = 'block';
+  document.getElementById('cdp-script').addEventListener('input', updateWordCount);
   setTimeout(() => document.getElementById('cdp-title').focus(), 50);
 }
 
@@ -3986,22 +4305,6 @@ function closeCardDetail() {
   _detailCardId = null;
 }
 
-function toggleDetailPreview() {
-  const btn     = document.getElementById('cdp-preview-btn');
-  const notes   = document.getElementById('cdp-notes');
-  const preview = document.getElementById('cdp-preview');
-  if (notes.style.display === 'none') {
-    notes.style.display   = '';
-    preview.style.display = 'none';
-    btn.textContent = 'Preview';
-  } else {
-    preview.innerHTML     = renderMarkdown(notes.value);
-    notes.style.display   = 'none';
-    preview.style.display = '';
-    btn.textContent = 'Edit';
-  }
-}
-
 async function saveCardDetail() {
   const payload = {
     title:       document.getElementById('cdp-title').value.trim(),
@@ -4009,23 +4312,129 @@ async function saveCardDetail() {
     platform:    document.getElementById('cdp-platform').value || null,
     target_date: document.getElementById('cdp-date').value || null,
     notes:       document.getElementById('cdp-notes').value.trim() || null,
+    script:      document.getElementById('cdp-script').value.trim() || null,
+    hook:        document.getElementById('cdp-hook').value.trim() || null,
   };
   if (!payload.title) { document.getElementById('cdp-title').focus(); return; }
+  const cardId = _detailCardId; // capture before closeCardDetail nullifies it
   closeCardDetail();
-  if (_detailCardId) {
-    await fetch(`/api/pipeline/${_detailCardId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+  if (cardId) {
+    await fetch(`/api/pipeline/${cardId}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
   } else {
     await fetch('/api/pipeline', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
   }
   await loadPipeline();
+}
+
+async function autoSaveCard() {
+  // Save current card state (creates if new, updates if existing)
+  const title = document.getElementById('cdp-title').value.trim();
+  if (!title) return null;
+  const payload = {
+    title,
+    stage:       document.getElementById('cdp-stage').value,
+    platform:    document.getElementById('cdp-platform').value || null,
+    target_date: document.getElementById('cdp-date').value || null,
+    notes:       document.getElementById('cdp-notes').value.trim() || null,
+    script:      document.getElementById('cdp-script').value.trim() || null,
+    hook:        document.getElementById('cdp-hook').value.trim() || null,
+  };
+  if (_detailCardId) {
+    await fetch(`/api/pipeline/${_detailCardId}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    return _detailCardId;
+  } else {
+    const r = await fetch('/api/pipeline', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const card = await r.json();
+    _detailCardId = card.id;
+    await loadPipeline();
+    return card.id;
+  }
+}
+
+async function generateResearch() {
+  const topicInput = document.getElementById('cdp-research-topic');
+  const topic = topicInput.value.trim() || document.getElementById('cdp-title').value.trim();
+  if (!topic) { alert('Enter a topic to research first.'); topicInput.focus(); return; }
+  // Title is required for the card to be saved properly
+  if (!document.getElementById('cdp-title').value.trim()) {
+    document.getElementById('cdp-title').value = topic;
+  }
+  const btn = document.getElementById('cdp-gen-research-btn');
+  const loading = document.getElementById('cdp-research-loading');
+  const textarea = document.getElementById('cdp-notes');
+  btn.disabled = true;
+  loading.style.display = 'block';
+  textarea.style.display = 'none';
+  try {
+    const id = await autoSaveCard();
+    const r = await fetch(`/api/pipeline/${id}/ai-research`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    textarea.value = data.notes;
+  } catch(e) { alert('Research generation failed: ' + e.message); }
+  loading.style.display = 'none';
+  textarea.style.display = '';
+  btn.disabled = false;
+}
+
+async function generateScript() {
+  const title = document.getElementById('cdp-title').value.trim();
+  if (!title) { alert('Add a title first — that\'s the video topic.'); document.getElementById('cdp-title').focus(); return; }
+  const btn = document.getElementById('cdp-gen-script-btn');
+  const loading = document.getElementById('cdp-script-loading');
+  const textarea = document.getElementById('cdp-script');
+  btn.disabled = true;
+  loading.style.display = 'block';
+  textarea.style.display = 'none';
+  document.getElementById('cdp-script-hint').style.display = 'none';
+  try {
+    const id = await autoSaveCard();
+    const r = await fetch(`/api/pipeline/${id}/ai-script`, { method: 'POST' });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    textarea.value = data.script;
+    updateWordCount();
+  } catch(e) { alert('Script generation failed: ' + e.message); }
+  loading.style.display = 'none';
+  textarea.style.display = '';
+  document.getElementById('cdp-script-hint').style.display = '';
+  btn.disabled = false;
+}
+
+async function generateHooks() {
+  const title = document.getElementById('cdp-title').value.trim();
+  if (!title) { alert('Add a title first.'); document.getElementById('cdp-title').focus(); return; }
+  const btn = document.getElementById('cdp-gen-hooks-btn');
+  const loading = document.getElementById('cdp-hooks-loading');
+  const textarea = document.getElementById('cdp-hook');
+  btn.disabled = true;
+  loading.style.display = 'block';
+  textarea.style.display = 'none';
+  try {
+    const id = await autoSaveCard();
+    const r = await fetch(`/api/pipeline/${id}/ai-hooks`, { method: 'POST' });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    textarea.value = data.hook;
+  } catch(e) { alert('Hook generation failed: ' + e.message); }
+  loading.style.display = 'none';
+  textarea.style.display = '';
+  btn.disabled = false;
 }
 
 async function pipelineDelete(id) {
@@ -4119,6 +4528,73 @@ async function saveChecklistItem() {
 }
 
 // ── Keyword Gap ───────────────────────────────────────────────────────────
+function renderTitleLength(posts) {
+  const el = document.getElementById('title-length-inner');
+  if (!el) return;
+  const ytPosts = posts.filter(p => p.platform === 'youtube' && p.title && p.views > 0);
+  if (ytPosts.length < 3) { el.innerHTML = '<p style="color:#475569;font-size:12px;">Not enough data yet.</p>'; return; }
+
+  const buckets = { '1–4': [], '5–7': [], '8–10': [], '11+': [] };
+  for (const p of ytPosts) {
+    const wc = p.title.trim().split(/\s+/).length;
+    if (wc <= 4) buckets['1–4'].push(p.views);
+    else if (wc <= 7) buckets['5–7'].push(p.views);
+    else if (wc <= 10) buckets['8–10'].push(p.views);
+    else buckets['11+'].push(p.views);
+  }
+
+  const rows = Object.entries(buckets).map(([label, arr]) => ({
+    label, count: arr.length,
+    avg: arr.length ? Math.round(arr.reduce((s,v)=>s+v,0) / arr.length) : 0,
+  })).filter(r => r.count > 0);
+
+  if (!rows.length) { el.innerHTML = '<p style="color:#475569;font-size:12px;">Not enough data yet.</p>'; return; }
+  const maxAvg = Math.max(...rows.map(r => r.avg));
+  const best = rows.find(r => r.avg === maxAvg);
+
+  el.innerHTML = rows.map(r => {
+    const pct = maxAvg > 0 ? Math.round((r.avg / maxAvg) * 100) : 0;
+    const isBest = r.avg === maxAvg && r.count >= 2;
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:12px;color:#cbd5e1;font-weight:600;">${r.label} words</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:11px;color:#475569;">${r.count} video${r.count===1?'':'s'}</span>
+          <span style="font-size:12px;font-weight:700;color:#e2e8f0;">${fmtNum(r.avg)} avg views</span>
+          ${isBest ? '<span style="font-size:10px;font-weight:700;background:rgba(74,222,128,.15);color:#4ade80;padding:1px 6px;border-radius:4px;">BEST</span>' : ''}
+        </div>
+      </div>
+      <div style="height:6px;background:#0f1a2e;border-radius:4px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${isBest?'#4ade80':'#818cf8'};border-radius:4px;transition:width .4s;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTopCommenters() {
+  const wrap  = document.getElementById('top-commenters-wrap');
+  const inner = document.getElementById('top-commenters-inner');
+  if (!wrap || !inner || _commentsData.length < 5) { if (wrap) wrap.style.display = 'none'; return; }
+
+  const map = {};
+  for (const c of _commentsData) {
+    if (!map[c.author]) map[c.author] = { author: c.author, pic: c.authorPic, count: 0, likes: 0 };
+    map[c.author].count++;
+    map[c.author].likes += c.likes || 0;
+  }
+  const top = Object.values(map)
+    .sort((a,b) => (b.likes + b.count*2) - (a.likes + a.count*2))
+    .slice(0, 8);
+
+  inner.innerHTML = top.map(t => `
+    <div style="display:flex;align-items:center;gap:6px;background:#0f1a2e;border:1px solid #1a2740;border-radius:20px;padding:4px 10px 4px 4px;">
+      <img src="${t.pic}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;" onerror="this.style.visibility='hidden'">
+      <span style="font-size:11px;color:#cbd5e1;font-weight:600;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(t.author)}</span>
+      <span style="font-size:10px;color:#475569;">${t.count} · ♥${t.likes}</span>
+    </div>`).join('');
+  wrap.style.display = '';
+}
+
 function renderKeywordGap(data) {
   const gapEl  = document.getElementById('kw-gap-list');
   const usedEl = document.getElementById('kw-used-list');
@@ -4219,13 +4695,28 @@ function renderComments() {
 
   const totalLikes   = filtered.reduce((s,c) => s + c.likes, 0);
   const totalReplies = filtered.reduce((s,c) => s + c.replyCount, 0);
-  const questions    = filtered.filter(c => c._sent === 'question').length;
+  const nPos      = filtered.filter(c => c._sent === 'positive').length;
+  const nCrit     = filtered.filter(c => c._sent === 'critical').length;
+  const nQ        = filtered.filter(c => c._sent === 'question').length;
+  const nNeutral  = filtered.length - nPos - nCrit - nQ;
+  const total     = filtered.length || 1;
+  const sentBar   = `<div style="display:flex;gap:1px;height:4px;border-radius:4px;overflow:hidden;width:80px;flex-shrink:0;">
+    <div style="background:#4ade80;width:${Math.round(nPos/total*100)}%;"></div>
+    <div style="background:#fbbf24;width:${Math.round(nQ/total*100)}%;"></div>
+    <div style="background:#f87171;width:${Math.round(nCrit/total*100)}%;"></div>
+    <div style="background:#334155;flex:1;"></div>
+  </div>`;
 
   stats.innerHTML = `
     <span style="font-size:11px;color:#475569;"><strong style="color:#e2e8f0;">${filtered.length}</strong> shown</span>
+    <span style="font-size:11px;color:#4ade80;">👍 ${nPos}</span>
+    <span style="font-size:11px;color:#fbbf24;">❓ ${nQ}</span>
+    <span style="font-size:11px;color:#f87171;">👎 ${nCrit}</span>
+    ${sentBar}
     <span style="font-size:11px;color:#475569;"><strong style="color:#fbbf24;">${totalLikes.toLocaleString()}</strong> likes</span>
-    <span style="font-size:11px;color:#475569;"><strong style="color:#818cf8;">${totalReplies.toLocaleString()}</strong> replies</span>
-    <span style="font-size:11px;color:#475569;"><strong style="color:#4ade80;">${questions}</strong> questions</span>`;
+    <span style="font-size:11px;color:#475569;"><strong style="color:#818cf8;">${totalReplies.toLocaleString()}</strong> replies</span>`;
+
+  renderTopCommenters();
 
   if (!filtered.length) {
     list.innerHTML = `<div style="text-align:center;padding:40px;color:#334155;font-size:13px;">No comments found${query ? ' matching "' + query + '"' : ''}.</div>`;
@@ -4278,6 +4769,70 @@ async function loadComments(append = false) {
   } finally {
     if (btn) btn.textContent = 'Load';
   }
+}
+
+async function loadMostLiked() {
+  const btn  = document.getElementById('comments-most-liked-btn');
+  const list = document.getElementById('comments-list');
+  btn.textContent = '⏳ Loading…';
+  btn.disabled = true;
+  list.innerHTML = `<div style="text-align:center;padding:30px;color:#475569;font-size:13px;">Fetching up to 500 comments and sorting by likes…</div>`;
+  document.getElementById('comments-more').style.display = 'none';
+
+  try {
+    // Fetch up to 5 pages (100 each = 500 comments), then sort by likes
+    let allComments = [];
+    let nextPage = null;
+    for (let i = 0; i < 5; i++) {
+      const params = new URLSearchParams({ limit: 100, order: 'relevance' });
+      if (nextPage) params.set('pageToken', nextPage);
+      const data = await fetch('/api/comments?' + params).then(r => r.json());
+      if (data.error) throw new Error(data.error);
+      allComments = [...allComments, ...data.comments];
+      nextPage = data.nextPageToken;
+      if (!nextPage) break;
+    }
+    allComments.sort((a, b) => b.likes - a.likes);
+    _commentsData = allComments;
+    _commentsNextPage = null;
+    _commentsLoaded = true;
+    renderComments();
+  } catch (err) {
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:#f87171;font-size:13px;">${err.message}</div>`;
+  } finally {
+    btn.textContent = '🏆 Most Liked';
+    btn.disabled = false;
+  }
+}
+
+async function analyzeCommentThemes() {
+  const btn     = document.getElementById('comments-themes-btn');
+  const loading = document.getElementById('comments-themes-loading');
+  const output  = document.getElementById('comments-themes-output');
+  if (!_commentsData.length) { alert('Load some comments first.'); return; }
+  btn.disabled = true;
+  loading.style.display = 'block';
+  output.style.display = 'none';
+  output.textContent = '';
+  try {
+    const resp = await fetch('/api/comments/themes', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ comments: _commentsData }),
+    });
+    if (!resp.ok) { const e = await resp.json().catch(()=>{}); alert('Error: ' + (e?.error || 'Unknown')); return; }
+    loading.style.display = 'none';
+    output.style.display = 'block';
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let raw = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      raw += decoder.decode(value, { stream: true });
+      output.innerHTML = raw.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/^## (.+)$/gm,'<div style="font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#475569;margin:14px 0 6px;">$1</div>').replace(/^• (.+)$/gm,'<div style="padding:3px 0 3px 12px;border-left:2px solid #1e2d45;margin-bottom:3px;color:#94a3b8;">$1</div>').replace(/\n/g,'<br>');
+    }
+  } catch(e) { alert('Error: ' + e.message); }
+  finally { loading.style.display = 'none'; btn.disabled = false; btn.textContent = '🔍 Re-Analyze'; }
 }
 
 // ── Thumbnail Gallery ─────────────────────────────────────────────────────
@@ -4374,11 +4929,56 @@ function openThumbModal(i) {
         </div>
         <div class="thumb-modal-actions">
           ${v.post_id && v.platform === 'youtube' ? `<a href="https://youtube.com/watch?v=${v.post_id}" target="_blank" rel="noopener"><button class="thumb-modal-btn" style="background:#818cf8;color:#fff;">Watch on YouTube ↗</button></a>` : ''}
+          ${v.post_id && v.platform === 'youtube' ? `<button class="thumb-modal-btn" id="tm-analyze-btn" onclick="analyzeVideoInModal('${v.post_id}')" style="background:linear-gradient(135deg,#818cf8,#6366f1);color:#fff;">🧠 Analyze Performance</button>` : ''}
+          ${v.post_id && v.platform === 'youtube' ? `<button class="thumb-modal-btn" id="tm-thumb-score-btn" onclick="scoreThumbInModal('${v.post_id}','${(v.thumbnail_url||'').replace(/'/g,"\\'")}','${(v.title||'').replace(/'/g,"\\'")}',${v.views||0},${v.engagement_rate||0})" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;">🎨 Score Thumbnail</button>` : ''}
           <button class="thumb-modal-btn" style="background:#0f1a2e;border:1px solid #1a2740;color:#64748b;" onclick="document.getElementById('thumb-modal').classList.remove('open')">Close</button>
+        </div>
+        <div id="tm-output" style="display:none;margin-top:16px;border-top:1px solid #1e2d45;padding-top:16px;">
+          <div id="tm-output-text" style="font-size:13px;color:#cbd5e1;line-height:1.8;white-space:pre-wrap;font-family:inherit;"></div>
         </div>
       </div>
     </div>`;
   modal.classList.add('open');
+}
+
+async function analyzeVideoInModal(postId) {
+  const btn = document.getElementById('tm-analyze-btn');
+  const out = document.getElementById('tm-output');
+  const text = document.getElementById('tm-output-text');
+  if (!btn || !out || !text) return;
+  btn.disabled = true; btn.textContent = '⏳ Analyzing…';
+  out.style.display = 'block'; text.textContent = '';
+  try {
+    const resp = await fetch(`/api/video/${postId}/analyze`, { method: 'POST' });
+    if (!resp.ok) { text.textContent = 'Error: ' + (await resp.json().catch(()=>({}))).error; return; }
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      text.textContent += decoder.decode(value, { stream: true });
+    }
+  } catch(e) { text.textContent = 'Error: ' + e.message; }
+  finally { if(btn) { btn.disabled = false; btn.textContent = '🧠 Re-Analyze'; } }
+}
+
+async function scoreThumbInModal(postId, url, title, views, er) {
+  const btn = document.getElementById('tm-thumb-score-btn');
+  const out = document.getElementById('tm-output');
+  const text = document.getElementById('tm-output-text');
+  if (!btn || !out || !text) return;
+  btn.disabled = true; btn.textContent = '⏳ Scoring…';
+  out.style.display = 'block'; text.textContent = 'Analyzing thumbnail image…';
+  try {
+    const r = await fetch('/api/thumbnail/score', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, title, views, engagementRate: er }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    text.textContent = data.analysis;
+  } catch(e) { text.textContent = 'Error: ' + e.message; }
+  finally { if(btn) { btn.disabled = false; btn.textContent = '🎨 Re-Score'; } }
 }
 
 // ── AI Idea Generator ─────────────────────────────────────────────────────
@@ -4408,13 +5008,64 @@ function renderIdeaCards(ideas) {
       ${idea.hook ? `<div class="idea-label">Why it'll perform</div><div class="idea-text">${escHtml(idea.hook)}</div>` : ''}
       ${idea.angle ? `<div class="idea-label">Storytelling angle</div><div class="idea-text">${escHtml(idea.angle)}</div>` : ''}
       <div class="idea-actions">
-        <button class="idea-action-btn idea-add-btn" onclick="ideaAddToPipeline(${i})">+ Add to Pipeline</button>
+        <button class="idea-action-btn idea-add-btn" id="idea-save-${i}" onclick="quickSaveIdea(${i}, this)">⚡ Save to Pipeline</button>
         <button class="idea-action-btn idea-copy-btn" onclick="ideaCopy(${i})">Copy title</button>
+        <button class="idea-action-btn" style="background:#1a2740;color:#64748b;" onclick="ideaAddToPipeline(${i})">Open & Edit</button>
       </div>
     </div>`).join('');
 }
 
 let _lastIdeas = [];
+
+async function generateFromChannel() {
+  const btn  = document.getElementById('ideas-channel-btn');
+  const icon = document.getElementById('channel-btn-icon');
+  btn.disabled = true;
+  icon.textContent = '⏳';
+  // Clear the angle field so it's a pure channel analysis
+  document.getElementById('ideas-angle').value = '';
+  const count = parseInt(document.getElementById('ideas-count').value);
+  // Use the existing generate flow with a special channelAnalysis flag
+  const stream   = document.getElementById('ideas-stream');
+  const cards    = document.getElementById('ideas-cards');
+  const output   = document.getElementById('ideas-output');
+  const empty    = document.getElementById('ideas-empty');
+  cards.innerHTML = '';
+  output.style.display = 'block';
+  empty.style.display = 'none';
+  stream.style.display = 'block';
+  stream.textContent = '';
+  try {
+    const resp = await fetch('/api/ideas/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ count, channelAnalysis: true }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: resp.statusText }));
+      stream.textContent = 'Error: ' + (err.error || resp.statusText);
+      return;
+    }
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      fullText += decoder.decode(value, { stream: true });
+      stream.textContent = fullText;
+      stream.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+    stream.style.display = 'none';
+    _lastIdeas = parseIdeas(fullText);
+    renderIdeaCards(_lastIdeas);
+  } catch (err) {
+    stream.textContent = 'Error: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    icon.textContent = '🔍';
+  }
+}
 
 async function generateIdeas() {
   const btn      = document.getElementById('ideas-generate-btn');
@@ -4496,6 +5147,31 @@ function ideaAddToPipeline(i) {
       ].filter(Boolean).join('\n\n');
     }
   }, 50);
+}
+
+async function quickSaveIdea(i, btn) {
+  const idea = _lastIdeas[i];
+  if (!idea || !btn) return;
+  btn.disabled = true; btn.textContent = '⏳ Saving…';
+  try {
+    const notes = [
+      idea.hook && '**Hook:** ' + idea.hook,
+      idea.angle && '**Angle:** ' + idea.angle,
+    ].filter(Boolean).join('\n\n');
+    const r = await fetch('/api/pipeline', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: idea.title, stage: 'idea', notes: notes || null, platform: 'youtube' }),
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    btn.textContent = '✓ Saved!';
+    btn.style.background = 'rgba(74,222,128,.2)'; btn.style.color = '#4ade80';
+    showToast('Saved to Pipeline → Ideas');
+    setTimeout(() => { btn.textContent = '⚡ Save to Pipeline'; btn.style.background = ''; btn.style.color = ''; btn.disabled = false; }, 3000);
+  } catch(e) {
+    btn.textContent = 'Error'; btn.disabled = false;
+    setTimeout(() => { btn.textContent = '⚡ Save to Pipeline'; }, 2000);
+  }
 }
 
 function ideaCopy(i) {
@@ -4664,6 +5340,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('pipeline-new-btn').addEventListener('click', () => openCardDetail(null));
   document.getElementById('cdp-title').addEventListener('keydown', e => {
     if (e.key === 'Escape') closeCardDetail();
+  });
+  document.getElementById('cdp-title').addEventListener('input', e => {
+    const topicInput = document.getElementById('cdp-research-topic');
+    if (!topicInput.value || topicInput.value === topicInput.dataset.lastTitle) {
+      topicInput.value = e.target.value;
+      topicInput.dataset.lastTitle = e.target.value;
+    }
   });
 });
 </script>
