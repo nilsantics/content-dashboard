@@ -646,7 +646,7 @@
     /* Thumbnail Modal */
     #thumb-modal { display:none; position:fixed; inset:0; background:#00000090; z-index:2000; align-items:center; justify-content:center; padding:20px; }
     #thumb-modal.open { display:flex; }
-    .thumb-modal-box { background:#0d1524; border:1px solid #1a2740; border-radius:16px; max-width:760px; width:100%; overflow:hidden; }
+    .thumb-modal-box { background:#0d1524; border:1px solid #1a2740; border-radius:16px; max-width:760px; width:100%; overflow:hidden; max-height:90vh; overflow-y:auto; }
     .thumb-modal-img { width:100%; aspect-ratio:16/9; object-fit:cover; display:block; background:#080d14; }
     .thumb-modal-body { padding:20px; }
     .thumb-modal-title { font-size:16px; font-weight:700; color:#e2e8f0; margin-bottom:12px; line-height:1.35; }
@@ -1677,13 +1677,6 @@
       <div id="comp-insights-body" style="display:flex;flex-direction:column;gap:18px;"></div>
     </div>
 
-    <div class="card" id="compete-compare-section" style="display:none;">
-      <div style="margin-bottom:18px;">
-        <span class="card-title">Head-to-Head Comparison</span>
-        <p style="font-size:12px;color:#3d5270;margin-top:3px;">You vs competitors — all public channel data</p>
-      </div>
-      <div class="compare-bar-wrap" id="compete-compare"></div>
-    </div>
   </div><!-- /tab-compete -->
 
   <!-- ══ Thumb Lab Tab ══ -->
@@ -5493,8 +5486,8 @@ function openThumbModal(i) {
           ${v.post_id && v.platform === 'youtube' ? `<button class="thumb-modal-btn" id="tm-thumb-score-btn" onclick="scoreThumbInModal('${v.post_id}','${(v.thumbnail_url||'').replace(/'/g,"\\'")}','${(v.title||'').replace(/'/g,"\\'")}',${v.views||0},${v.engagement_rate||0})" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;">🎨 Score Thumbnail</button>` : ''}
           <button class="thumb-modal-btn" style="background:#0f1a2e;border:1px solid #1a2740;color:#64748b;" onclick="document.getElementById('thumb-modal').classList.remove('open')">Close</button>
         </div>
-        <div id="tm-output" style="display:none;margin-top:16px;border-top:1px solid #1e2d45;padding-top:16px;">
-          <div id="tm-output-text" style="font-size:13px;color:#cbd5e1;line-height:1.8;white-space:pre-wrap;font-family:inherit;"></div>
+        <div id="tm-output" style="display:none;margin-top:14px;border-top:1px solid #1e2d45;padding-top:14px;">
+          <div id="tm-output-text" style="font-size:12.5px;color:#cbd5e1;line-height:1.6;"></div>
         </div>
       </div>
     </div>`;
@@ -5536,9 +5529,52 @@ async function scoreThumbInModal(postId, url, title, views, er) {
     });
     const data = await r.json();
     if (data.error) throw new Error(data.error);
-    text.textContent = data.analysis;
+    text.innerHTML = renderThumbScore(data.analysis);
   } catch(e) { text.textContent = 'Error: ' + e.message; }
   finally { if(btn) { btn.disabled = false; btn.textContent = '🎨 Re-Score'; } }
+}
+
+function renderThumbScore(text) {
+  if (!text) return '';
+  // Parse dimension scores: **Label** (X/10) — feedback
+  const rows = [];
+  const dimRe = /\*\*([^*]+)\*\*\s*[\(\[]?(\d+)\/10[\)\]]?\s*[—–-]\s*([^\n*]+)/g;
+  let m;
+  while ((m = dimRe.exec(text)) !== null) {
+    const label = m[1].trim();
+    const score = parseInt(m[2]);
+    const feedback = m[3].trim();
+    const color = score >= 8 ? '#34d399' : score >= 6 ? '#f59e0b' : '#f87171';
+    rows.push(`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;">
+      <div style="flex-shrink:0;min-width:120px;font-size:11.5px;font-weight:700;color:#7a92b0;padding-top:1px;">${escHtml(label)}</div>
+      <div style="flex-shrink:0;font-size:13px;font-weight:800;color:${color};min-width:30px;">${score}/10</div>
+      <div style="font-size:12px;color:#94a3b8;line-height:1.5;">${escHtml(feedback)}</div>
+    </div>`);
+  }
+
+  // Overall score
+  const overallM = text.match(/Overall\s+Score[:\s]*(\d+)\/10/i);
+  const overall = overallM ? parseInt(overallM[1]) : null;
+
+  // One thing to change
+  const oneThingM = text.match(/One\s+Thing\s+To\s+Change[^—–\-]*[—–-]\s*([^\n]+)/i);
+  const oneThing = oneThingM ? oneThingM[1].trim() : null;
+
+  let html = rows.join('');
+  if (overall !== null) {
+    const oc = overall >= 8 ? '#34d399' : overall >= 6 ? '#f59e0b' : '#f87171';
+    html += `<div style="margin-top:10px;padding:8px 12px;background:#0a1420;border-radius:8px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;">Overall</span>
+      <span style="font-size:22px;font-weight:800;color:${oc};">${overall}/10</span>
+    </div>`;
+  }
+  if (oneThing) {
+    html += `<div style="margin-top:10px;padding:10px 12px;background:#1a1000;border:1px solid #f59e0b33;border-radius:8px;">
+      <div style="font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">The One Thing To Change</div>
+      <div style="font-size:12.5px;color:#fcd34d;line-height:1.5;">${escHtml(oneThing)}</div>
+    </div>`;
+  }
+  return html || `<div style="white-space:pre-wrap;">${escHtml(text)}</div>`;
 }
 
 // ── AI Idea Generator ─────────────────────────────────────────────────────
@@ -5902,24 +5938,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('ideas-generate-btn').addEventListener('click', generateIdeas);
   document.getElementById('ideas-angle').addEventListener('keydown', e => { if (e.key === 'Enter') generateIdeas(); });
 
-  // Checklist
-  loadChecklist();
-  document.getElementById('checklist-add-btn').addEventListener('click', () => {
-    const f = document.getElementById('checklist-add-form');
-    f.style.display = f.style.display === 'none' ? 'block' : 'none';
-    if (f.style.display !== 'none') document.getElementById('checklist-new-label').focus();
-  });
-  document.getElementById('checklist-cancel-new').addEventListener('click', () => {
-    document.getElementById('checklist-add-form').style.display = 'none';
-  });
-  document.getElementById('checklist-save-new').addEventListener('click', saveChecklistItem);
-  document.getElementById('checklist-new-label').addEventListener('keydown', e => {
-    if (e.key === 'Enter') saveChecklistItem();
-    if (e.key === 'Escape') document.getElementById('checklist-add-form').style.display = 'none';
-  });
-  document.getElementById('checklist-reset').addEventListener('click', () => {
-    _checkedIds.clear(); renderChecklist();
-  });
 
   // Competitor tracking
   document.getElementById('competitor-add-btn').addEventListener('click', addCompetitor);
