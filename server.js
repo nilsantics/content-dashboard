@@ -161,6 +161,36 @@ pool.query(`
 `).catch(err => console.warn('client_projects init:', err.message));
 
 pool.query(`
+  CREATE TABLE IF NOT EXISTS client_todos (
+    id          BIGSERIAL PRIMARY KEY,
+    client_id   BIGINT NOT NULL,
+    task        TEXT NOT NULL,
+    due_date    DATE,
+    done        BOOLEAN DEFAULT FALSE,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('client_todos init:', err.message));
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS profile_links (
+    id          BIGSERIAL PRIMARY KEY,
+    label       TEXT NOT NULL,
+    url         TEXT NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('profile_links init:', err.message));
+
+pool.query(`
+  CREATE TABLE IF NOT EXISTS user_settings (
+    key         TEXT PRIMARY KEY,
+    value       TEXT,
+    updated_at  TIMESTAMPTZ DEFAULT NOW()
+  )
+`).catch(err => console.warn('user_settings init:', err.message));
+
+pool.query(`ALTER TABLE clients ADD COLUMN IF NOT EXISTS monthly_retainer NUMERIC(10,2)`).catch(() => {});
+
+pool.query(`
   CREATE TABLE IF NOT EXISTS hub_milestones (
     id          BIGSERIAL PRIMARY KEY,
     label       TEXT NOT NULL,
@@ -2050,8 +2080,8 @@ app.get('/api/my-channel', async (req, res) => {
 app.get('/api/competitors/:channelId/videos', async (req, res) => {
   try {
     const apiKey = process.env.YOUTUBE_API_KEY;
-    const { channelId } = req.params;
-    if (!/^UC[A-Za-z0-9_-]{20,}$/.test(channelId)) return res.status(400).json({ error: 'Invalid channel ID' });
+    const channelId = req.params.channelId.trim();
+    if (!/^UC[A-Za-z0-9_-]{20,}$/.test(channelId)) return res.status(400).json({ error: `Invalid channel ID: "${channelId}"` });
 
     // Get uploads playlist
     const chR = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`);
@@ -2399,11 +2429,13 @@ app.post('/api/clients', express.json(), async (req, res) => {
 });
 app.put('/api/clients/:id', express.json(), async (req, res) => {
   try {
-    const { name, company, email, status, tags, notes, onboarding_checklist } = req.body;
+    const { name, company, email, status, tags, notes, onboarding_checklist, monthly_retainer } = req.body;
     const r = await pool.query(
       `UPDATE clients SET name=$1,company=$2,email=$3,status=$4,tags=$5,notes=$6,
-       onboarding_checklist=COALESCE($7::jsonb,onboarding_checklist),updated_at=NOW() WHERE id=$8 RETURNING *`,
+       monthly_retainer=COALESCE($7::numeric,monthly_retainer),
+       onboarding_checklist=COALESCE($8::jsonb,onboarding_checklist),updated_at=NOW() WHERE id=$9 RETURNING *`,
       [name, company, email, status, tags, notes,
+       monthly_retainer != null ? monthly_retainer : null,
        onboarding_checklist ? JSON.stringify(onboarding_checklist) : null, req.params.id]
     );
     res.json(r.rows[0]);
@@ -2732,6 +2764,78 @@ app.get('/api/hub/notion', async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ── Client To-Dos ─────────────────────────────────────────────────────────────
+app.get('/api/clients/:id/todos', async (req, res) => {
+  try {
+    const r = await pool.query(
+      'SELECT * FROM client_todos WHERE client_id=$1 ORDER BY done ASC, due_date ASC NULLS LAST, created_at ASC',
+      [req.params.id]
+    );
+    res.json(r.rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/clients/:id/todos', express.json(), async (req, res) => {
+  try {
+    const { task, due_date } = req.body;
+    const r = await pool.query(
+      `INSERT INTO client_todos (client_id,task,due_date) VALUES ($1,$2,$3) RETURNING *`,
+      [req.params.id, task, due_date || null]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.put('/api/clients/todos/:id', express.json(), async (req, res) => {
+  try {
+    const { done, task, due_date } = req.body;
+    const r = await pool.query(
+      `UPDATE client_todos SET done=COALESCE($1,done),task=COALESCE($2,task),due_date=COALESCE($3::date,due_date) WHERE id=$4 RETURNING *`,
+      [done ?? null, task ?? null, due_date || null, req.params.id]
+    );
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.delete('/api/clients/todos/:id', async (req, res) => {
+  try {
+    await pool.query('DELETE FROM client_todos WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Profile Links ──────────────────────────────────────────────────────────────
+app.get('/api/profile-links', async (req, res) => {
+  try { res.json((await pool.query('SELECT * FROM profile_links ORDER BY created_at ASC')).rows); }
+  catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.post('/api/profile-links', express.json(), async (req, res) => {
+  try {
+    const { label, url } = req.body;
+    const r = await pool.query(`INSERT INTO profile_links (label,url) VALUES ($1,$2) RETURNING *`, [label, url]);
+    res.json(r.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.delete('/api/profile-links/:id', async (req, res) => {
+  try { await pool.query('DELETE FROM profile_links WHERE id=$1', [req.params.id]); res.json({ ok: true }); }
+  catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── User settings ──────────────────────────────────────────────────────────────
+app.get('/api/settings/:key', async (req, res) => {
+  try {
+    const r = await pool.query('SELECT value FROM user_settings WHERE key=$1', [req.params.key]);
+    res.json({ value: r.rows[0]?.value || '' });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+app.put('/api/settings/:key', express.json(), async (req, res) => {
+  try {
+    await pool.query(
+      `INSERT INTO user_settings (key,value,updated_at) VALUES ($1,$2,NOW())
+       ON CONFLICT (key) DO UPDATE SET value=$2,updated_at=NOW()`,
+      [req.params.key, req.body.value || '']
+    );
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // ── Invoices ──────────────────────────────────────────────────────────────────
 app.get('/api/invoices', async (req, res) => {
   try {
@@ -2920,6 +3024,18 @@ app.get('/api/invoices/overdue-count', async (req, res) => {
       `SELECT COUNT(*) AS cnt FROM invoices WHERE (status='overdue') OR (status='sent' AND due_date < CURRENT_DATE)`
     );
     res.json({ count: Number(r.rows[0]?.cnt || 0) });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ── Competitor insights ───────────────────────────────────────────────────────
+app.get('/api/competitors/insights', async (req, res) => {
+  try {
+    const chCond = getChannelCond();
+    const [myStats, comps] = await Promise.all([
+      pool.query(`SELECT COUNT(*) AS videos, ROUND(AVG(views)) AS avg_views, ROUND(AVG(engagement_rate),2) AS avg_er, MAX(views) AS best_video FROM content_analytics WHERE platform='youtube' ${chCond}`),
+      pool.query(`SELECT * FROM competitors ORDER BY avg_recent_views DESC NULLS LAST`),
+    ]);
+    res.json({ mine: myStats.rows[0], competitors: comps.rows });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 

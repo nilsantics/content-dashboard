@@ -3500,11 +3500,12 @@ async function loadCompetitors() {
     renderCompareChart();
     try { loadCompetitorInsights(); } catch(e) { console.warn('insights:', e.message); }
     // Auto-load 3 recent videos for each competitor
-    _competitors.filter(c => c.channel_id).forEach(c => autoLoadCompVideos(c.channel_id));
+    _competitors.filter(c => c.channel_id).forEach(c => autoLoadCompVideos(c.channel_id.trim()));
   } catch(e) { console.warn('competitors:', e.message); }
 }
 
 async function autoLoadCompVideos(channelId) {
+  channelId = (channelId || '').trim();
   const panel = document.getElementById(`cvids-${channelId}`);
   if (!panel || panel.dataset.loaded) return;
   panel.dataset.loaded = '1';
@@ -3848,9 +3849,25 @@ async function scoreLabThumb(slot) {
 
 async function loadLabFillers() {
   try {
+    // Cache fillers for 3 hours to avoid hitting YouTube Search API quota repeatedly
+    const CACHE_KEY = 'lab_fillers_v2';
+    const CACHE_TTL = 3 * 60 * 60 * 1000;
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const { ts, data } = JSON.parse(cached);
+      if (Date.now() - ts < CACHE_TTL && data?.length) {
+        _labFillers = data;
+        shuffleArray(_labFillers);
+        shuffleArray(FILLER_CHANNELS);
+        return;
+      }
+    }
     const rows = await fetch('/api/lab-fillers').then(r => r.json());
     _labFillers = (rows || []).filter(v => v.thumbnail_url).slice(0, 20);
     shuffleArray(_labFillers);
+    if (_labFillers.length) {
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: _labFillers })); } catch(e) {}
+    }
   } catch(e) { _labFillers = []; }
   shuffleArray(FILLER_CHANNELS);
 }
