@@ -1543,41 +1543,6 @@
       <div class="pipeline-board" id="pipeline-board"></div>
     </div>
 
-    <!-- Upload Checklist -->
-    <div class="card" id="checklist-section">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
-        <div>
-          <span class="card-title">Upload Checklist</span>
-          <p style="font-size:12px;color:#3d5270;margin-top:3px;">Run through this before every publish — check off as you go, resets each session</p>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <span id="checklist-progress" style="font-size:11px;color:#475569;"></span>
-          <button id="checklist-reset" style="background:#0f1a2e;border:1px solid #1a2740;border-radius:7px;color:#64748b;font-size:11px;padding:6px 12px;cursor:pointer;">Reset</button>
-          <button id="checklist-add-btn" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:700;padding:6px 12px;cursor:pointer;">+ Add Item</button>
-        </div>
-      </div>
-      <div id="checklist-progress-bar" style="height:4px;background:#0f1a2e;border-radius:4px;overflow:hidden;margin-bottom:18px;">
-        <div id="checklist-progress-fill" style="height:100%;background:linear-gradient(90deg,#818cf8,#4ade80);border-radius:4px;transition:width .4s ease;width:0%;"></div>
-      </div>
-      <div id="checklist-body"></div>
-      <div id="checklist-add-form" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #1a2740;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <input id="checklist-new-label" type="text" placeholder="New checklist item…"
-            style="flex:1;background:#080d14;border:1px solid #1a2740;border-radius:7px;color:#e2e8f0;font-size:12px;padding:8px 10px;min-width:200px;outline:none;">
-          <select id="checklist-new-cat" style="background:#080d14;border:1px solid #1a2740;border-radius:7px;color:#e2e8f0;font-size:12px;padding:8px 10px;">
-            <option value="metadata">Metadata</option>
-            <option value="visuals">Visuals</option>
-            <option value="engagement">Engagement</option>
-            <option value="promotion">Promotion</option>
-            <option value="accessibility">Accessibility</option>
-            <option value="general">General</option>
-          </select>
-          <button id="checklist-save-new" style="background:#4ade80;border:none;border-radius:7px;color:#000;font-size:11px;font-weight:700;padding:8px 14px;cursor:pointer;">Save</button>
-          <button id="checklist-cancel-new" style="background:#0f1a2e;border:1px solid #1a2740;border-radius:7px;color:#64748b;font-size:11px;padding:8px 12px;cursor:pointer;">Cancel</button>
-        </div>
-      </div>
-    </div>
-
   </div><!-- /tab-pipeline -->
 
   <!-- ══ Comments Tab ══ -->
@@ -1980,8 +1945,7 @@
         </select>
       </div>
       <input class="client-input" id="cf-retainer" placeholder="Monthly retainer ($)" type="number" min="0" step="0.01">
-      </div>
-      <input class="client-input" id="cf-tags" placeholder="Tags (comma-separated)" style="width:100%;box-sizing:border-box;margin-bottom:8px;">
+      <input class="client-input" id="cf-tags" placeholder="Tags (comma-separated)" style="width:100%;box-sizing:border-box;margin-bottom:8px;display:block;margin-top:8px;">
       <textarea class="client-input" id="cf-notes" placeholder="Notes..." rows="3" style="resize:vertical;margin-bottom:10px;width:100%;box-sizing:border-box;display:block;"></textarea>
       <div style="display:flex;gap:8px;">
         <button onclick="saveClient()" style="background:#818cf8;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;padding:7px 18px;cursor:pointer;" id="cf-save-btn">Save</button>
@@ -2030,7 +1994,7 @@
   <div class="tab-panel" id="tab-hub">
     <div style="margin-bottom:4px;">
       <h2 style="font-size:17px;font-weight:700;color:#eef2f8;margin:0;">Hub</h2>
-      <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Your one-stop dashboard — email, files, pages, links.</p>
+      <p style="font-size:12px;color:#3d5270;margin:3px 0 0;">Morning brief, quick links, profile links, and achievements.</p>
     </div>
 
     <!-- Morning Brief -->
@@ -3541,7 +3505,7 @@ async function loadCompetitors() {
     _myChannelStats = myStats && !myStats.error ? myStats : null;
     renderCompeteCards();
     renderCompareChart();
-    loadCompetitorInsights();
+    try { loadCompetitorInsights(); } catch(e) { console.warn('insights:', e.message); }
     // Auto-load 3 recent videos for each competitor
     _competitors.filter(c => c.channel_id).forEach(c => autoLoadCompVideos(c.channel_id));
   } catch(e) { console.warn('competitors:', e.message); }
@@ -3732,12 +3696,12 @@ function loadCompetitorInsights() {
   const body = document.getElementById('comp-insights-body');
   if (!card || !body) return;
   // Need at least one competitor and "you" channel
-  const you = _competitors.find(c => c.is_you);
-  const others = _competitors.filter(c => !c.is_you);
+  const you = _myChannelStats;
+  const others = _competitors.filter(c => c.channel_id);
   if (!you || !others.length) { card.style.display = 'none'; return; }
   card.style.display = '';
 
-  const all = [you, ...others];
+  const all = [{ ...you, is_you: true }, ...others];
   const metrics = [
     { key:'subscribers',      label:'Subscribers',       fmt: v => fmtNum(v) },
     { key:'total_views',      label:'Total Views',       fmt: v => fmtNum(v) },
